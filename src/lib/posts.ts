@@ -1,4 +1,5 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
+import { getLocationInfo } from './location-map';
 
 export type Post = CollectionEntry<'posts'>;
 
@@ -29,6 +30,11 @@ export function groupByStyle(posts: Post[]): Map<string, Post[]> {
 /** 場所（エリア）名 → その場所の記事 */
 export function groupByLocation(posts: Post[]): Map<string, Post[]> {
 	return groupBy(posts, (post) => [post.data.location]);
+}
+
+/** 都道府県名 → その都道府県の記事（location-map.ts で location から解決） */
+export function groupByPrefecture(posts: Post[]): Map<string, Post[]> {
+	return groupBy(posts, (post) => [getLocationInfo(post.data.location).prefecture]);
 }
 
 /** タグ → そのタグを持つ記事（1 記事が複数のタグに入る） */

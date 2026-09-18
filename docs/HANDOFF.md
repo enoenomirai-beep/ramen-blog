@@ -1,6 +1,6 @@
 # 作業引き継ぎメモ
 
-最終更新: 2026-09-18（Claude Code セッションからの引き継ぎ）
+最終更新: 2026-09-19（Claude Code セッションからの引き継ぎ）
 
 ## プロジェクト概要
 
@@ -36,6 +36,7 @@ Astro 7.3 + Tailwind CSS 4 + MDX。記事は Content Collections（`src/content/
 - [x] 2 本目の本物の記事（2026-09-19）: `bushoya-gaiden-akihabara.md` をサンプルから実際の訪問記事（武将家外伝・2026-09-16・★4.3）に置き換え。写真は IMG_4090.HEIC のまま（ユーザー確認済み）。評価は 0.1 刻み（`multipleOf(0.1)`、`StarRating` は端数ぶん部分塗り）に変更
 - [x] `docs/AI-BRIEF.md`（2026-09-19）: ユーザーが Gemini などに現状を共有してプロンプトを考えてもらうためのブリーフ。機能・記事を変えたら毎回更新する（CLAUDE.md に規約追加）
 - [x] エリア別・タグ別ページ（2026-09-19、Gemini 作成の指示）: `/locations/`・`/locations/[location]/`・`/tags/`・`/tags/[tag]/`。`posts.ts` に `groupByLocation()` / `groupByTag()` / `locationPath()` / `tagPath()` を追加し、系統別と共通の `TermPosts.astro`（ページ本体）/ `TermCard.astro`（一覧カード）に切り出して 3 分類で使い回す。導線: ヘッダーナビ（系統別・エリア別・タグ）、フッター、記事の場所バッジとタグ、店舗情報の「場所」。ヘッダーはスマホで 2 段（ロゴ+切替 / ナビ）に
+- [x] エリアの都道府県ナビ・近接駅検索（2026-09-19）: `src/lib/location-map.ts` を新設（`location` → `{ prefecture, group }` の辞書。未登録の `location` は自動で `prefecture: 'その他'` / `group: 自身の location名` にフォールバック）。`posts.ts` に `groupByPrefecture()` を追加。`/locations/index.astro` を都道府県ごとの `<details>` アコーディオンの中に駅（location）カードを並べる階層表示に変更（ページ数・ルーティングは変わらず、`/locations/[location]/` はそのまま）。新設 `AreaSearchBox.astro`（インクリメンタルサーチ、Vanilla JS）をページ上部に設置。入力値を location・group（近接駅グループ）・prefecture に部分一致させるので、「秋葉原」で検索すると同じ group の「末広町」の記事もヒットする
 - [x] **公開済み（2026-09-18）**: https://enoenomirai-beep.github.io/ramen-blog/
   - リポジトリ: https://github.com/enoenomirai-beep/ramen-blog（`main`、Pages の Source = GitHub Actions）
   - 本番で確認済み: トップ / 記事 3 ページ / `rss.xml` / `sitemap-index.xml` / favicon / OGP・canonical の URL / 画像の読み込み。コンソールエラーなし

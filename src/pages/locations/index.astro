@@ -1,18 +1,49 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+import AreaSearchBox from '../../components/AreaSearchBox.astro';
 import TermCard from '../../components/TermCard.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
 import { withBase } from '../../consts';
-import { getPublishedPosts, groupByLocation, locationPath } from '../../lib/posts';
+import { getLocationInfo } from '../../lib/location-map';
+import { getPublishedPosts, groupByLocation, locationPath, type Post } from '../../lib/posts';
 
-// エリアごとの記事数と最新記事。記事数の多い順（同数なら最新記事が新しい順 = 出現順）
-const groups = [...groupByLocation(await getPublishedPosts()).entries()]
-	.map(([location, posts]) => ({ location, count: posts.length, latest: posts[0] }))
-	.sort((a, b) => b.count - a.count);
+const posts = await getPublishedPosts();
+
+// 駅（location）ごとの記事数・最新記事・都道府県
+interface Station {
+	location: string;
+	count: number;
+	latest: Post;
+	prefecture: string;
+}
+const stations: Station[] = [...groupByLocation(posts).entries()].map(([location, locPosts]) => ({
+	location,
+	count: locPosts.length,
+	latest: locPosts[0],
+	prefecture: getLocationInfo(location).prefecture,
+}));
+
+// 都道府県 → 駅一覧（出現順にまとめてから、都道府県内は記事数の多い順、都道府県自体も記事数の多い順）
+const byPrefecture = new Map<string, Station[]>();
+for (const station of stations) {
+	const list = byPrefecture.get(station.prefecture);
+	if (list) list.push(station);
+	else byPrefecture.set(station.prefecture, [station]);
+}
+const prefectures = [...byPrefecture.entries()]
+	.map(([prefecture, group]) => ({
+		prefecture,
+		stations: group.sort((a, b) => b.count - a.count),
+		total: group.reduce((sum, s) => sum + s.count, 0),
+	}))
+	.sort((a, b) => b.total - a.total);
 
 const homeHref = withBase('/');
 ---
 
-<BaseLayout title="エリア別" description="場所（駅・エリア）ごとのラーメンレビュー一覧。">
+<BaseLayout
+	title="エリア別"
+	description="都道府県・駅（エリア）ごとのラーメンレビュー一覧。近接駅もまとめて検索できます。"
+>
 	<nav aria-label="パンくずリスト" class="mb-5 text-xs text-ink-muted sm:text-sm">
 		<a href={homeHref} class="hover:text-brand-fg">記事一覧</a>
 		<span aria-hidden="true" class="mx-2 text-ink-faint">/</span>
@@ -22,16 +53,32 @@ const homeHref = withBase('/');
 	<section class="mb-6 sm:mb-8">
 		<p class="mb-1 text-xs font-bold tracking-widest text-brand-fg uppercase">Areas</p>
 		<h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">エリア別</h1>
-		<p class="mt-2 text-sm leading-relaxed text-ink-muted sm:text-base">場所（駅・エリア）ごとにレビューをまとめています。</p>
+		<p class="mt-2 text-sm leading-relaxed text-ink-muted sm:text-base">
+			都道府県・駅ごとにレビューをまとめています。近接駅もまとめて検索できます。
+		</p>
 	</section>
 
-	<ul class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+	<section class="mb-8 sm:mb-10">
+		<AreaSearchBox posts={posts} />
+	</section>
+
+	<div class="flex flex-col gap-5 sm:gap-6">
 		{
-			groups.map(({ location, count, latest }) => (
-				<li>
-					<TermCard name={location} href={locationPath(location)} count={count} latest={latest} />
-				</li>
+			prefectures.map(({ prefecture, stations: prefStations, total }) => (
+				<details open class="overflow-hidden rounded-xl border border-line bg-surface-raised">
+					<summary class="cursor-pointer bg-surface-sunken px-4 py-3 font-bold text-ink select-none marker:text-brand-fg sm:px-5">
+						<span class="text-lg sm:text-xl">{prefecture}</span>
+						<span class="ml-2 text-sm font-semibold text-ink-muted">{total} 件</span>
+					</summary>
+					<ul class="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 sm:p-5 lg:grid-cols-3">
+						{prefStations.map(({ location, count, latest }) => (
+							<li>
+								<TermCard name={location} href={locationPath(location)} count={count} latest={latest} />
+							</li>
+						))}
+					</ul>
+				</details>
 			))
 		}
-	</ul>
+	</div>
 </BaseLayout>
