@@ -43,6 +43,12 @@ const posts = defineCollection({
 			price: z.number().int().nonnegative().optional(),
 			/** 自由なタグ */
 			tags: z.array(z.string()).default([]),
+			/** GoogleマップなどのURL（記事ページの「場所」に「地図を見る」リンクを表示） */
+			map_url: z.url().optional(),
+			/** 営業時間（例: "11:00〜15:00 / 17:00〜21:00"） */
+			business_hours: z.string().optional(),
+			/** 最寄り駅（location とは別に、駅名だけを書きたい場合） */
+			nearest_station: z.string().optional(),
 			/** 下書きの場合 true（一覧・ビルドから除外） */
 			draft: z.boolean().default(false),
 		})
