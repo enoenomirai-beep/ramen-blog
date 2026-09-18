@@ -28,7 +28,7 @@ Node.js は `C:\Program Files\nodejs`。ツール用シェルの PATH に入っ�
 - 色は `src/styles/global.css` のテーマトークンで書く：面 `bg-surface` / `bg-surface-raised`（カード）/ `bg-surface-sunken`、文字 `text-ink` / `text-ink-muted` / `text-ink-faint`、線 `border-line` / `border-line-strong`、ブランド `text-brand-fg`（リンク・スコア）、バッジ `bg-chip-brand text-chip-brand-fg` / `bg-chip text-chip-fg`、ヘッダー `bg-header text-header-ink`。固定色は `brand-*`（深い赤）/ `accent-*`（オレンジ）/ `star` / `soy-*`。`stone-*` や `dark:` を直接書かない（ダークモードは `<html data-theme="dark">` でトークンの値が切り替わる。新しい色が必要なら `:root` と `[data-theme="dark"]` の両方にトークンを足す）
 - 記事本文の見出し・表・引用の装飾は `global.css` の `.article-body` ルール（`.prose` の上に重ねる。レイヤー外に書いてあるので `prose-*` 修飾子より優先される）
 - 画像は `src/assets/posts/` に置き、フロントマターの `image` で相対パス指定。`image` があれば `image_alt` 必須。`image` が無い記事は `src/lib/placeholder.ts` の Unsplash 画像を「イメージ」ラベル付きで出す
-- 評価 `rating` は 1〜5 の 0.5 刻み。表示は `StarRating.astro`（半星対応）。一覧の 1 行は `PostListItem.astro`
+- 評価 `rating` は 1〜5 の 0.1 刻み。表示は `StarRating.astro`（端数ぶん星を部分的に塗る）。一覧の 1 行は `PostListItem.astro`
 - 記事の取得は `src/lib/posts.ts` の `getPublishedPosts()`（draft 除外・新しい順）を使う。`getCollection` を直接呼ばない。系統別 URL は `stylePath()`
 - 一覧の絞り込み・並び替えは `src/components/PostFilters.astro` のクライアントスクリプト。カード側は `index.astro` の `<li data-post ...>` の data 属性を読む
 - 公開先は GitHub Pages（`https://enoenomirai-beep.github.io/ramen-blog/`）。`astro.config.mjs` の `site` + `base: '/ramen-blog'` から絶対 URL（RSS / sitemap / OGP / canonical）を生成
