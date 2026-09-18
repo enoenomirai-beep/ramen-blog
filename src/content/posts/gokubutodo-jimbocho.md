@@ -4,9 +4,7 @@ date: 2026-07-19
 shop_name: "極太堂"
 style: "二郎系"
 location: "神保町"
-rating: 4
-image: ../../assets/posts/gokubutodo-jimbocho.jpg
-image_alt: "極太堂の小ラーメン。山盛りのもやしとキャベツの上に刻みニンニクが乗る"
+rating: 3.5
 description: "古書店街の路地にある二郎インスパイア。極太麺と乳化スープ、山盛りヤサイのバランスが良く、初心者にもすすめやすい一杯。"
 menu: "小ラーメン（ヤサイマシ・ニンニク）"
 price: 900

@@ -5,8 +5,6 @@ shop_name: "熊田家"
 style: "家系"
 location: "つくばみらい"
 rating: 5
-image: ../../assets/posts/kumadaya-tsukubamirai.jpg
-image_alt: "熊田家のラーメン（並）。鶏油が浮かぶ豚骨醤油スープにほうれん草・チャーシュー・海苔"
 description: "郊外の住宅街に佇む家系の名店。乳化したスープと鶏油のバランスが絶妙で、ライスが止まらない一杯でした。"
 menu: "ラーメン（並）・味濃いめ・ほうれん草増し"
 price: 950

@@ -1,6 +1,8 @@
 ---
+import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { formatDate, withBase } from '../../consts';
+import { PLACEHOLDER_ALT, placeholderImage } from '../../lib/placeholder';
 import { getPublishedPosts, groupByStyle, stylePath } from '../../lib/posts';
 
 // 系統ごとの記事数と最新記事。記事数の多い順（同数なら最新記事が新しい順 = 出現順）
@@ -12,17 +14,16 @@ const homeHref = withBase('/');
 ---
 
 <BaseLayout title="系統別" description="ラーメンの系統（家系・二郎系など）ごとのレビュー一覧。">
-	<nav aria-label="パンくずリスト" class="mb-6 text-sm text-stone-500 dark:text-stone-400">
-		<a href={homeHref} class="hover:text-orange-600 dark:hover:text-orange-400">記事一覧</a>
-		<span aria-hidden="true" class="mx-2">/</span>
-		<span class="text-stone-700 dark:text-stone-300">系統別</span>
+	<nav aria-label="パンくずリスト" class="mb-5 text-xs text-ink-muted sm:text-sm">
+		<a href={homeHref} class="hover:text-brand-fg">記事一覧</a>
+		<span aria-hidden="true" class="mx-2 text-ink-faint">/</span>
+		<span class="font-medium text-ink">系統別</span>
 	</nav>
 
-	<section class="mb-8 sm:mb-10">
-		<h1 class="text-2xl font-bold tracking-tight sm:text-3xl">系統別</h1>
-		<p class="mt-2 text-sm leading-relaxed text-stone-600 dark:text-stone-400 sm:text-base">
-			ラーメンの系統ごとにレビューをまとめています。
-		</p>
+	<section class="mb-6 sm:mb-8">
+		<p class="mb-1 text-xs font-bold tracking-widest text-brand-fg uppercase">Styles</p>
+		<h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">系統別</h1>
+		<p class="mt-2 text-sm leading-relaxed text-ink-muted sm:text-base">ラーメンの系統ごとにレビューをまとめています。</p>
 	</section>
 
 	<ul class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -31,17 +32,44 @@ const homeHref = withBase('/');
 				<li>
 					<a
 						href={withBase(stylePath(style))}
-						class="group flex h-full flex-col gap-2 rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-5 transition hover:-translate-y-0.5 hover:border-orange-400 hover:shadow-md"
+						class="group flex h-full flex-col overflow-hidden rounded-xl border border-line bg-surface-raised shadow-sm transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md"
 					>
-						<div class="flex items-baseline justify-between gap-3">
-							<h2 class="text-lg font-bold text-stone-900 dark:text-stone-100 group-hover:text-orange-700 dark:group-hover:text-orange-400">{style}</h2>
-							<span class="text-sm tabular-nums text-stone-500 dark:text-stone-400">{count} 件</span>
+						<div class="relative aspect-video overflow-hidden bg-surface-sunken">
+							{latest.data.image ? (
+								<Image
+									src={latest.data.image}
+									alt=""
+									widths={[400, 800]}
+									sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw"
+									loading="lazy"
+									class="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+								/>
+							) : (
+								<img
+									src={placeholderImage(latest.id, 800, 450)}
+									alt={PLACEHOLDER_ALT}
+									width="800"
+									height="450"
+									loading="lazy"
+									decoding="async"
+									class="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+								/>
+							)}
+							<span class="absolute top-3 left-3 rounded-full bg-brand-600 px-3 py-1 text-sm font-bold text-white shadow">
+								{style}
+							</span>
 						</div>
-						<p class="text-xs text-stone-500 dark:text-stone-400">最新の記事</p>
-						<p class="line-clamp-2 text-sm leading-snug text-stone-700 dark:text-stone-300">{latest.data.title}</p>
-						<time datetime={latest.data.date.toISOString()} class="mt-auto pt-1 text-xs text-stone-500 dark:text-stone-400">
-							{formatDate(latest.data.date)}
-						</time>
+						<div class="flex flex-1 flex-col gap-1.5 p-4">
+							<div class="flex items-baseline justify-between gap-3">
+								<h2 class="text-lg font-extrabold text-ink group-hover:text-brand-fg">{style}</h2>
+								<span class="text-sm font-semibold tabular-nums text-ink-muted">{count} 件</span>
+							</div>
+							<p class="text-xs font-bold text-ink-faint">最新の記事</p>
+							<p class="line-clamp-2 text-sm leading-snug text-ink">{latest.data.shop_name}</p>
+							<time datetime={latest.data.date.toISOString()} class="mt-auto pt-1 text-xs text-ink-faint">
+								{formatDate(latest.data.date)}
+							</time>
+						</div>
 					</a>
 				</li>
 			))

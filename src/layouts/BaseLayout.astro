@@ -29,6 +29,9 @@ const ogImageUrl = new URL(og.src, Astro.site);
 const homeHref = withBase('/');
 const rssHref = withBase('/rss.xml');
 const stylesHref = withBase('/styles/');
+
+const navLinkClass =
+	'rounded px-2 py-1 text-sm font-semibold text-header-ink/85 transition hover:bg-white/10 hover:text-header-ink';
 ---
 
 <html lang="ja" class="motion-safe:scroll-smooth">
@@ -51,6 +54,7 @@ const stylesHref = withBase('/styles/');
 		<link rel="icon" type="image/svg+xml" href={withBase('/favicon.svg')} />
 		<link rel="icon" href={withBase('/favicon.ico')} />
 		<meta name="generator" content={Astro.generator} />
+		<meta name="theme-color" content="#a52d14" />
 		<title>{pageTitle}</title>
 		<meta name="description" content={description} />
 		<link rel="canonical" href={canonical} />
@@ -73,22 +77,18 @@ const stylesHref = withBase('/styles/');
 		<meta name="twitter:description" content={description} />
 		<meta name="twitter:image" content={ogImageUrl} />
 	</head>
-	<body class="flex min-h-dvh flex-col bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 antialiased">
-		<header class="border-b border-stone-200 dark:border-stone-800 bg-white/90 dark:bg-stone-900/90 backdrop-blur">
-			<div
-				class="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8"
-			>
-				<a href={homeHref} class="flex items-center gap-2 text-lg font-bold tracking-tight sm:text-xl">
-					<span aria-hidden="true" class="text-2xl">🍜</span>
+	<body class="flex min-h-dvh flex-col bg-surface text-ink antialiased">
+		<!-- 暖簾のような深い赤のヘッダー。下端に鶏油色のライン -->
+		<header class="border-b-[3px] border-accent-500 bg-header text-header-ink shadow-md">
+			<div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
+				<a href={homeHref} class="flex min-w-0 items-center gap-2 text-base leading-tight font-extrabold tracking-tight sm:text-xl">
+					<span aria-hidden="true" class="text-2xl drop-shadow-sm">🍜</span>
 					<span>{SITE_TITLE}</span>
 				</a>
-				<nav
-					aria-label="メインナビゲーション"
-					class="flex shrink-0 items-center gap-1 text-sm font-medium whitespace-nowrap text-stone-600 dark:text-stone-400"
-				>
-					<a href={homeHref} class="rounded px-2 py-1 hover:text-orange-600 dark:hover:text-orange-400">記事一覧</a>
-					<a href={stylesHref} class="rounded px-2 py-1 hover:text-orange-600 dark:hover:text-orange-400">系統別</a>
-					<a href={rssHref} class="rounded px-2 py-1 hover:text-orange-600 dark:hover:text-orange-400" title="RSS フィード">
+				<nav aria-label="メインナビゲーション" class="flex shrink-0 items-center gap-0.5 whitespace-nowrap">
+					<a href={homeHref} class={navLinkClass}>記事一覧</a>
+					<a href={stylesHref} class={navLinkClass}>系統別</a>
+					<a href={rssHref} class={navLinkClass} title="RSS フィード">
 						<span class="sr-only">RSS フィード</span>
 						<svg class="size-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
 							<path
@@ -101,16 +101,19 @@ const stylesHref = withBase('/styles/');
 			</div>
 		</header>
 
-		<main class="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+		<main class="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
 			<slot />
 		</main>
 
-		<footer class="border-t border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900">
+		<footer class="border-t border-line bg-surface-sunken">
 			<div
-				class="mx-auto flex w-full max-w-6xl flex-col items-center gap-2 px-4 py-6 text-xs text-stone-500 dark:text-stone-400 sm:flex-row sm:justify-between sm:px-6 lg:px-8"
+				class="mx-auto flex w-full max-w-6xl flex-col items-center gap-2 px-4 py-6 text-xs text-ink-muted sm:flex-row sm:justify-between sm:px-6 lg:px-8"
 			>
 				<span>© {new Date().getFullYear()} {SITE_TITLE}</span>
-				<a href={rssHref} class="hover:text-orange-600 dark:hover:text-orange-400">RSS</a>
+				<div class="flex items-center gap-4">
+					<a href={stylesHref} class="hover:text-brand-fg">系統別</a>
+					<a href={rssHref} class="hover:text-brand-fg">RSS</a>
+				</div>
 			</div>
 		</footer>
 	</body>

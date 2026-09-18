@@ -1,0 +1,50 @@
+---
+/**
+ * 星評価（★★★★☆ 4.5）。
+ *
+ * 1〜5 の 0.5 刻みに対応。4.5 なら 5 つ目の星が左半分だけ塗られる。
+ * 数値をそのまま出すのではなく、パッと見で分かるように星で示し、右に数値を添える。
+ */
+interface Props {
+	/** 1〜5（0.5 刻み） */
+	rating: number;
+	/** sm: 一覧など / md: 記事ヘッダー / lg: スコア強調 */
+	size?: 'sm' | 'md' | 'lg';
+	/** 右に数値（4.5）を表示するか */
+	showValue?: boolean;
+	class?: string;
+}
+
+const { rating, size = 'sm', showValue = true, class: className } = Astro.props;
+
+// 0.5 刻みに丸めて、星ごとの塗り割合（1 / 0.5 / 0）を求める
+const value = Math.max(0, Math.min(5, Math.round(rating * 2) / 2));
+const fills = [1, 2, 3, 4, 5].map((n) => Math.max(0, Math.min(1, value - (n - 1))));
+
+const iconClass = { sm: 'size-4', md: 'size-5', lg: 'size-7' }[size];
+const valueClass = { sm: 'text-sm', md: 'text-lg', lg: 'text-3xl' }[size];
+const label = `5段階評価: ${value.toFixed(1)}`;
+const starPath = 'M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1.1 5.9L10 14.9l-5.3 2.8 1.1-5.9L1.5 7.7l5.9-.8L10 1.5z';
+---
+
+<span class:list={['inline-flex items-center gap-1.5', className]} role="img" aria-label={label} title={label}>
+	<span class="inline-flex items-center gap-0.5">
+		{
+			fills.map((fill) => (
+				<span class:list={['relative inline-block shrink-0', iconClass]}>
+					<svg class="absolute inset-0 size-full text-line-strong" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+						<path d={starPath} />
+					</svg>
+					{fill > 0 && (
+						<span class="absolute inset-y-0 left-0 overflow-hidden" style={`width: ${fill * 100}%`}>
+							<svg class:list={['text-star', iconClass]} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+								<path d={starPath} />
+							</svg>
+						</span>
+					)}
+				</span>
+			))
+		}
+	</span>
+	{showValue && <span class:list={['leading-none font-extrabold tabular-nums text-brand-fg', valueClass]}>{value.toFixed(1)}</span>}
+</span>

@@ -19,15 +19,16 @@ interface Props {
 
 const { styles, locations, total } = Astro.props;
 
+// 押下中の系統タグは暖簾の赤で塗る（色はテーマトークン。global.css 参照）
 const tagClass =
-	'group inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-medium transition ' +
-	'border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-300 hover:border-orange-400 hover:text-orange-700 dark:hover:text-orange-400 ' +
-	'aria-pressed:border-orange-600 dark:aria-pressed:border-orange-600 aria-pressed:bg-orange-600 dark:aria-pressed:bg-orange-600 aria-pressed:text-white dark:aria-pressed:text-white';
+	'group inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-semibold transition ' +
+	'border-line-strong bg-surface-raised text-ink-muted hover:border-brand-400 hover:text-brand-fg ' +
+	'aria-pressed:border-brand-600 aria-pressed:bg-brand-600 aria-pressed:text-white';
 const countClass =
-	'rounded-full bg-stone-100 dark:bg-stone-800 px-1.5 text-xs tabular-nums text-stone-600 dark:text-stone-400 group-aria-pressed:bg-orange-500 dark:group-aria-pressed:bg-orange-500 group-aria-pressed:text-white dark:group-aria-pressed:text-white';
+	'rounded-full bg-surface-sunken px-1.5 text-xs tabular-nums text-ink-muted group-aria-pressed:bg-white/25 group-aria-pressed:text-white';
 const selectClass =
-	'w-full rounded-full border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 py-1.5 pr-8 pl-3 text-sm text-stone-700 dark:text-stone-300 ' +
-	'hover:border-orange-400 focus:border-orange-500 sm:w-auto';
+	'w-full rounded-full border border-line-strong bg-surface-raised py-1.5 pr-8 pl-3 text-sm font-medium text-ink ' +
+	'hover:border-brand-400 focus:border-brand-500 sm:w-auto';
 
 const ratingOptions = [
 	{ value: '0', label: 'すべての評価' },
@@ -89,13 +90,13 @@ const sortOptions = [
 			</select>
 		</div>
 
-		<div class="flex items-center gap-3 text-sm text-stone-500 dark:text-stone-400 sm:ml-auto">
+		<div class="flex items-center gap-3 text-sm text-ink-muted sm:ml-auto">
 			<p aria-live="polite">
-				<span data-result-count>{total}</span> 件の記事
+				<span data-result-count class="font-bold text-ink">{total}</span> 件の記事
 			</p>
 			<button
 				type="button"
-				class="font-medium text-orange-700 dark:text-orange-400 underline-offset-2 hover:underline"
+				class="font-semibold text-brand-fg underline-offset-2 hover:underline"
 				data-filter-clear
 				hidden
 			>
