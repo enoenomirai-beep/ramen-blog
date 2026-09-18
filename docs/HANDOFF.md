@@ -29,6 +29,7 @@ Astro 7.3 + Tailwind CSS 4 + MDX。記事は Content Collections（`src/content/
 - [x] 記事本文の目次（2026-09-18）: `src/components/TableOfContents.astro`。`render(post)` の `headings` から h2 / h3 を拾って `<details open>` で表示。見出し 2 つ未満なら非表示。見出しに `scroll-mt-6`、`<html>` に `motion-safe:scroll-smooth`
 - [x] 系統別ページ（2026-09-18）: `/styles/`（一覧）と `/styles/[style]/`。`src/lib/posts.ts` に `getPublishedPosts()` / `groupByStyle()` / `stylePath()` を切り出し、トップ・RSS・記事ページもこれを使うように統一。記事ページの系統バッジは `/?style=` から系統別ページへ変更、ヘッダーに「系統別」を追加。URL は系統名をそのまま `encodeURIComponent`（`/styles/%E5%AE%B6%E7%B3%BB/`）
 - [x] ダークモード（2026-09-18）: `<html data-theme>` 方式。`global.css` の `@custom-variant dark` + `color-scheme`、`BaseLayout` の inline script（localStorage `theme` → OS 設定の順で初期化、ちらつき防止）、`ThemeToggle.astro`（ヘッダー右端、月／太陽アイコンは CSS で出し分け）。全コンポーネントの色クラスに `dark:` を付与
+- [x] 写真取り込みスクリプト（2026-09-18）: `scripts/import-photo.mjs`（`npm run photo -- <写真> <スラッグ>`）。EXIF の向きを反映 → メタデータ（GPS 含む）削除 → 長辺 1600px → JPEG q82 で `src/assets/posts/<スラッグ>.jpg` に保存。HEIC は非対応（sharp のビルドに libheif が無い）
 - [x] **公開済み（2026-09-18）**: https://enoenomirai-beep.github.io/ramen-blog/
   - リポジトリ: https://github.com/enoenomirai-beep/ramen-blog（`main`、Pages の Source = GitHub Actions）
   - 本番で確認済み: トップ / 記事 3 ページ / `rss.xml` / `sitemap-index.xml` / favicon / OGP・canonical の URL / 画像の読み込み。コンソールエラーなし
@@ -39,9 +40,20 @@ Astro 7.3 + Tailwind CSS 4 + MDX。記事は Content Collections（`src/content/
 - git が見つからないターミナルでは先頭で `$env:Path = "C:\Program Files\Git\cmd;" + $env:Path`
 - ユーザー名やリポジトリ名を変える場合は `astro.config.mjs` の `site` / `base` と、README・CLAUDE.md 内の URL も合わせて直す
 
+## 残り：実際の写真への差し替え（ユーザーの写真が必要）
+
+サンプル 3 記事の画像はダミー。差し替えの技術的な準備は済んでいるので、あとは写真を受け取るだけ：
+
+1. 写真ファイルをどこかに置いてもらう（パスを教えてもらう）
+2. `npm run photo -- <写真> kumadaya-tsukubamirai --force`（他 2 記事も同様）
+3. 各記事の `image_alt` を実際の写真の説明に書き換える
+4. `npm run build` → commit → push
+
+そもそもサンプル記事自体がダミーなので、実際の訪問記事を書き始めるタイミングでサンプルを削除する選択もある。
+
 ## そのほかの次の候補
 
-- 実際の写真への差し替え（`src/assets/posts/` のファイルを置き換えるだけ）
+- （現時点で残っている候補はなし。記事を書き始める）
 
 ## 注意事項
 

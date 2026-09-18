@@ -33,7 +33,7 @@ Node.js は `C:\Program Files\nodejs`。ツール用シェルの PATH に入っ�
 - サブパス配信なので、サイト内リンク（`/`, `/posts/...`, `/rss.xml`, favicon）は必ず `src/consts.ts` の `withBase()` を通す。`href="/..."` を直書きしない
 - 開発サーバーの URL は `http://localhost:4321/ramen-blog/`（ルート `/` は 404 になる）
 - `main` への push で `.github/workflows/deploy.yml`（withastro/action）が自動デプロイ
-- サンプル画像は `node scripts/make-placeholders.mjs` で再生成できる
+- サンプル画像は `node scripts/make-placeholders.mjs` で再生成できる。実際の写真は `npm run photo -- <写真> <スラッグ>`（`scripts/import-photo.mjs`）で取り込む（縮小・EXIF/GPS 削除）。元の写真をそのまま `src/assets/posts/` に置かない
 
 ## Documentation
 
