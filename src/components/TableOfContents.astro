@@ -1,0 +1,57 @@
+---
+/**
+ * 記事本文の目次。
+ *
+ * `render(post)` が返す headings のうち h2 / h3 から生成する（h2 を親、直後の h3 を子にネスト）。
+ * 見出しが 2 つ未満のときは何も表示しない。<details> で折りたためる。
+ */
+import type { MarkdownHeading } from 'astro';
+
+interface Props {
+	headings: MarkdownHeading[];
+}
+
+const { headings } = Astro.props;
+
+interface TocItem extends MarkdownHeading {
+	children: MarkdownHeading[];
+}
+const items: TocItem[] = [];
+for (const heading of headings) {
+	if (heading.depth === 2) items.push({ ...heading, children: [] });
+	else if (heading.depth === 3 && items.length > 0) items[items.length - 1].children.push(heading);
+}
+const count = items.reduce((n, item) => n + 1 + item.children.length, 0);
+
+const linkClass = 'text-stone-700 underline-offset-2 hover:text-orange-700 hover:underline';
+---
+
+{
+	count >= 2 && (
+		<nav aria-label="目次" class="mb-8 rounded-2xl border border-stone-200 bg-white px-5 py-4 text-sm">
+			<details open>
+				<summary class="cursor-pointer font-bold text-stone-800 select-none marker:text-orange-500">目次</summary>
+				<ol class="mt-3 list-decimal space-y-1.5 pl-6 marker:font-semibold marker:text-orange-600">
+					{items.map((item) => (
+						<li>
+							<a href={`#${item.slug}`} class={linkClass}>
+								{item.text}
+							</a>
+							{item.children.length > 0 && (
+								<ol class="mt-1 list-disc space-y-1 pl-5 marker:text-stone-400">
+									{item.children.map((child) => (
+										<li>
+											<a href={`#${child.slug}`} class={linkClass}>
+												{child.text}
+											</a>
+										</li>
+									))}
+								</ol>
+							)}
+						</li>
+					))}
+				</ol>
+			</details>
+		</nav>
+	)
+}
