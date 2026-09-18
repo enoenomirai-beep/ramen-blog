@@ -1,0 +1,106 @@
+---
+/**
+ * エリア別ページ上部の近接駅対応インクリメンタルサーチ。
+ *
+ * 入力値を location（駅名）と location-map.ts の group（近接駅グループ）・prefecture に
+ * 部分一致させ、該当する記事を一覧表示する（Vanilla JS、クライアント側のみ）。
+ * 例: 「秋葉原」と入力すると、location が「末広町」（同じ group）の記事もヒットする。
+ */
+import { getLocationInfo } from '../lib/location-map';
+import type { Post } from '../lib/posts';
+import PostListItem from './PostListItem.astro';
+
+interface Props {
+	posts: Post[];
+}
+
+const { posts } = Astro.props;
+---
+
+<div data-area-search>
+	<label for="area-search-input" class="sr-only">エリアで検索（近接駅もまとめてヒットします）</label>
+	<div class="relative">
+		<svg
+			class="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-ink-faint"
+			viewBox="0 0 20 20"
+			fill="currentColor"
+			aria-hidden="true"
+		>
+			<path
+				fill-rule="evenodd"
+				d="M8.5 3a5.5 5.5 0 1 0 3.38 9.84l3.64 3.65a.75.75 0 1 0 1.06-1.06l-3.65-3.64A5.5 5.5 0 0 0 8.5 3ZM4.5 8.5a4 4 0 1 1 8 0 4 4 0 0 1-8 0Z"
+				clip-rule="evenodd"></path>
+		</svg>
+		<input
+			id="area-search-input"
+			type="search"
+			inputmode="search"
+			autocomplete="off"
+			placeholder="駅名・エリア名で検索（例: 秋葉原 → 近くの末広町もまとめてヒット）"
+			class="w-full rounded-full border border-line-strong bg-surface-raised py-2.5 pr-4 pl-10 text-sm font-medium text-ink placeholder:text-ink-faint hover:border-brand-400 focus:border-brand-500"
+			data-area-search-input
+		/>
+	</div>
+
+	<div data-area-search-results hidden class="mt-4">
+		<p class="mb-3 text-sm text-ink-muted">
+			<span data-area-search-count class="font-bold text-ink">0</span> 件ヒット
+		</p>
+		<ol class="flex flex-col gap-4">
+			{
+				posts.map((post) => {
+					const info = getLocationInfo(post.data.location);
+					return (
+						<li
+							data-area-search-item
+							data-location={post.data.location}
+							data-group={info.group}
+							data-prefecture={info.prefecture}
+						>
+							<PostListItem post={post} />
+						</li>
+					);
+				})
+			}
+		</ol>
+		<p
+			data-area-search-empty
+			hidden
+			class="rounded-xl border border-dashed border-line-strong bg-surface-raised px-6 py-12 text-center text-sm text-ink-muted"
+		>
+			該当する記事はありません。
+		</p>
+	</div>
+</div>
+
+<script>
+	const root = document.querySelector<HTMLElement>('[data-area-search]');
+	if (root) {
+		const input = root.querySelector<HTMLInputElement>('[data-area-search-input]')!;
+		const resultsEl = root.querySelector<HTMLElement>('[data-area-search-results]')!;
+		const countEl = root.querySelector<HTMLElement>('[data-area-search-count]');
+		const emptyEl = root.querySelector<HTMLElement>('[data-area-search-empty]');
+		const items = Array.from(root.querySelectorAll<HTMLElement>('[data-area-search-item]'));
+
+		function render() {
+			const query = input.value.trim().toLowerCase();
+			resultsEl.hidden = query === '';
+			if (query === '') return;
+
+			let visible = 0;
+			for (const item of items) {
+				const d = item.dataset;
+				// 駅名・近接駅グループ・都道府県のいずれかに部分一致すればヒット
+				const haystack = `${d.location ?? ''} ${d.group ?? ''} ${d.prefecture ?? ''}`.toLowerCase();
+				const match = haystack.includes(query);
+				item.hidden = !match;
+				if (match) visible++;
+			}
+			if (countEl) countEl.textContent = String(visible);
+			if (emptyEl) emptyEl.hidden = visible > 0;
+		}
+
+		input.addEventListener('input', render);
+		render();
+	}
+</script>
