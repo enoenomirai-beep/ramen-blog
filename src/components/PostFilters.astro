@@ -1,0 +1,233 @@
+---
+/**
+ * 記事一覧の絞り込み・並び替え UI。
+ *
+ * - 系統（style）：タグボタン
+ * - 場所（location）／評価（rating）：セレクト
+ * - 並び替え（sort）：セレクト
+ *
+ * ページ内の `[data-post-list] > [data-post]` 要素を対象に、クライアント側で
+ * 表示・非表示と並び順を切り替える。状態は URL のクエリ（?style=&location=&rating=&sort=）に同期する。
+ */
+interface Props {
+	/** 系統名 → 記事数（出現順） */
+	styles: Map<string, number>;
+	/** 場所名 → 記事数（出現順） */
+	locations: Map<string, number>;
+	total: number;
+}
+
+const { styles, locations, total } = Astro.props;
+
+const tagClass =
+	'group inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-medium transition ' +
+	'border-stone-300 bg-white text-stone-700 hover:border-orange-400 hover:text-orange-700 ' +
+	'aria-pressed:border-orange-600 aria-pressed:bg-orange-600 aria-pressed:text-white';
+const countClass =
+	'rounded-full bg-stone-100 px-1.5 text-xs tabular-nums text-stone-600 group-aria-pressed:bg-orange-500 group-aria-pressed:text-white';
+const selectClass =
+	'w-full rounded-full border border-stone-300 bg-white py-1.5 pr-8 pl-3 text-sm text-stone-700 ' +
+	'hover:border-orange-400 focus:border-orange-500 sm:w-auto';
+
+const ratingOptions = [
+	{ value: '0', label: 'すべての評価' },
+	{ value: '5', label: '★5 のみ' },
+	{ value: '4', label: '★4 以上' },
+	{ value: '3', label: '★3 以上' },
+];
+const sortOptions = [
+	{ value: 'new', label: '新しい順' },
+	{ value: 'old', label: '古い順' },
+	{ value: 'rating', label: '評価が高い順' },
+];
+---
+
+<div class="flex flex-col gap-4" data-post-filters>
+	<!-- 系統タグ -->
+	<div
+		class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0"
+		role="group"
+		aria-label="系統で絞り込み"
+	>
+		<button type="button" class={tagClass} data-filter-style="all" aria-pressed="true">
+			すべて
+			<span class={countClass}>{total}</span>
+		</button>
+		{
+			[...styles.entries()].map(([style, count]) => (
+				<button type="button" class={tagClass} data-filter-style={style} aria-pressed="false">
+					{style}
+					<span class={countClass}>{count}</span>
+				</button>
+			))
+		}
+	</div>
+
+	<!-- 場所・評価・並び替え -->
+	<div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+		<div class="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:items-center">
+			<label class="sr-only" for="filter-location">場所</label>
+			<select id="filter-location" class={selectClass} data-filter-location>
+				<option value="">すべての場所</option>
+				{
+					[...locations.entries()].map(([location, count]) => (
+						<option value={location}>
+							{location}（{count}）
+						</option>
+					))
+				}
+			</select>
+
+			<label class="sr-only" for="filter-rating">評価</label>
+			<select id="filter-rating" class={selectClass} data-filter-rating>
+				{ratingOptions.map(({ value, label }) => <option value={value}>{label}</option>)}
+			</select>
+
+			<label class="sr-only" for="filter-sort">並び替え</label>
+			<select id="filter-sort" class={selectClass} data-filter-sort>
+				{sortOptions.map(({ value, label }) => <option value={value}>{label}</option>)}
+			</select>
+		</div>
+
+		<div class="flex items-center gap-3 text-sm text-stone-500 sm:ml-auto">
+			<p aria-live="polite">
+				<span data-result-count>{total}</span> 件の記事
+			</p>
+			<button
+				type="button"
+				class="font-medium text-orange-700 underline-offset-2 hover:underline"
+				data-filter-clear
+				hidden
+			>
+				条件をクリア
+			</button>
+		</div>
+	</div>
+</div>
+
+<script>
+	type Sort = 'new' | 'old' | 'rating';
+	interface State {
+		style: string;
+		location: string;
+		rating: number;
+		sort: Sort;
+	}
+
+	const DEFAULTS: State = { style: 'all', location: '', rating: 0, sort: 'new' };
+	const SORTS: Sort[] = ['new', 'old', 'rating'];
+
+	const root = document.querySelector<HTMLElement>('[data-post-filters]');
+	const listEl = document.querySelector<HTMLElement>('[data-post-list]');
+	if (root && listEl) {
+		const list: HTMLElement = listEl; // 巻き上げられる function 宣言からも non-null で参照できるようにする
+		const items = Array.from(list.querySelectorAll<HTMLElement>('[data-post]'));
+		const styleButtons = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-filter-style]'));
+		const locationSelect = root.querySelector<HTMLSelectElement>('[data-filter-location]')!;
+		const ratingSelect = root.querySelector<HTMLSelectElement>('[data-filter-rating]')!;
+		const sortSelect = root.querySelector<HTMLSelectElement>('[data-filter-sort]')!;
+		const clearButton = root.querySelector<HTMLButtonElement>('[data-filter-clear]')!;
+		const countEl = root.querySelector<HTMLElement>('[data-result-count]');
+		const emptyEl = document.querySelector<HTMLElement>('[data-empty-state]');
+
+		const state: State = { ...DEFAULTS };
+
+		function readStateFromUrl() {
+			const params = new URL(location.href).searchParams;
+			const style = params.get('style');
+			const loc = params.get('location');
+			const rating = Number(params.get('rating'));
+			const sort = params.get('sort') as Sort | null;
+
+			state.style = style && styleButtons.some((b) => b.dataset.filterStyle === style) ? style : DEFAULTS.style;
+			state.location =
+				loc && Array.from(locationSelect.options).some((o) => o.value === loc) ? loc : DEFAULTS.location;
+			state.rating = [3, 4, 5].includes(rating) ? rating : DEFAULTS.rating;
+			state.sort = sort && SORTS.includes(sort) ? sort : DEFAULTS.sort;
+		}
+
+		function writeStateToUrl() {
+			const url = new URL(location.href);
+			const set = (key: string, value: string, def: string) =>
+				value === def ? url.searchParams.delete(key) : url.searchParams.set(key, value);
+			set('style', state.style, DEFAULTS.style);
+			set('location', state.location, DEFAULTS.location);
+			set('rating', String(state.rating), String(DEFAULTS.rating));
+			set('sort', state.sort, DEFAULTS.sort);
+			history.replaceState(null, '', url);
+		}
+
+		function matches(item: HTMLElement) {
+			const d = item.dataset;
+			return (
+				(state.style === 'all' || d.postStyle === state.style) &&
+				(state.location === '' || d.postLocation === state.location) &&
+				(state.rating === 0 || Number(d.postRating) >= state.rating)
+			);
+		}
+
+		function compare(a: HTMLElement, b: HTMLElement) {
+			const dateA = a.dataset.postDate ?? '';
+			const dateB = b.dataset.postDate ?? '';
+			const ratingA = Number(a.dataset.postRating);
+			const ratingB = Number(b.dataset.postRating);
+			switch (state.sort) {
+				case 'old':
+					return dateA.localeCompare(dateB);
+				case 'rating':
+					return ratingB - ratingA || dateB.localeCompare(dateA);
+				default:
+					return dateB.localeCompare(dateA);
+			}
+		}
+
+		function render() {
+			let visible = 0;
+			for (const item of items) {
+				const ok = matches(item);
+				item.hidden = !ok;
+				if (ok) visible++;
+			}
+			// 並び替え：DOM 上の要素を並べ直す
+			for (const item of [...items].sort(compare)) list.appendChild(item);
+
+			for (const btn of styleButtons) {
+				btn.setAttribute('aria-pressed', String(btn.dataset.filterStyle === state.style));
+			}
+			locationSelect.value = state.location;
+			ratingSelect.value = String(state.rating);
+			sortSelect.value = state.sort;
+
+			const isDefault =
+				state.style === DEFAULTS.style && state.location === DEFAULTS.location && state.rating === DEFAULTS.rating;
+			clearButton.hidden = isDefault;
+			if (countEl) countEl.textContent = String(visible);
+			if (emptyEl) emptyEl.hidden = visible > 0;
+		}
+
+		function update(partial: Partial<State>) {
+			Object.assign(state, partial);
+			render();
+			writeStateToUrl();
+		}
+
+		for (const btn of styleButtons) {
+			btn.addEventListener('click', () => update({ style: btn.dataset.filterStyle ?? 'all' }));
+		}
+		locationSelect.addEventListener('change', () => update({ location: locationSelect.value }));
+		ratingSelect.addEventListener('change', () => update({ rating: Number(ratingSelect.value) }));
+		sortSelect.addEventListener('change', () => update({ sort: sortSelect.value as Sort }));
+		clearButton.addEventListener('click', () =>
+			update({ style: DEFAULTS.style, location: DEFAULTS.location, rating: DEFAULTS.rating }),
+		);
+
+		// ブラウザの戻る／進むで URL が変わったときも追従する
+		window.addEventListener('popstate', () => {
+			readStateFromUrl();
+			render();
+		});
+
+		readStateFromUrl();
+		render();
+	}
+</script>

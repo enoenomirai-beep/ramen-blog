@@ -1,0 +1,16 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+	/* 日本語環境で読みやすいフォントスタック */
+	--font-sans:
+		"Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic UI",
+		"Meiryo", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* Tailwind v4 の ring 幅の既定値は 1px。フォーカス表示を少し強める */
+@layer base {
+	:focus-visible {
+		@apply outline-2 outline-offset-2 outline-orange-500;
+	}
+}

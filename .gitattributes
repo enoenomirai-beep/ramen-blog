@@ -1,0 +1,9 @@
+# テキストファイルは LF で保存（Windows でも CI（Linux）でも同じ差分になるように）
+* text=auto eol=lf
+
+# バイナリ
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.webp binary
+*.ico binary

@@ -1,0 +1,97 @@
+---
+import '../styles/global.css';
+import type { ImageMetadata } from 'astro';
+import { getImage } from 'astro:assets';
+import ogDefault from '../assets/og-default.jpg';
+import { SITE_DESCRIPTION, SITE_TITLE, withBase } from '../consts';
+
+interface Props {
+	/** <title> に使うページタイトル（サイト名は自動で付与） */
+	title?: string;
+	description?: string;
+	/** OGP 画像（省略時はサイト共通のデフォルト画像） */
+	ogImage?: ImageMetadata;
+	/** og:type */
+	type?: 'website' | 'article';
+}
+
+const { title, description = SITE_DESCRIPTION, ogImage = ogDefault, type = 'website' } = Astro.props;
+const pageTitle = title ? `${title} | ${SITE_TITLE}` : SITE_TITLE;
+
+// 絶対 URL は astro.config.mjs の site を基準にする（Astro.url.pathname と画像の src は base 込み）
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const rssUrl = new URL(withBase('/rss.xml'), Astro.site);
+const og = await getImage({ src: ogImage, width: 1200, height: 630, format: 'jpg' });
+const ogImageUrl = new URL(og.src, Astro.site);
+
+// サイト内リンク（base 付き）
+const homeHref = withBase('/');
+const rssHref = withBase('/rss.xml');
+---
+
+<html lang="ja">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="icon" type="image/svg+xml" href={withBase('/favicon.svg')} />
+		<link rel="icon" href={withBase('/favicon.ico')} />
+		<meta name="generator" content={Astro.generator} />
+		<title>{pageTitle}</title>
+		<meta name="description" content={description} />
+		<link rel="canonical" href={canonical} />
+		<link rel="alternate" type="application/rss+xml" title={SITE_TITLE} href={rssUrl} />
+
+		<!-- OGP -->
+		<meta property="og:type" content={type} />
+		<meta property="og:site_name" content={SITE_TITLE} />
+		<meta property="og:locale" content="ja_JP" />
+		<meta property="og:title" content={title ?? SITE_TITLE} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonical} />
+		<meta property="og:image" content={ogImageUrl} />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+
+		<!-- Twitter / X カード -->
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={title ?? SITE_TITLE} />
+		<meta name="twitter:description" content={description} />
+		<meta name="twitter:image" content={ogImageUrl} />
+	</head>
+	<body class="flex min-h-dvh flex-col bg-stone-50 text-stone-900 antialiased">
+		<header class="border-b border-stone-200 bg-white/90 backdrop-blur">
+			<div
+				class="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8"
+			>
+				<a href={homeHref} class="flex items-center gap-2 text-lg font-bold tracking-tight sm:text-xl">
+					<span aria-hidden="true" class="text-2xl">🍜</span>
+					<span>{SITE_TITLE}</span>
+				</a>
+				<nav aria-label="メインナビゲーション" class="flex items-center gap-1 text-sm font-medium text-stone-600">
+					<a href={homeHref} class="rounded px-2 py-1 hover:text-orange-600">記事一覧</a>
+					<a href={rssHref} class="rounded px-2 py-1 hover:text-orange-600" title="RSS フィード">
+						<span class="sr-only">RSS フィード</span>
+						<svg class="size-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+							<path
+								d="M3.75 3a.75.75 0 0 0 0 1.5A11.75 11.75 0 0 1 15.5 16.25a.75.75 0 0 0 1.5 0A13.25 13.25 0 0 0 3.75 3Zm0 4.5a.75.75 0 0 0 0 1.5 7.25 7.25 0 0 1 7.25 7.25.75.75 0 0 0 1.5 0A8.75 8.75 0 0 0 3.75 7.5ZM5 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"
+							></path>
+						</svg>
+					</a>
+				</nav>
+			</div>
+		</header>
+
+		<main class="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+			<slot />
+		</main>
+
+		<footer class="border-t border-stone-200 bg-white">
+			<div
+				class="mx-auto flex w-full max-w-6xl flex-col items-center gap-2 px-4 py-6 text-xs text-stone-500 sm:flex-row sm:justify-between sm:px-6 lg:px-8"
+			>
+				<span>© {new Date().getFullYear()} {SITE_TITLE}</span>
+				<a href={rssHref} class="hover:text-orange-600">RSS</a>
+			</div>
+		</footer>
+	</body>
+</html>

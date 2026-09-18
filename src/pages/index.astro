@@ -1,0 +1,64 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostCard from '../components/PostCard.astro';
+import PostFilters from '../components/PostFilters.astro';
+import { SITE_DESCRIPTION } from '../consts';
+
+// 下書きを除き、日付の新しい順に並べる
+const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
+	(a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+
+// 系統・場所ごとの記事数（出現順を保つため Map）
+function countBy(key: 'style' | 'location') {
+	const map = new Map<string, number>();
+	for (const post of posts) {
+		const value = post.data[key];
+		map.set(value, (map.get(value) ?? 0) + 1);
+	}
+	return map;
+}
+const styles = countBy('style');
+const locations = countBy('location');
+---
+
+<BaseLayout>
+	<section class="mb-8 sm:mb-10">
+		<h1 class="text-2xl font-bold tracking-tight sm:text-3xl">最新のレビュー</h1>
+		<p class="mt-2 max-w-2xl text-sm leading-relaxed text-stone-600 sm:text-base">
+			{SITE_DESCRIPTION}
+		</p>
+	</section>
+
+	<section class="mb-6">
+		<PostFilters styles={styles} locations={locations} total={posts.length} />
+	</section>
+
+	<section aria-label="記事一覧">
+		<ul class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3" data-post-list>
+			{
+				posts.map((post) => (
+					<li
+						class="contents"
+						data-post
+						data-post-style={post.data.style}
+						data-post-location={post.data.location}
+						data-post-rating={post.data.rating}
+						data-post-date={post.data.date.toISOString()}
+					>
+						<PostCard post={post} />
+					</li>
+				))
+			}
+		</ul>
+
+		<p
+			data-empty-state
+			hidden
+			class="rounded-2xl border border-dashed border-stone-300 bg-white px-6 py-12 text-center text-sm text-stone-500"
+		>
+			条件に合う記事はありません。
+		</p>
+	</section>
+</BaseLayout>
