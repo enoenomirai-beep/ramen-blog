@@ -1,13 +1,11 @@
 import rss from '@astrojs/rss';
 import type { APIRoute } from 'astro';
-import { getCollection } from 'astro:content';
 import { SITE_DESCRIPTION, SITE_TITLE, withBase } from '../consts';
+import { getPublishedPosts } from '../lib/posts';
 
 /** /rss.xml — 記事の RSS フィード */
 export const GET: APIRoute = async (context) => {
-	const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
-		(a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
-	);
+	const posts = await getPublishedPosts();
 
 	return rss({
 		title: SITE_TITLE,

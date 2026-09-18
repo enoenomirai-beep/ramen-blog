@@ -14,6 +14,7 @@ Astro + Tailwind CSS で作ったラーメン食べ歩きレビュー専用の�
 
 - 記事一覧：系統タグ・場所・評価（★n 以上）で絞り込み、新しい順／古い順／評価順で並び替え。条件は URL クエリ（`?style=家系&location=秋葉原&rating=4&sort=rating`）に同期されるので、絞り込んだ状態のままリンクを共有できます
 - 記事ページ：店舗情報・評価・写真・Markdown 本文、本文の目次（`##` / `###` から自動生成、見出しが 2 つ以上のときだけ表示、折りたたみ可）、前後の記事へのナビ（日付順で「前の記事」= 古い記事、「次の記事」= 新しい記事）
+- 系統別ページ：`/styles/`（系統の一覧）と `/styles/家系/` のように系統ごとの記事一覧。記事ページの系統バッジとヘッダーの「系統別」からたどれます。新しい系統はフロントマターの `style` に書くだけで自動的にページが増えます
 - RSS フィード、sitemap、OGP / Twitter カード（記事ページは写真を OGP 画像として使用）
 
 ## 公開（GitHub Pages）
@@ -66,9 +67,12 @@ base: '/<リポジトリ名>',
 │   │   └── posts/              # ★ 記事（.md / .mdx）を置く場所
 │   ├── layouts/
 │   │   └── BaseLayout.astro    # 共通レイアウト（ヘッダー／フッター／OGP）
+│   ├── lib/posts.ts            # 記事の取得・系統ごとのグループ化（各ページ共通）
 │   ├── pages/
 │   │   ├── index.astro         # トップページ（記事一覧 + 絞り込み）
 │   │   ├── posts/[id].astro    # 記事詳細ページ
+│   │   ├── styles/index.astro  # 系統の一覧
+│   │   ├── styles/[style].astro # 系統ごとの記事一覧
 │   │   └── rss.xml.ts          # RSS フィード
 │   ├── styles/global.css       # Tailwind の読み込みとテーマ設定
 │   ├── consts.ts               # サイト名などの定数、withBase()（base 付きリンク）

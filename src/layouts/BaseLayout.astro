@@ -27,6 +27,7 @@ const ogImageUrl = new URL(og.src, Astro.site);
 // サイト内リンク（base 付き）
 const homeHref = withBase('/');
 const rssHref = withBase('/rss.xml');
+const stylesHref = withBase('/styles/');
 ---
 
 <html lang="ja" class="motion-safe:scroll-smooth">
@@ -67,8 +68,12 @@ const rssHref = withBase('/rss.xml');
 					<span aria-hidden="true" class="text-2xl">🍜</span>
 					<span>{SITE_TITLE}</span>
 				</a>
-				<nav aria-label="メインナビゲーション" class="flex items-center gap-1 text-sm font-medium text-stone-600">
+				<nav
+					aria-label="メインナビゲーション"
+					class="flex shrink-0 items-center gap-1 text-sm font-medium whitespace-nowrap text-stone-600"
+				>
 					<a href={homeHref} class="rounded px-2 py-1 hover:text-orange-600">記事一覧</a>
+					<a href={stylesHref} class="rounded px-2 py-1 hover:text-orange-600">系統別</a>
 					<a href={rssHref} class="rounded px-2 py-1 hover:text-orange-600" title="RSS フィード">
 						<span class="sr-only">RSS フィード</span>
 						<svg class="size-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">

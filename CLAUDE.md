@@ -17,7 +17,7 @@ Manage the background server with `astro dev stop`, `astro dev status`, and `ast
 Node.js は `C:\Program Files\nodejs`。ツール用シェルの PATH に入っていない場合はコマンド先頭で
 `$env:Path = "C:\Program Files\nodejs;" + $env:Path` を付ける。
 
-検証は `npx astro check`（型）→ `npm run build`（4 ページ + rss.xml + sitemap が生成されること）。
+検証は `npx astro check`（型）→ `npm run build`（記事 3 + トップ + 系統別 3 = 7 ページ + rss.xml + sitemap が生成されること）。
 
 ## 構成と規約
 
@@ -26,6 +26,7 @@ Node.js は `C:\Program Files\nodejs`。ツール用シェルの PATH に入っ�
 - zod は `astro/zod` から import（`astro:content` の `z` は Astro 8 で削除予定）
 - Tailwind v4: 設定は `src/styles/global.css` の `@theme`。`tailwind.config.js` は無い
 - 画像は `src/assets/posts/` に置き、フロントマターの `image` で相対パス指定。`image` があれば `image_alt` 必須
+- 記事の取得は `src/lib/posts.ts` の `getPublishedPosts()`（draft 除外・新しい順）を使う。`getCollection` を直接呼ばない。系統別 URL は `stylePath()`
 - 一覧の絞り込み・並び替えは `src/components/PostFilters.astro` のクライアントスクリプト。カード側は `index.astro` の `<li data-post ...>` の data 属性を読む
 - 公開先は GitHub Pages（`https://enoenomirai-beep.github.io/ramen-blog/`）。`astro.config.mjs` の `site` + `base: '/ramen-blog'` から絶対 URL（RSS / sitemap / OGP / canonical）を生成
 - サブパス配信なので、サイト内リンク（`/`, `/posts/...`, `/rss.xml`, favicon）は必ず `src/consts.ts` の `withBase()` を通す。`href="/..."` を直書きしない
