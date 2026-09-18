@@ -13,7 +13,7 @@ Astro + Tailwind CSS で作ったラーメン食べ歩きレビュー専用の�
 ## 機能
 
 - 記事一覧：系統タグ・場所・評価（★n 以上）で絞り込み、新しい順／古い順／評価順で並び替え。条件は URL クエリ（`?style=家系&location=秋葉原&rating=4&sort=rating`）に同期されるので、絞り込んだ状態のままリンクを共有できます
-- 記事ページ：店舗情報・評価・写真・Markdown 本文
+- 記事ページ：店舗情報・評価・写真・Markdown 本文、前後の記事へのナビ（日付順で「前の記事」= 古い記事、「次の記事」= 新しい記事）
 - RSS フィード、sitemap、OGP / Twitter カード（記事ページは写真を OGP 画像として使用）
 
 ## 公開（GitHub Pages）
@@ -59,6 +59,7 @@ base: '/<リポジトリ名>',
 │   ├── components/
 │   │   ├── PostCard.astro      # 記事一覧のカード
 │   │   ├── PostFilters.astro   # 絞り込み・並び替え UI
+│   │   ├── PostNav.astro       # 記事ページの前後記事ナビ
 │   │   └── RatingStars.astro   # 5段階評価の星表示
 │   ├── content/
 │   │   └── posts/              # ★ 記事（.md / .mdx）を置く場所

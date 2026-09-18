@@ -3,21 +3,28 @@ import { Image } from 'astro:assets';
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import RatingStars from '../../components/RatingStars.astro';
+import PostNav from '../../components/PostNav.astro';
 import { formatDate, withBase } from '../../consts';
 
 export async function getStaticPaths() {
-	const posts = await getCollection('posts', ({ data }) => !data.draft);
-	return posts.map((post) => ({
+	// 一覧（index.astro）と同じ新しい順に並べ、前後ナビ用に隣の記事も props で渡す
+	const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
+		(a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+	);
+	return posts.map((post, i) => ({
 		params: { id: post.id },
-		props: { post },
+		// next = ひとつ新しい記事、prev = ひとつ古い記事（端では undefined）
+		props: { post, next: posts[i - 1], prev: posts[i + 1] },
 	}));
 }
 
 interface Props {
 	post: CollectionEntry<'posts'>;
+	prev?: CollectionEntry<'posts'>;
+	next?: CollectionEntry<'posts'>;
 }
 
-const { post } = Astro.props;
+const { post, prev, next } = Astro.props;
 const { title, date, shop_name, style, location, rating, description, menu, price, tags, image, image_alt } =
 	post.data;
 const { Content } = await render(post);
@@ -97,7 +104,8 @@ const styleHref = withBase(`/?style=${encodeURIComponent(style)}`);
 		</div>
 
 		<footer class="mt-12 border-t border-stone-200 pt-6">
-			<a href={homeHref} class="inline-flex items-center gap-1 text-sm font-medium text-orange-700 hover:underline">
+			<PostNav prev={prev} next={next} />
+			<a href={homeHref} class="mt-6 inline-flex items-center gap-1 text-sm font-medium text-orange-700 hover:underline">
 				← 記事一覧に戻る
 			</a>
 		</footer>
