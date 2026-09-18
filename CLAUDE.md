@@ -3,6 +3,7 @@
 ラーメン食べ歩きレビュー専用の静的ブログ（Astro 7 + Tailwind CSS 4 + MDX）。
 **作業を始める前に [docs/HANDOFF.md](docs/HANDOFF.md) を読むこと**（進捗・保留事項・次のタスク）。
 使い方・記事の追加方法は [README.md](README.md)。
+機能や記事を変えたら [docs/AI-BRIEF.md](docs/AI-BRIEF.md)（ユーザーが別の AI に現状を共有するためのブリーフ）も同じ PR で更新する。
 
 ## Development
 
