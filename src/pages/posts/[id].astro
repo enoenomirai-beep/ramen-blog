@@ -4,6 +4,7 @@ import { getCollection, render, type CollectionEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import RatingStars from '../../components/RatingStars.astro';
 import PostNav from '../../components/PostNav.astro';
+import TableOfContents from '../../components/TableOfContents.astro';
 import { formatDate, withBase } from '../../consts';
 
 export async function getStaticPaths() {
@@ -27,7 +28,7 @@ interface Props {
 const { post, prev, next } = Astro.props;
 const { title, date, shop_name, style, location, rating, description, menu, price, tags, image, image_alt } =
 	post.data;
-const { Content } = await render(post);
+const { Content, headings } = await render(post);
 
 const meta: { label: string; value: string }[] = [
 	{ label: '店名', value: shop_name },
@@ -97,8 +98,10 @@ const styleHref = withBase(`/?style=${encodeURIComponent(style)}`);
 			</dl>
 		</header>
 
+		<TableOfContents headings={headings} />
+
 		<div
-			class="prose prose-stone max-w-none prose-headings:font-bold prose-h2:mt-10 prose-h2:border-l-4 prose-h2:border-orange-500 prose-h2:pl-3 prose-a:text-orange-700 prose-blockquote:text-stone-500 prose-th:bg-stone-100 prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2"
+			class="prose prose-stone max-w-none prose-headings:scroll-mt-6 prose-headings:font-bold prose-h2:mt-10 prose-h2:border-l-4 prose-h2:border-orange-500 prose-h2:pl-3 prose-a:text-orange-700 prose-blockquote:text-stone-500 prose-th:bg-stone-100 prose-th:px-3 prose-th:py-2 prose-td:px-3 prose-td:py-2"
 		>
 			<Content />
 		</div>
