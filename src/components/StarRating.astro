@@ -1,12 +1,12 @@
 ---
 /**
- * 星評価（★★★★☆ 4.5）。
+ * 星評価（★★★★☆ 4.3）。
  *
- * 1〜5 の 0.5 刻みに対応。4.5 なら 5 つ目の星が左半分だけ塗られる。
+ * 1〜5 の 0.1 刻みに対応。4.3 なら 5 つ目の星が左から 30% だけ塗られる。
  * 数値をそのまま出すのではなく、パッと見で分かるように星で示し、右に数値を添える。
  */
 interface Props {
-	/** 1〜5（0.5 刻み） */
+	/** 1〜5（0.1 刻み） */
 	rating: number;
 	/** sm: 一覧など / md: 記事ヘッダー / lg: スコア強調 */
 	size?: 'sm' | 'md' | 'lg';
@@ -17,8 +17,8 @@ interface Props {
 
 const { rating, size = 'sm', showValue = true, class: className } = Astro.props;
 
-// 0.5 刻みに丸めて、星ごとの塗り割合（1 / 0.5 / 0）を求める
-const value = Math.max(0, Math.min(5, Math.round(rating * 2) / 2));
+// 0.1 刻みに丸めて、星ごとの塗り割合（0〜1）を求める。端数は最後の星の塗り幅になる
+const value = Math.max(0, Math.min(5, Math.round(rating * 10) / 10));
 const fills = [1, 2, 3, 4, 5].map((n) => Math.max(0, Math.min(1, value - (n - 1))));
 
 const iconClass = { sm: 'size-4', md: 'size-5', lg: 'size-7' }[size];

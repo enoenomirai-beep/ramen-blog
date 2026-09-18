@@ -24,8 +24,8 @@ const posts = defineCollection({
 			style: z.string().min(1),
 			/** お店の場所（駅名・エリアなど） */
 			location: z.string().min(1),
-			/** 5段階評価のスコア（1〜5、0.5 刻み。例: 4.5） */
-			rating: z.number().min(1).max(5).multipleOf(0.5),
+			/** 5段階評価のスコア（1〜5、0.1 刻み。例: 4.3） */
+			rating: z.number().min(1).max(5).multipleOf(0.1),
 
 			// --- 任意項目 ---
 			/**
