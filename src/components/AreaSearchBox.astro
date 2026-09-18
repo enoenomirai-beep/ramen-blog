@@ -2,11 +2,13 @@
 /**
  * エリア別ページ上部の近接駅対応インクリメンタルサーチ。
  *
- * 入力値を location（駅名）と location-map.ts の group（近接駅グループ）・prefecture に
- * 部分一致させ、該当する記事を一覧表示する（Vanilla JS、クライアント側のみ）。
- * 例: 「秋葉原」と入力すると、location が「末広町」（同じ group）の記事もヒットする。
+ * 記事ごとに「同じグループ（徒歩圏内）に属する駅名一覧」を location-map.ts の
+ * getGroupStations() で事前計算して埋め込み、クライアント側ではその中のどれかに
+ * 入力値が部分一致すれば表示する（Vanilla JS）。
+ * グループの駅一覧はどちらの記事も同じなので、双方向にヒットする
+ * （「秋葉原」で検索しても「末広町」で検索しても、お互いの記事が出る）。
  */
-import { getLocationInfo } from '../lib/location-map';
+import { getGroupStations, getLocationInfo } from '../lib/location-map';
 import type { Post } from '../lib/posts';
 import PostListItem from './PostListItem.astro';
 
@@ -50,11 +52,13 @@ const { posts } = Astro.props;
 			{
 				posts.map((post) => {
 					const info = getLocationInfo(post.data.location);
+					// 同じグループ（徒歩圏内）の駅名一覧。駅名に "|" は使わない前提の区切り文字
+					const groupStations = getGroupStations(post.data.location).join('|');
 					return (
 						<li
 							data-area-search-item
 							data-location={post.data.location}
-							data-group={info.group}
+							data-group-stations={groupStations}
 							data-prefecture={info.prefecture}
 						>
 							<PostListItem post={post} />
@@ -90,9 +94,11 @@ const { posts } = Astro.props;
 			let visible = 0;
 			for (const item of items) {
 				const d = item.dataset;
-				// 駅名・近接駅グループ・都道府県のいずれかに部分一致すればヒット
-				const haystack = `${d.location ?? ''} ${d.group ?? ''} ${d.prefecture ?? ''}`.toLowerCase();
-				const match = haystack.includes(query);
+				// 同じグループの駅名のどれか、または都道府県に部分一致すればヒット（双方向）
+				const stations = (d.groupStations ?? '').split('|');
+				const match =
+					stations.some((station) => station.toLowerCase().includes(query)) ||
+					(d.prefecture ?? '').toLowerCase().includes(query);
 				item.hidden = !match;
 				if (match) visible++;
 			}
