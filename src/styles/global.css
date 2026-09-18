@@ -1,6 +1,12 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/*
+ * ダークモードは OS 設定ではなく <html data-theme="dark"> で切り替える。
+ * 初期値は BaseLayout の inline script が localStorage → OS 設定の順で決め、ThemeToggle で反転する。
+ */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 @theme {
 	/* 日本語環境で読みやすいフォントスタック */
 	--font-sans:
@@ -12,5 +18,10 @@
 @layer base {
 	:focus-visible {
 		@apply outline-2 outline-offset-2 outline-orange-500;
+	}
+
+	/* select やスクロールバーなどブラウザ標準 UI もダークにする */
+	[data-theme="dark"] {
+		color-scheme: dark;
 	}
 }

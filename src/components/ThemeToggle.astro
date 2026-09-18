@@ -1,0 +1,45 @@
+---
+/**
+ * ライト／ダークの切り替えボタン。
+ *
+ * 現在のテーマは `<html data-theme="light|dark">` で表す（初期値は BaseLayout の inline script が
+ * localStorage → OS 設定の順で決める）。押すと反転して localStorage の `theme` に保存する。
+ * アイコンは CSS（dark: バリアント）で出し分けるので、スクリプトは属性の切り替えだけ。
+ */
+---
+
+<button
+	type="button"
+	data-theme-toggle
+	class="rounded p-1.5 hover:text-orange-600 dark:hover:text-orange-400"
+	aria-label="ダークモードを切り替え"
+	title="ダークモードを切り替え"
+>
+	<!-- 月：ライト時に表示（押すとダークになる） -->
+	<svg class="size-4 dark:hidden" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+		<path
+			d="M7.455 2.004a.75.75 0 0 1 .26.77 7 7 0 0 0 9.958 7.967.75.75 0 0 1 1.067.853A8.5 8.5 0 1 1 6.647 1.921a.75.75 0 0 1 .808.083Z"
+		></path>
+	</svg>
+	<!-- 太陽：ダーク時に表示（押すとライトになる） -->
+	<svg class="hidden size-4 dark:block" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+		<path
+			d="M10 2a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 10 2ZM10 15a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 10 15ZM10 7a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM15.657 5.404a.75.75 0 1 0-1.06-1.06l-1.061 1.06a.75.75 0 0 0 1.06 1.06l1.06-1.06ZM6.464 14.596a.75.75 0 1 0-1.06-1.06l-1.06 1.06a.75.75 0 0 0 1.06 1.06l1.06-1.06ZM18 10a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5A.75.75 0 0 1 18 10ZM5 10a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5A.75.75 0 0 1 5 10ZM14.596 15.657a.75.75 0 0 0 1.06-1.06l-1.06-1.061a.75.75 0 1 0-1.06 1.06l1.06 1.06ZM5.404 6.464a.75.75 0 0 0 1.06-1.06l-1.06-1.06a.75.75 0 1 0-1.061 1.06l1.06 1.06Z"
+		></path>
+	</svg>
+</button>
+
+<script>
+	const root = document.documentElement;
+	for (const button of document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]')) {
+		button.addEventListener('click', () => {
+			const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+			root.dataset.theme = next;
+			try {
+				localStorage.setItem('theme', next);
+			} catch {
+				// プライベートモードなどで保存できなくても、このページ内の切り替えは効かせる
+			}
+		});
+	}
+</script>

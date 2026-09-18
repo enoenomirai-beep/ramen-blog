@@ -25,6 +25,7 @@ Node.js は `C:\Program Files\nodejs`。ツール用シェルの PATH に入っ�
 - フロントマターのキーは snake_case（`shop_name`, `image_alt` など）
 - zod は `astro/zod` から import（`astro:content` の `z` は Astro 8 で削除予定）
 - Tailwind v4: 設定は `src/styles/global.css` の `@theme`。`tailwind.config.js` は無い
+- ダークモードは `<html data-theme="dark">` で切り替える（`global.css` の `@custom-variant dark`）。色のクラスを書くときは必ず `dark:` バリアントも付ける（対応表: bg-white→dark:bg-stone-900、bg-stone-50→950、bg-stone-100→800、border-stone-200→800、border-stone-300→700、text-stone-900/800/700/600/500→100/200/300/400/400、orange-700/600 の文字→dark:orange-400、bg-orange-100 text-orange-800→dark:bg-orange-950 dark:text-orange-300）
 - 画像は `src/assets/posts/` に置き、フロントマターの `image` で相対パス指定。`image` があれば `image_alt` 必須
 - 記事の取得は `src/lib/posts.ts` の `getPublishedPosts()`（draft 除外・新しい順）を使う。`getCollection` を直接呼ばない。系統別 URL は `stylePath()`
 - 一覧の絞り込み・並び替えは `src/components/PostFilters.astro` のクライアントスクリプト。カード側は `index.astro` の `<li data-post ...>` の data 属性を読む

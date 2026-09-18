@@ -12,15 +12,15 @@ const homeHref = withBase('/');
 ---
 
 <BaseLayout title="系統別" description="ラーメンの系統（家系・二郎系など）ごとのレビュー一覧。">
-	<nav aria-label="パンくずリスト" class="mb-6 text-sm text-stone-500">
-		<a href={homeHref} class="hover:text-orange-600">記事一覧</a>
+	<nav aria-label="パンくずリスト" class="mb-6 text-sm text-stone-500 dark:text-stone-400">
+		<a href={homeHref} class="hover:text-orange-600 dark:hover:text-orange-400">記事一覧</a>
 		<span aria-hidden="true" class="mx-2">/</span>
-		<span class="text-stone-700">系統別</span>
+		<span class="text-stone-700 dark:text-stone-300">系統別</span>
 	</nav>
 
 	<section class="mb-8 sm:mb-10">
 		<h1 class="text-2xl font-bold tracking-tight sm:text-3xl">系統別</h1>
-		<p class="mt-2 text-sm leading-relaxed text-stone-600 sm:text-base">
+		<p class="mt-2 text-sm leading-relaxed text-stone-600 dark:text-stone-400 sm:text-base">
 			ラーメンの系統ごとにレビューをまとめています。
 		</p>
 	</section>
@@ -31,15 +31,15 @@ const homeHref = withBase('/');
 				<li>
 					<a
 						href={withBase(stylePath(style))}
-						class="group flex h-full flex-col gap-2 rounded-2xl border border-stone-200 bg-white p-5 transition hover:-translate-y-0.5 hover:border-orange-400 hover:shadow-md"
+						class="group flex h-full flex-col gap-2 rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 p-5 transition hover:-translate-y-0.5 hover:border-orange-400 hover:shadow-md"
 					>
 						<div class="flex items-baseline justify-between gap-3">
-							<h2 class="text-lg font-bold text-stone-900 group-hover:text-orange-700">{style}</h2>
-							<span class="text-sm tabular-nums text-stone-500">{count} 件</span>
+							<h2 class="text-lg font-bold text-stone-900 dark:text-stone-100 group-hover:text-orange-700 dark:group-hover:text-orange-400">{style}</h2>
+							<span class="text-sm tabular-nums text-stone-500 dark:text-stone-400">{count} 件</span>
 						</div>
-						<p class="text-xs text-stone-500">最新の記事</p>
-						<p class="line-clamp-2 text-sm leading-snug text-stone-700">{latest.data.title}</p>
-						<time datetime={latest.data.date.toISOString()} class="mt-auto pt-1 text-xs text-stone-500">
+						<p class="text-xs text-stone-500 dark:text-stone-400">最新の記事</p>
+						<p class="line-clamp-2 text-sm leading-snug text-stone-700 dark:text-stone-300">{latest.data.title}</p>
+						<time datetime={latest.data.date.toISOString()} class="mt-auto pt-1 text-xs text-stone-500 dark:text-stone-400">
 							{formatDate(latest.data.date)}
 						</time>
 					</a>

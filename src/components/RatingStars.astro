@@ -20,7 +20,7 @@ const iconClass = size === 'md' ? 'size-5' : 'size-4';
 	{
 		stars.map((n) => (
 			<svg
-				class:list={[iconClass, n <= rating ? 'text-amber-400' : 'text-stone-300']}
+				class:list={[iconClass, n <= rating ? 'text-amber-400' : 'text-stone-300 dark:text-stone-600']}
 				viewBox="0 0 20 20"
 				fill="currentColor"
 				aria-hidden="true"
@@ -29,5 +29,5 @@ const iconClass = size === 'md' ? 'size-5' : 'size-4';
 			</svg>
 		))
 	}
-	<span class="ml-1 text-sm font-semibold tabular-nums text-stone-700">{rating}.0</span>
+	<span class="ml-1 text-sm font-semibold tabular-nums text-stone-700 dark:text-stone-300">{rating}.0</span>
 </span>
