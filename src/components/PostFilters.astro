@@ -21,12 +21,12 @@ const { styles, locations, total } = Astro.props;
 
 const tagClass =
 	'group inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-medium transition ' +
-	'border-stone-300 bg-white text-stone-700 hover:border-orange-400 hover:text-orange-700 ' +
-	'aria-pressed:border-orange-600 aria-pressed:bg-orange-600 aria-pressed:text-white';
+	'border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-300 hover:border-orange-400 hover:text-orange-700 dark:hover:text-orange-400 ' +
+	'aria-pressed:border-orange-600 dark:aria-pressed:border-orange-600 aria-pressed:bg-orange-600 dark:aria-pressed:bg-orange-600 aria-pressed:text-white dark:aria-pressed:text-white';
 const countClass =
-	'rounded-full bg-stone-100 px-1.5 text-xs tabular-nums text-stone-600 group-aria-pressed:bg-orange-500 group-aria-pressed:text-white';
+	'rounded-full bg-stone-100 dark:bg-stone-800 px-1.5 text-xs tabular-nums text-stone-600 dark:text-stone-400 group-aria-pressed:bg-orange-500 dark:group-aria-pressed:bg-orange-500 group-aria-pressed:text-white dark:group-aria-pressed:text-white';
 const selectClass =
-	'w-full rounded-full border border-stone-300 bg-white py-1.5 pr-8 pl-3 text-sm text-stone-700 ' +
+	'w-full rounded-full border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 py-1.5 pr-8 pl-3 text-sm text-stone-700 dark:text-stone-300 ' +
 	'hover:border-orange-400 focus:border-orange-500 sm:w-auto';
 
 const ratingOptions = [
@@ -89,13 +89,13 @@ const sortOptions = [
 			</select>
 		</div>
 
-		<div class="flex items-center gap-3 text-sm text-stone-500 sm:ml-auto">
+		<div class="flex items-center gap-3 text-sm text-stone-500 dark:text-stone-400 sm:ml-auto">
 			<p aria-live="polite">
 				<span data-result-count>{total}</span> 件の記事
 			</p>
 			<button
 				type="button"
-				class="font-medium text-orange-700 underline-offset-2 hover:underline"
+				class="font-medium text-orange-700 dark:text-orange-400 underline-offset-2 hover:underline"
 				data-filter-clear
 				hidden
 			>
