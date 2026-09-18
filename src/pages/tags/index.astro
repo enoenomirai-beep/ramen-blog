@@ -1,0 +1,44 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { withBase } from '../../consts';
+import { getPublishedPosts, groupByTag, tagPath } from '../../lib/posts';
+
+// タグごとの記事数。多い順（同数なら出現順）。タグは数が増えるのでカードではなくチップで並べる
+const tags = [...groupByTag(await getPublishedPosts()).entries()]
+	.map(([tag, posts]) => ({ tag, count: posts.length }))
+	.sort((a, b) => b.count - a.count);
+
+const homeHref = withBase('/');
+---
+
+<BaseLayout title="タグ" description="タグごとのラーメンレビュー一覧。">
+	<nav aria-label="パンくずリスト" class="mb-5 text-xs text-ink-muted sm:text-sm">
+		<a href={homeHref} class="hover:text-brand-fg">記事一覧</a>
+		<span aria-hidden="true" class="mx-2 text-ink-faint">/</span>
+		<span class="font-medium text-ink">タグ</span>
+	</nav>
+
+	<section class="mb-6 sm:mb-8">
+		<p class="mb-1 text-xs font-bold tracking-widest text-brand-fg uppercase">Tags</p>
+		<h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">タグ</h1>
+		<p class="mt-2 text-sm leading-relaxed text-ink-muted sm:text-base">
+			記事に付けたタグの一覧です。数字はそのタグが付いた記事の数。
+		</p>
+	</section>
+
+	<ul class="flex flex-wrap gap-2">
+		{
+			tags.map(({ tag, count }) => (
+				<li>
+					<a
+						href={withBase(tagPath(tag))}
+						class="inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-surface-raised px-3.5 py-1.5 text-sm font-semibold text-ink transition hover:border-brand-400 hover:text-brand-fg"
+					>
+						#{tag}
+						<span class="rounded-full bg-surface-sunken px-1.5 text-xs tabular-nums text-ink-muted">{count}</span>
+					</a>
+				</li>
+			))
+		}
+	</ul>
+</BaseLayout>

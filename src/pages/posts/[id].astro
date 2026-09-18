@@ -7,7 +7,7 @@ import PostNav from '../../components/PostNav.astro';
 import TableOfContents from '../../components/TableOfContents.astro';
 import { formatDate, withBase } from '../../consts';
 import { PLACEHOLDER_ALT, placeholderImage } from '../../lib/placeholder';
-import { getPublishedPosts, stylePath, type Post } from '../../lib/posts';
+import { getPublishedPosts, locationPath, stylePath, tagPath, type Post } from '../../lib/posts';
 
 export async function getStaticPaths() {
 	// 新しい順（一覧と同じ）。前後ナビ用に隣の記事も props で渡す
@@ -34,7 +34,7 @@ const { Content, headings } = await render(post);
 const meta: { label: string; value: string; href?: string }[] = [
 	{ label: '店名', value: shop_name },
 	{ label: '系統', value: style, href: withBase(stylePath(style)) },
-	{ label: '場所', value: location },
+	{ label: '場所', value: location, href: withBase(locationPath(location)) },
 	{ label: '訪問日', value: formatDate(date) },
 ];
 if (menu) meta.push({ label: '注文', value: menu });
@@ -42,6 +42,7 @@ if (price !== undefined) meta.push({ label: '価格', value: `¥${price.toLocale
 
 const homeHref = withBase('/');
 const styleHref = withBase(stylePath(style));
+const locationHref = withBase(locationPath(location));
 ---
 
 <BaseLayout title={title} description={description} ogImage={image} type="article">
@@ -63,7 +64,10 @@ const styleHref = withBase(stylePath(style));
 				>
 					{style}
 				</a>
-				<span class="inline-flex items-center gap-1 rounded-full bg-chip px-2.5 py-0.5 font-medium text-chip-fg">
+				<a
+					href={locationHref}
+					class="inline-flex items-center gap-1 rounded-full bg-chip px-2.5 py-0.5 font-medium text-chip-fg hover:bg-brand-600 hover:text-white"
+				>
 					<svg class="size-3" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
 						<path
 							fill-rule="evenodd"
@@ -71,8 +75,17 @@ const styleHref = withBase(stylePath(style));
 							clip-rule="evenodd"></path>
 					</svg>
 					{location}
-				</span>
-				{tags.map((tag) => <span class="rounded-full border border-line px-2.5 py-0.5 text-ink-muted">#{tag}</span>)}
+				</a>
+				{
+					tags.map((tag) => (
+						<a
+							href={withBase(tagPath(tag))}
+							class="rounded-full border border-line px-2.5 py-0.5 text-ink-muted hover:border-brand-400 hover:text-brand-fg"
+						>
+							#{tag}
+						</a>
+					))
+				}
 			</div>
 
 			<!-- 店名を一番大きく、記事タイトルはその下 -->

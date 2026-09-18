@@ -1,0 +1,66 @@
+---
+/**
+ * 系統別／エリア別の一覧ページに並べるカード。
+ * 最新記事の写真（無ければイメージ画像）の上に項目名のバッジ、下に件数と最新記事。
+ */
+import { Image } from 'astro:assets';
+import { formatDate, withBase } from '../consts';
+import { PLACEHOLDER_ALT, placeholderImage } from '../lib/placeholder';
+import type { Post } from '../lib/posts';
+
+interface Props {
+	/** 項目名（例: 家系 / 秋葉原） */
+	name: string;
+	/** リンク先（base なし） */
+	href: string;
+	count: number;
+	/** この項目の最新記事 */
+	latest: Post;
+}
+
+const { name, href, count, latest } = Astro.props;
+---
+
+<a
+	href={withBase(href)}
+	class="group flex h-full flex-col overflow-hidden rounded-xl border border-line bg-surface-raised shadow-sm transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md"
+>
+	<div class="relative aspect-video overflow-hidden bg-surface-sunken">
+		{
+			latest.data.image ? (
+				<Image
+					src={latest.data.image}
+					alt=""
+					widths={[400, 800]}
+					sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw"
+					loading="lazy"
+					class="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+				/>
+			) : (
+				<img
+					src={placeholderImage(latest.id, 800, 450)}
+					alt={PLACEHOLDER_ALT}
+					width="800"
+					height="450"
+					loading="lazy"
+					decoding="async"
+					class="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+				/>
+			)
+		}
+		<span class="absolute top-3 left-3 rounded-full bg-brand-600 px-3 py-1 text-sm font-bold text-white shadow">
+			{name}
+		</span>
+	</div>
+	<div class="flex flex-1 flex-col gap-1.5 p-4">
+		<div class="flex items-baseline justify-between gap-3">
+			<h2 class="text-lg font-extrabold text-ink group-hover:text-brand-fg">{name}</h2>
+			<span class="text-sm font-semibold tabular-nums text-ink-muted">{count} 件</span>
+		</div>
+		<p class="text-xs font-bold text-ink-faint">最新の記事</p>
+		<p class="line-clamp-2 text-sm leading-snug text-ink">{latest.data.shop_name}</p>
+		<time datetime={latest.data.date.toISOString()} class="mt-auto pt-1 text-xs text-ink-faint">
+			{formatDate(latest.data.date)}
+		</time>
+	</div>
+</a>

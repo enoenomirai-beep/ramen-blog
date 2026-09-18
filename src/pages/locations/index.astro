@@ -1,0 +1,37 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import TermCard from '../../components/TermCard.astro';
+import { withBase } from '../../consts';
+import { getPublishedPosts, groupByLocation, locationPath } from '../../lib/posts';
+
+// エリアごとの記事数と最新記事。記事数の多い順（同数なら最新記事が新しい順 = 出現順）
+const groups = [...groupByLocation(await getPublishedPosts()).entries()]
+	.map(([location, posts]) => ({ location, count: posts.length, latest: posts[0] }))
+	.sort((a, b) => b.count - a.count);
+
+const homeHref = withBase('/');
+---
+
+<BaseLayout title="エリア別" description="場所（駅・エリア）ごとのラーメンレビュー一覧。">
+	<nav aria-label="パンくずリスト" class="mb-5 text-xs text-ink-muted sm:text-sm">
+		<a href={homeHref} class="hover:text-brand-fg">記事一覧</a>
+		<span aria-hidden="true" class="mx-2 text-ink-faint">/</span>
+		<span class="font-medium text-ink">エリア別</span>
+	</nav>
+
+	<section class="mb-6 sm:mb-8">
+		<p class="mb-1 text-xs font-bold tracking-widest text-brand-fg uppercase">Areas</p>
+		<h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">エリア別</h1>
+		<p class="mt-2 text-sm leading-relaxed text-ink-muted sm:text-base">場所（駅・エリア）ごとにレビューをまとめています。</p>
+	</section>
+
+	<ul class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+		{
+			groups.map(({ location, count, latest }) => (
+				<li>
+					<TermCard name={location} href={locationPath(location)} count={count} latest={latest} />
+				</li>
+			))
+		}
+	</ul>
+</BaseLayout>

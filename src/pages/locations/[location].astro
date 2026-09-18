@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import TermPosts from '../../components/TermPosts.astro';
+import { getPublishedPosts, groupByLocation, locationPath, type Post } from '../../lib/posts';
+
+export async function getStaticPaths() {
+	const byLocation = groupByLocation(await getPublishedPosts());
+	// 他のエリアへのリンク用に、全エリアと記事数も各ページに渡す
+	const locations = [...byLocation.entries()].map(([location, posts]) => ({ location, count: posts.length }));
+	return [...byLocation.entries()].map(([location, posts]) => ({
+		params: { location },
+		props: { posts, locations },
+	}));
+}
+
+interface Props {
+	/** このエリアの記事（新しい順） */
+	posts: Post[];
+	/** 全エリアと記事数 */
+	locations: { location: string; count: number }[];
+}
+
+const { location } = Astro.params;
+const { posts, locations } = Astro.props;
+const others = locations
+	.filter((l) => l.location !== location)
+	.map((l) => ({ name: l.location, href: locationPath(l.location), count: l.count }));
+
+const title = `${location}のラーメン`;
+const description = `${location}で食べたラーメンのレビュー ${posts.length} 件。店舗・系統・評価つきで記録しています。`;
+---
+
+<BaseLayout title={title} description={description}>
+	<TermPosts
+		kind={{ label: 'エリア別', href: '/locations/', eyebrow: 'Area' }}
+		name={location}
+		suffix="のラーメン"
+		posts={posts}
+		others={others}
+		othersLabel="他のエリア:"
+	/>
+</BaseLayout>
