@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import PostCard from '../../components/PostCard.astro';
+import PostListItem from '../../components/PostListItem.astro';
 import { withBase } from '../../consts';
 import { getPublishedPosts, groupByStyle, stylePath, type Post } from '../../lib/posts';
 
@@ -32,38 +32,37 @@ const stylesHref = withBase('/styles/');
 ---
 
 <BaseLayout title={title} description={description}>
-	<nav aria-label="パンくずリスト" class="mb-6 text-sm text-stone-500 dark:text-stone-400">
-		<a href={homeHref} class="hover:text-orange-600 dark:hover:text-orange-400">記事一覧</a>
-		<span aria-hidden="true" class="mx-2">/</span>
-		<a href={stylesHref} class="hover:text-orange-600 dark:hover:text-orange-400">系統別</a>
-		<span aria-hidden="true" class="mx-2">/</span>
-		<span class="text-stone-700 dark:text-stone-300">{style}</span>
+	<nav aria-label="パンくずリスト" class="mb-5 text-xs text-ink-muted sm:text-sm">
+		<a href={homeHref} class="hover:text-brand-fg">記事一覧</a>
+		<span aria-hidden="true" class="mx-2 text-ink-faint">/</span>
+		<a href={stylesHref} class="hover:text-brand-fg">系統別</a>
+		<span aria-hidden="true" class="mx-2 text-ink-faint">/</span>
+		<span class="font-medium text-ink">{style}</span>
 	</nav>
 
-	<section class="mb-8 sm:mb-10">
-		<h1 class="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-2xl font-bold tracking-tight sm:text-3xl">
+	<section class="mb-6 sm:mb-8">
+		<p class="mb-1 text-xs font-bold tracking-widest text-brand-fg uppercase">Style</p>
+		<h1 class="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-2xl font-extrabold tracking-tight sm:text-3xl">
 			<span class="inline-flex items-baseline gap-x-1.5">
-				<span
-					class="inline-flex items-center rounded-full bg-orange-100 dark:bg-orange-950 px-3 py-1 text-base font-semibold text-orange-800 dark:text-orange-300 sm:text-lg"
-				>
+				<span class="inline-flex items-center rounded-full bg-chip-brand px-3 py-1 text-base font-bold text-chip-brand-fg sm:text-lg">
 					{style}
 				</span>
 				<span>のラーメン</span>
 			</span>
-			<span class="text-base font-medium text-stone-500 dark:text-stone-400 sm:text-lg">{posts.length} 件</span>
+			<span class="text-base font-semibold text-ink-muted sm:text-lg">{posts.length} 件</span>
 		</h1>
 
 		{
 			otherStyles.length > 0 && (
 				<div class="mt-4 flex flex-wrap items-center gap-2 text-sm">
-					<span class="text-stone-500 dark:text-stone-400">他の系統:</span>
+					<span class="text-ink-muted">他の系統:</span>
 					{otherStyles.map(({ style: other, count }) => (
 						<a
 							href={withBase(stylePath(other))}
-							class="inline-flex items-center gap-1.5 rounded-full border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 px-3 py-1 font-medium text-stone-700 dark:text-stone-300 hover:border-orange-400 hover:text-orange-700 dark:hover:text-orange-400"
+							class="inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-surface-raised px-3 py-1 font-semibold text-ink-muted hover:border-brand-400 hover:text-brand-fg"
 						>
 							{other}
-							<span class="rounded-full bg-stone-100 dark:bg-stone-800 px-1.5 text-xs tabular-nums text-stone-600 dark:text-stone-400">{count}</span>
+							<span class="rounded-full bg-surface-sunken px-1.5 text-xs tabular-nums text-ink-muted">{count}</span>
 						</a>
 					))}
 				</div>
@@ -72,14 +71,14 @@ const stylesHref = withBase('/styles/');
 	</section>
 
 	<section aria-label={`${style}の記事一覧`}>
-		<ul class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+		<ol class="flex flex-col gap-4">
 			{
 				posts.map((post) => (
-					<li class="contents">
-						<PostCard post={post} />
+					<li>
+						<PostListItem post={post} />
 					</li>
 				))
 			}
-		</ul>
+		</ol>
 	</section>
 </BaseLayout>

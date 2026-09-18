@@ -1,39 +1,12 @@
-// サンプル記事用のプレースホルダー画像と OGP 用デフォルト画像を生成する開発用スクリプト
+// OGP 用デフォルト画像（src/assets/og-default.jpg）を生成する開発用スクリプト
 //   node scripts/make-placeholders.mjs
-// 実際の写真を用意したら src/assets/posts/ のファイルを差し替えるだけでよい。
-import { mkdir } from 'node:fs/promises';
+// 写真が無い記事のイメージ画像は src/lib/placeholder.ts（Unsplash）で出すので、記事用のダミーはもう作らない。
 import path from 'node:path';
 import sharp from 'sharp';
 
-const POSTS_DIR = path.resolve('src/assets/posts');
 const ASSETS_DIR = path.resolve('src/assets');
 
 /** @typedef {{ label: string; sub?: string; bg: [string, string]; soup: string; bowl: string }} Palette */
-
-/** @type {(Palette & { slug: string })[]} */
-const postImages = [
-	{
-		slug: 'kumadaya-tsukubamirai',
-		label: 'KUMADAYA',
-		bg: ['#fde68a', '#f59e0b'],
-		soup: '#b45309',
-		bowl: '#1c1917',
-	},
-	{
-		slug: 'bushoya-gaiden-akihabara',
-		label: 'BUSHOYA GAIDEN',
-		bg: ['#fecaca', '#dc2626'],
-		soup: '#7c2d12',
-		bowl: '#292524',
-	},
-	{
-		slug: 'gokubutodo-jimbocho',
-		label: 'GOKUBUTODO',
-		bg: ['#d9f99d', '#65a30d'],
-		soup: '#78350f',
-		bowl: '#f5f5f4',
-	},
-];
 
 /** OGP 用（1200x630）。サイト全体のデフォルト画像 */
 /** @type {Palette} */
@@ -119,9 +92,4 @@ async function writeJpeg(svg, outFile) {
 	console.log(`wrote ${path.relative(process.cwd(), outFile)}`);
 }
 
-await mkdir(POSTS_DIR, { recursive: true });
-
-for (const img of postImages) {
-	await writeJpeg(bowlSvg(img, 1200, 800), path.join(POSTS_DIR, `${img.slug}.jpg`));
-}
 await writeJpeg(bowlSvg(ogImage, 1200, 630), path.join(ASSETS_DIR, 'og-default.jpg'));

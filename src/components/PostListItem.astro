@@ -1,0 +1,113 @@
+---
+/**
+ * 記事一覧の 1 行（メディアオブジェクト）。
+ *
+ * sm 以上: 左にサムネイル、右に店舗情報。sm 未満: 画像が上、テキストが下の縦積み。
+ * 店名を一番大きく、系統・場所はバッジ、評価は StarRating で示す。
+ * 写真が無い記事には Unsplash のイメージ画像を出し、「イメージ」と明示する。
+ */
+import { Image } from 'astro:assets';
+import { formatDate, withBase } from '../consts';
+import { PLACEHOLDER_ALT, placeholderImage } from '../lib/placeholder';
+import { stylePath, type Post } from '../lib/posts';
+import StarRating from './StarRating.astro';
+
+interface Props {
+	post: Post;
+}
+
+const { post } = Astro.props;
+const { title, date, shop_name, style, location, rating, description, menu, price, image, image_alt } = post.data;
+const href = withBase(`/posts/${post.id}/`);
+const styleHref = withBase(stylePath(style));
+---
+
+<article
+	class="group grid grid-cols-1 overflow-hidden rounded-xl border border-line bg-surface-raised shadow-sm transition hover:border-brand-300 hover:shadow-md sm:grid-cols-[232px_1fr] md:grid-cols-[280px_1fr]"
+>
+	<!-- サムネイル（店名のリンクと同じ先なので、タブ移動では飛ばす） -->
+	<a
+		href={href}
+		tabindex="-1"
+		aria-hidden="true"
+		class="relative block aspect-3/2 overflow-hidden bg-surface-sunken sm:aspect-auto sm:h-full sm:min-h-44"
+	>
+		{
+			image ? (
+				<Image
+					src={image}
+					alt={image_alt ?? ''}
+					widths={[400, 800, 1200]}
+					sizes="(min-width: 768px) 280px, (min-width: 640px) 232px, 100vw"
+					loading="lazy"
+					class="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+				/>
+			) : (
+				<>
+					<img
+						src={placeholderImage(post.id, 800, 600)}
+						alt={PLACEHOLDER_ALT}
+						width="800"
+						height="600"
+						loading="lazy"
+						decoding="async"
+						class="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+					/>
+					<span class="absolute bottom-2 left-2 rounded bg-black/55 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-white">
+						イメージ
+					</span>
+				</>
+			)
+		}
+	</a>
+
+	<div class="flex min-w-0 flex-col gap-2 p-4 sm:p-5">
+		<!-- バッジ + 訪問日 -->
+		<div class="flex flex-wrap items-center gap-1.5 text-xs">
+			<a
+				href={styleHref}
+				class="inline-flex items-center rounded-full bg-chip-brand px-2.5 py-0.5 font-bold text-chip-brand-fg hover:bg-brand-600 hover:text-white"
+			>
+				{style}
+			</a>
+			<span class="inline-flex items-center gap-1 rounded-full bg-chip px-2.5 py-0.5 font-medium text-chip-fg">
+				<svg class="size-3" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+					<path
+						fill-rule="evenodd"
+						d="M9.7 17.7a.5.5 0 0 0 .6 0C13.6 15.2 16 12.3 16 8.9A6 6 0 0 0 4 8.9c0 3.4 2.4 6.3 5.7 8.8ZM10 11a2.3 2.3 0 1 0 0-4.6 2.3 2.3 0 0 0 0 4.6Z"
+						clip-rule="evenodd"></path>
+				</svg>
+				{location}
+			</span>
+			<time datetime={date.toISOString()} class="ml-auto text-ink-faint">{formatDate(date)}</time>
+		</div>
+
+		<!-- 店名（一番目立つ）→ 記事タイトル -->
+		<h2 class="text-xl leading-tight font-extrabold tracking-tight text-ink sm:text-2xl">
+			<a href={href} class="hover:text-brand-fg">{shop_name}</a>
+		</h2>
+		<p class="text-sm leading-snug font-medium text-ink-muted">
+			<a href={href} class="hover:text-brand-fg">{title}</a>
+		</p>
+
+		<!-- 評価・注文・価格 -->
+		<div class="mt-0.5 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+			<StarRating rating={rating} size="md" />
+			{
+				(menu || price !== undefined) && (
+					<span class="flex flex-wrap items-center gap-x-2 text-sm text-ink-muted">
+						{menu && (
+							<span>
+								<span class="mr-1 rounded bg-surface-sunken px-1 text-[11px] font-bold text-ink-faint">注文</span>
+								{menu}
+							</span>
+						)}
+						{price !== undefined && <span class="font-semibold text-ink">¥{price.toLocaleString('ja-JP')}</span>}
+					</span>
+				)
+			}
+		</div>
+
+		{description && <p class="line-clamp-2 text-sm leading-relaxed text-ink-muted">{description}</p>}
+	</div>
+</article>
