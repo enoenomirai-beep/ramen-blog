@@ -6,7 +6,8 @@
 //   - 長辺が --width（既定 1600px）に収まるよう縮小（拡大はしない）。縦横比はそのまま
 //   - JPEG（品質 82、プログレッシブ）で src/assets/posts/<スラッグ>.jpg に保存
 // スマホの写真は 4000px・数 MB あるのが普通なので、そのまま置くと git リポジトリが太る。必ずこれを通す。
-import { access, stat } from 'node:fs/promises';
+// iPhone の HEIC もそのまま渡せる（sharp は HEVC を読めないので heic-decode（libheif の WASM 版）で展開する）。
+import { access, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
 
@@ -50,20 +51,29 @@ if (!force && (await exists(output))) {
 	usage(`${path.relative(process.cwd(), output)} はすでにあります。上書きするなら --force を付けてください`);
 }
 
+/** 入力を sharp のパイプラインとして開く。HEIC は RGBA に展開してから渡す */
+async function open(file) {
+	if (/.hei[cf]$/i.test(file)) {
+		const { default: decode } = await import('heic-decode');
+		// libheif が回転・反転（irot / imir）を適用済みのピクセルを返すので .rotate() は不要
+		const { width, height, data } = await decode({ buffer: await readFile(file) });
+		return sharp(Buffer.from(data), { raw: { width, height, channels: 4 } });
+	}
+	return sharp(file).rotate(); // EXIF の Orientation を実際のピクセルに反映（これで回転タグは不要になる）
+}
+
 // --- 変換 ---
 let info;
 try {
-	info = await sharp(input)
-		.rotate() // EXIF の Orientation を実際のピクセルに反映（これで回転タグは不要になる）
+	info = await (await open(input))
 		.resize({ width, height: width, fit: 'inside', withoutEnlargement: true })
 		.jpeg({ quality: 82, progressive: true, mozjpeg: true })
 		// .withMetadata() を呼ばないので EXIF / GPS / ICC は出力に含まれない
 		.toFile(output);
 } catch (error) {
 	const message = error instanceof Error ? error.message : String(error);
-	if (/heif|heic|unsupported image format/i.test(message)) {
-		console.error('エラー: この形式（HEIC など）は読めません。');
-		console.error('  iPhone なら「設定 → カメラ → フォーマット → 互換性優先」にするか、写真アプリから JPEG で書き出してください。');
+	if (/unsupported image format|Input buffer contains unsupported|bad seek/i.test(message)) {
+		console.error(`エラー: この画像形式は読めません（${path.extname(input) || '拡張子なし'}）。JPEG / PNG / WebP / HEIC に対応しています。`);
 		process.exit(1);
 	}
 	throw error;

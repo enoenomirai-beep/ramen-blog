@@ -134,17 +134,17 @@ draft: false              # true にすると一覧・ビルドから除外
 
 ```bash
 npm run photo -- <写真ファイル> <記事のスラッグ>
-# 例: npm run photo -- "C:UsersyouPicturesIMG_1234.jpg" kumadaya-tsukubamirai
+# 例: npm run photo -- "C:\Users\you\Pictures\IMG_1234.HEIC" kumadaya-tsukubamirai
 ```
 
 これで `src/assets/posts/<スラッグ>.jpg` が作られます（EXIF の向きを反映したうえで位置情報などのメタデータを削除、
 長辺 1600px に縮小、JPEG 品質 82）。上書きは `--force`、サイズ変更は `--width 1200` のように指定します。
-iPhone の HEIC は読めないので、「設定 → カメラ → フォーマット → 互換性優先」にするか JPEG で書き出してください。
+iPhone の HEIC もそのまま渡せます（JPEG / PNG / WebP / HEIC 対応）。
 
 そのあと、フロントマターに `image`（記事ファイルからの相対パス）と `image_alt`（写真の説明）を書きます。
 推奨は 3:2 前後の横向きですが、縦写真でも中央でトリミングして表示されます。
 
 画像は Astro の `<Image>` でビルド時に WebP へ変換・リサイズされ、一覧カードと記事ページの両方に表示されます。
 `image` を省略した記事はカードに 🍜 のプレースホルダーが出ます。
-サンプル画像は `node scripts/make-placeholders.mjs` で生成したダミーです。実際の写真に差し替えるには、
-サンプル記事のスラッグ（`kumadaya-tsukubamirai` など）を指定して上のコマンドを `--force` 付きで実行するだけです。
+熊田家・武将家 外伝の写真は実際に撮ったもの、極太堂（架空の店）はダミー画像です。ダミーは `node scripts/make-placeholders.mjs` で生成できます。
+既存の写真を差し替えるには、記事のスラッグを指定して上のコマンドを `--force` 付きで実行するだけです。
