@@ -48,6 +48,7 @@ base: '/<リポジトリ名>',
 | `npm run build`   | 本番用ビルドを `./dist/` に出力               |
 | `npm run preview` | ビルド結果をローカルでプレビュー              |
 | `npx astro check` | 型チェック                                    |
+| `npm run photo -- <写真> <スラッグ>` | 写真を記事用に取り込み（縮小・EXIF 削除） |
 
 ## ディレクトリ構成
 
@@ -80,7 +81,9 @@ base: '/<リポジトリ名>',
 │   ├── consts.ts               # サイト名などの定数、withBase()（base 付きリンク）
 │   └── content.config.ts       # Content Collections のスキーマ定義
 ├── .github/workflows/deploy.yml   # GitHub Pages への自動デプロイ
-├── scripts/make-placeholders.mjs  # サンプル画像の生成スクリプト
+├── scripts/
+│   ├── import-photo.mjs           # 写真の取り込み（縮小・EXIF 削除）
+│   └── make-placeholders.mjs      # サンプル画像の生成
 └── astro.config.mjs               # site / base（公開 URL）・統合の設定
 ```
 
@@ -126,9 +129,22 @@ draft: false              # true にすると一覧・ビルドから除外
 
 ### 写真の追加
 
-1. 写真を `src/assets/posts/` に置く（推奨: 横 1200px 以上、3:2 前後）
-2. フロントマターに `image`（記事ファイルからの相対パス）と `image_alt` を書く
+スマホで撮った写真は取り込みスクリプトを通してから置きます（そのまま置くと数 MB のファイルと GPS 位置情報が
+リポジトリに入ってしまいます）。
+
+```bash
+npm run photo -- <写真ファイル> <記事のスラッグ>
+# 例: npm run photo -- "C:UsersyouPicturesIMG_1234.jpg" kumadaya-tsukubamirai
+```
+
+これで `src/assets/posts/<スラッグ>.jpg` が作られます（EXIF の向きを反映したうえで位置情報などのメタデータを削除、
+長辺 1600px に縮小、JPEG 品質 82）。上書きは `--force`、サイズ変更は `--width 1200` のように指定します。
+iPhone の HEIC は読めないので、「設定 → カメラ → フォーマット → 互換性優先」にするか JPEG で書き出してください。
+
+そのあと、フロントマターに `image`（記事ファイルからの相対パス）と `image_alt`（写真の説明）を書きます。
+推奨は 3:2 前後の横向きですが、縦写真でも中央でトリミングして表示されます。
 
 画像は Astro の `<Image>` でビルド時に WebP へ変換・リサイズされ、一覧カードと記事ページの両方に表示されます。
 `image` を省略した記事はカードに 🍜 のプレースホルダーが出ます。
-サンプル画像は `node scripts/make-placeholders.mjs` で生成したダミーです。
+サンプル画像は `node scripts/make-placeholders.mjs` で生成したダミーです。実際の写真に差し替えるには、
+サンプル記事のスラッグ（`kumadaya-tsukubamirai` など）を指定して上のコマンドを `--force` 付きで実行するだけです。
