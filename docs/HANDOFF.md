@@ -18,7 +18,7 @@ Astro 7.3 + Tailwind CSS 4 + MDX。記事は Content Collections（`src/content/
 - [x] 写真対応（`<Image>` で最適化）。サンプル画像は `node scripts/make-placeholders.mjs` で生成したダミー
 - [x] RSS（`/rss.xml`）、sitemap、OGP / Twitter カード
 - [x] レスポンシブ対応（375px で確認済み）
-- [x] `astro check` 0 エラー、`npm run build` 成功（2026-09-18 時点）
+- [x] `astro check` 0 エラー、`npm run build` 成功（7 ページ、2026-09-18 時点）
 - [x] GitHub Pages デプロイ準備（2026-09-18）
   - git 2.55 を winget でインストール、`git init -b main` + 初期コミット済み
   - `.github/workflows/deploy.yml`（`withastro/action@v6` + `actions/deploy-pages@v5`）
@@ -27,6 +27,7 @@ Astro 7.3 + Tailwind CSS 4 + MDX。記事は Content Collections（`src/content/
   - 旧コピー `ramen-blog/ramen-blog/`（scratch 時代の残骸）を削除
 - [x] 記事ページの前後記事ナビ（2026-09-18）: `src/components/PostNav.astro`。`[id].astro` の `getStaticPaths` で日付順に並べて隣の記事を props で渡す
 - [x] 記事本文の目次（2026-09-18）: `src/components/TableOfContents.astro`。`render(post)` の `headings` から h2 / h3 を拾って `<details open>` で表示。見出し 2 つ未満なら非表示。見出しに `scroll-mt-6`、`<html>` に `motion-safe:scroll-smooth`
+- [x] 系統別ページ（2026-09-18）: `/styles/`（一覧）と `/styles/[style]/`。`src/lib/posts.ts` に `getPublishedPosts()` / `groupByStyle()` / `stylePath()` を切り出し、トップ・RSS・記事ページもこれを使うように統一。記事ページの系統バッジは `/?style=` から系統別ページへ変更、ヘッダーに「系統別」を追加。URL は系統名をそのまま `encodeURIComponent`（`/styles/%E5%AE%B6%E7%B3%BB/`）
 - [x] **公開済み（2026-09-18）**: https://enoenomirai-beep.github.io/ramen-blog/
   - リポジトリ: https://github.com/enoenomirai-beep/ramen-blog（`main`、Pages の Source = GitHub Actions）
   - 本番で確認済み: トップ / 記事 3 ページ / `rss.xml` / `sitemap-index.xml` / favicon / OGP・canonical の URL / 画像の読み込み。コンソールエラーなし
@@ -39,7 +40,6 @@ Astro 7.3 + Tailwind CSS 4 + MDX。記事は Content Collections（`src/content/
 
 ## そのほかの次の候補
 
-- 系統別ページ（`/styles/家系/`）
 - ダークモード
 - 実際の写真への差し替え（`src/assets/posts/` のファイルを置き換えるだけ）
 

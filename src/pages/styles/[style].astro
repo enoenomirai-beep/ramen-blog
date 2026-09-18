@@ -1,0 +1,85 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostCard from '../../components/PostCard.astro';
+import { withBase } from '../../consts';
+import { getPublishedPosts, groupByStyle, stylePath, type Post } from '../../lib/posts';
+
+export async function getStaticPaths() {
+	const byStyle = groupByStyle(await getPublishedPosts());
+	// 他の系統へのリンク用に、全系統と記事数も各ページに渡す
+	const styles = [...byStyle.entries()].map(([style, posts]) => ({ style, count: posts.length }));
+	return [...byStyle.entries()].map(([style, posts]) => ({
+		params: { style },
+		props: { posts, styles },
+	}));
+}
+
+interface Props {
+	/** この系統の記事（新しい順） */
+	posts: Post[];
+	/** 全系統と記事数 */
+	styles: { style: string; count: number }[];
+}
+
+const { style } = Astro.params;
+const { posts, styles } = Astro.props;
+const otherStyles = styles.filter((s) => s.style !== style);
+
+const title = `${style}のラーメン`;
+const description = `${style}のラーメンレビュー ${posts.length} 件。店舗・場所・評価つきで記録しています。`;
+const homeHref = withBase('/');
+const stylesHref = withBase('/styles/');
+---
+
+<BaseLayout title={title} description={description}>
+	<nav aria-label="パンくずリスト" class="mb-6 text-sm text-stone-500">
+		<a href={homeHref} class="hover:text-orange-600">記事一覧</a>
+		<span aria-hidden="true" class="mx-2">/</span>
+		<a href={stylesHref} class="hover:text-orange-600">系統別</a>
+		<span aria-hidden="true" class="mx-2">/</span>
+		<span class="text-stone-700">{style}</span>
+	</nav>
+
+	<section class="mb-8 sm:mb-10">
+		<h1 class="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-2xl font-bold tracking-tight sm:text-3xl">
+			<span class="inline-flex items-baseline gap-x-1.5">
+				<span
+					class="inline-flex items-center rounded-full bg-orange-100 px-3 py-1 text-base font-semibold text-orange-800 sm:text-lg"
+				>
+					{style}
+				</span>
+				<span>のラーメン</span>
+			</span>
+			<span class="text-base font-medium text-stone-500 sm:text-lg">{posts.length} 件</span>
+		</h1>
+
+		{
+			otherStyles.length > 0 && (
+				<div class="mt-4 flex flex-wrap items-center gap-2 text-sm">
+					<span class="text-stone-500">他の系統:</span>
+					{otherStyles.map(({ style: other, count }) => (
+						<a
+							href={withBase(stylePath(other))}
+							class="inline-flex items-center gap-1.5 rounded-full border border-stone-300 bg-white px-3 py-1 font-medium text-stone-700 hover:border-orange-400 hover:text-orange-700"
+						>
+							{other}
+							<span class="rounded-full bg-stone-100 px-1.5 text-xs tabular-nums text-stone-600">{count}</span>
+						</a>
+					))}
+				</div>
+			)
+		}
+	</section>
+
+	<section aria-label={`${style}の記事一覧`}>
+		<ul class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+			{
+				posts.map((post) => (
+					<li class="contents">
+						<PostCard post={post} />
+					</li>
+				))
+			}
+		</ul>
+	</section>
+</BaseLayout>

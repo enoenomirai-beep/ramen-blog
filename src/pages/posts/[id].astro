@@ -1,17 +1,16 @@
 ---
 import { Image } from 'astro:assets';
-import { getCollection, render, type CollectionEntry } from 'astro:content';
+import { render, type CollectionEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import RatingStars from '../../components/RatingStars.astro';
 import PostNav from '../../components/PostNav.astro';
 import TableOfContents from '../../components/TableOfContents.astro';
 import { formatDate, withBase } from '../../consts';
+import { getPublishedPosts, stylePath } from '../../lib/posts';
 
 export async function getStaticPaths() {
-	// 一覧（index.astro）と同じ新しい順に並べ、前後ナビ用に隣の記事も props で渡す
-	const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
-		(a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
-	);
+	// 新しい順（一覧と同じ）。前後ナビ用に隣の記事も props で渡す
+	const posts = await getPublishedPosts();
 	return posts.map((post, i) => ({
 		params: { id: post.id },
 		// next = ひとつ新しい記事、prev = ひとつ古い記事（端では undefined）
@@ -40,7 +39,7 @@ if (menu) meta.push({ label: '注文', value: menu });
 if (price !== undefined) meta.push({ label: '価格', value: `¥${price.toLocaleString('ja-JP')}` });
 
 const homeHref = withBase('/');
-const styleHref = withBase(`/?style=${encodeURIComponent(style)}`);
+const styleHref = withBase(stylePath(style));
 ---
 
 <BaseLayout title={title} description={description} ogImage={image} type="article">
