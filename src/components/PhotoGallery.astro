@@ -1,0 +1,183 @@
+---
+/**
+ * 記事本文（MDX）に埋め込む複数写真のギャラリー。
+ *
+ * `photos` の `src` は、`src/assets/posts/` からインポートした画像（ImageMetadata。
+ * astro:assets の <Image> で最適化して表示）と、Unsplash などのリモート URL（string。
+ * そのまま <img> で表示）のどちらも渡せる。既存の `npm run photo` / フロントマターの
+ * `image` とは独立した仕組みなので競合しない。
+ *
+ * スマホは 1 カラム、sm 以上は 2 カラム。サムネイルをクリックすると Lightbox
+ * （拡大表示・前後移動・Esc/オーバーレイクリックで閉じる）で表示する（Vanilla JS）。
+ */
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+export interface GalleryPhoto {
+	src: ImageMetadata | string;
+	alt: string;
+	/** サムネイル下と Lightbox に表示するキャプション（任意） */
+	caption?: string;
+}
+
+interface Props {
+	photos: GalleryPhoto[];
+}
+
+const { photos } = Astro.props;
+---
+
+<div class="not-prose my-8" data-photo-gallery>
+	<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+		{
+			photos.map((photo) => (
+				<figure class="overflow-hidden rounded-xl border border-line bg-surface-sunken shadow-sm">
+					<button
+						type="button"
+						class="group block w-full cursor-zoom-in"
+						data-gallery-trigger
+						data-caption={photo.caption ?? ''}
+						aria-label={`${photo.alt}を拡大表示`}
+					>
+						{typeof photo.src === 'string' ? (
+							<img
+								src={photo.src}
+								alt={photo.alt}
+								loading="lazy"
+								decoding="async"
+								class="aspect-4/3 w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+							/>
+						) : (
+							<Image
+								src={photo.src}
+								alt={photo.alt}
+								widths={[400, 800]}
+								sizes="(min-width: 640px) 50vw, 100vw"
+								loading="lazy"
+								class="aspect-4/3 w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+							/>
+						)}
+					</button>
+					{photo.caption && (
+						<figcaption class="border-t border-line px-3 py-2 text-xs text-ink-muted">{photo.caption}</figcaption>
+					)}
+				</figure>
+			))
+		}
+	</div>
+
+	<div
+		data-gallery-lightbox
+		hidden
+		class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 sm:p-8"
+		role="dialog"
+		aria-modal="true"
+		aria-label="写真を拡大表示"
+	>
+		<button
+			type="button"
+			data-gallery-close
+			class="absolute top-4 right-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
+			aria-label="閉じる"
+		>
+			<svg class="size-6" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+				<path d="M4.3 4.3a1 1 0 0 1 1.4 0L10 8.6l4.3-4.3a1 1 0 1 1 1.4 1.4L11.4 10l4.3 4.3a1 1 0 0 1-1.4 1.4L10 11.4l-4.3 4.3a1 1 0 0 1-1.4-1.4L8.6 10 4.3 5.7a1 1 0 0 1 0-1.4Z" />
+			</svg>
+		</button>
+		{
+			photos.length > 1 && (
+				<>
+					<button
+						type="button"
+						data-gallery-prev
+						class="absolute top-1/2 left-2 -translate-y-1/2 rounded-full bg-white/10 p-2 text-white hover:bg-white/20 sm:left-4"
+						aria-label="前の写真"
+					>
+						<svg class="size-6" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+							<path
+								fill-rule="evenodd"
+								d="M12.7 4.3a1 1 0 0 1 0 1.4L8.4 10l4.3 4.3a1 1 0 1 1-1.4 1.4l-5-5a1 1 0 0 1 0-1.4l5-5a1 1 0 0 1 1.4 0Z"
+								clip-rule="evenodd"
+							/>
+						</svg>
+					</button>
+					<button
+						type="button"
+						data-gallery-next
+						class="absolute top-1/2 right-2 -translate-y-1/2 rounded-full bg-white/10 p-2 text-white hover:bg-white/20 sm:right-4"
+						aria-label="次の写真"
+					>
+						<svg class="size-6" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+							<path
+								fill-rule="evenodd"
+								d="M7.3 15.7a1 1 0 0 1 0-1.4L11.6 10 7.3 5.7a1 1 0 0 1 1.4-1.4l5 5a1 1 0 0 1 0 1.4l-5 5a1 1 0 0 1-1.4 0Z"
+								clip-rule="evenodd"
+							/>
+						</svg>
+					</button>
+				</>
+			)
+		}
+		<figure class="flex max-h-full max-w-full flex-col items-center">
+			<img data-gallery-image src="" alt="" class="max-h-[80vh] max-w-full rounded-lg object-contain shadow-lg" />
+			<figcaption data-gallery-caption class="mt-3 text-center text-sm text-white/80" />
+		</figure>
+	</div>
+</div>
+
+<script>
+	document.querySelectorAll<HTMLElement>('[data-photo-gallery]').forEach((root) => {
+		const triggers = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-gallery-trigger]'));
+		const lightbox = root.querySelector<HTMLElement>('[data-gallery-lightbox]');
+		const lightboxImg = lightbox?.querySelector<HTMLImageElement>('[data-gallery-image]');
+		const captionEl = lightbox?.querySelector<HTMLElement>('[data-gallery-caption]');
+		const closeButton = lightbox?.querySelector<HTMLButtonElement>('[data-gallery-close]');
+		const prevButton = lightbox?.querySelector<HTMLButtonElement>('[data-gallery-prev]');
+		const nextButton = lightbox?.querySelector<HTMLButtonElement>('[data-gallery-next]');
+		if (!lightbox || !lightboxImg || triggers.length === 0) return;
+
+		let current = 0;
+
+		function show() {
+			const trigger = triggers[current];
+			const img = trigger?.querySelector('img');
+			if (!img || !lightboxImg) return;
+			lightboxImg.src = img.currentSrc || img.src;
+			lightboxImg.alt = img.alt;
+			if (captionEl) captionEl.textContent = trigger.dataset.caption ?? '';
+		}
+		function open(index: number) {
+			current = index;
+			show();
+			lightbox!.hidden = false;
+			document.body.style.overflow = 'hidden';
+			closeButton?.focus();
+		}
+		function close() {
+			lightbox!.hidden = true;
+			document.body.style.overflow = '';
+		}
+		function prev() {
+			current = (current - 1 + triggers.length) % triggers.length;
+			show();
+		}
+		function next() {
+			current = (current + 1) % triggers.length;
+			show();
+		}
+
+		triggers.forEach((trigger, i) => trigger.addEventListener('click', () => open(i)));
+		closeButton?.addEventListener('click', close);
+		prevButton?.addEventListener('click', prev);
+		nextButton?.addEventListener('click', next);
+		lightbox.addEventListener('click', (e) => {
+			if (e.target === lightbox) close();
+		});
+		document.addEventListener('keydown', (e) => {
+			if (lightbox!.hidden) return;
+			if (e.key === 'Escape') close();
+			if (e.key === 'ArrowLeft') prev();
+			if (e.key === 'ArrowRight') next();
+		});
+	});
+</script>
