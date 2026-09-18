@@ -25,25 +25,15 @@ Astro 7.3 + Tailwind CSS 4 + MDX。記事は Content Collections（`src/content/
   - `astro.config.mjs`: `site: 'https://enoenomirai-beep.github.io'`, `base: '/ramen-blog'`
   - サイト内リンクは `src/consts.ts` の `withBase()` 経由に統一（favicon / ヘッダー・フッター / カード / パンくず / 系統リンク / RSS）。ビルド成果物の HTML・rss.xml・sitemap で `/ramen-blog/` プレフィックスを確認済み
   - 旧コピー `ramen-blog/ramen-blog/`（scratch 時代の残骸）を削除
+- [x] **公開済み（2026-09-18）**: https://enoenomirai-beep.github.io/ramen-blog/
+  - リポジトリ: https://github.com/enoenomirai-beep/ramen-blog（`main`、Pages の Source = GitHub Actions）
+  - 本番で確認済み: トップ / 記事 3 ページ / `rss.xml` / `sitemap-index.xml` / favicon / OGP・canonical の URL / 画像の読み込み。コンソールエラーなし
 
-## 残り：GitHub へ push して公開
+## 運用
 
-ユーザーが GitHub 側で行う作業（Claude からは代行できない）：
-
-1. GitHub で **空の**リポジトリ `enoenomirai-beep/ramen-blog` を作成（README / .gitignore / license は付けない）
-2. ローカルから push：
-   ```powershell
-   git remote add origin https://github.com/enoenomirai-beep/ramen-blog.git
-   git push -u origin main
-   ```
-   （初回は Git Credential Manager のブラウザ認証が開く）
-3. リポジトリの **Settings → Pages → Build and deployment → Source** を **GitHub Actions** に変更
-4. Actions タブで "Deploy to GitHub Pages" が緑になったら `https://enoenomirai-beep.github.io/ramen-blog/` で確認
-   - トップ・記事ページ・`/ramen-blog/rss.xml`・OGP 画像の URL（`view-source` で `og:image`）を目視
-
-ユーザー名やリポジトリ名を変える場合は `astro.config.mjs` の `site` / `base` と、README・CLAUDE.md 内の URL も合わせて直す。
-
-代替案（GitHub が使えないとき）：Cloudflare Pages（wrangler で `dist` を直接アップロード）。その場合は `base` を外す。
+- 記事を追加・修正したら `git add` → `git commit` → `git push`。1〜2 分で本番に反映される（Actions タブで進捗を確認できる）
+- git が見つからないターミナルでは先頭で `$env:Path = "C:\Program Files\Git\cmd;" + $env:Path`
+- ユーザー名やリポジトリ名を変える場合は `astro.config.mjs` の `site` / `base` と、README・CLAUDE.md 内の URL も合わせて直す
 
 ## そのほかの次の候補
 
