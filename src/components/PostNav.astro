@@ -1,0 +1,56 @@
+---
+/**
+ * 記事ページの前後記事ナビ。
+ *
+ * 「前の記事」= ひとつ古い記事、「次の記事」= ひとつ新しい記事（日付順）。
+ * どちらか片方しか無いときは、空いた側を空のセルにして左右の位置を揃える。
+ */
+import type { CollectionEntry } from 'astro:content';
+import { formatDate, withBase } from '../consts';
+
+interface Props {
+	/** ひとつ古い記事 */
+	prev?: CollectionEntry<'posts'>;
+	/** ひとつ新しい記事 */
+	next?: CollectionEntry<'posts'>;
+}
+
+const { prev, next } = Astro.props;
+
+const linkClass =
+	'group flex h-full flex-col gap-1 rounded-2xl border border-stone-200 bg-white p-4 transition ' +
+	'hover:border-orange-400 hover:shadow-sm focus-visible:border-orange-500 focus-visible:outline-none';
+const labelClass = 'text-xs font-semibold text-orange-700';
+const shopClass = 'text-xs text-stone-500';
+const titleClass = 'line-clamp-2 text-sm leading-snug font-bold text-stone-900 group-hover:text-orange-700';
+const dateClass = 'mt-auto pt-1 text-xs text-stone-500';
+---
+
+{
+	(prev || next) && (
+		<nav aria-label="前後の記事" class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+			{prev ? (
+				<a href={withBase(`/posts/${prev.id}/`)} rel="prev" class={linkClass}>
+					<span class={labelClass}>← 前の記事</span>
+					<span class={shopClass}>{prev.data.shop_name}</span>
+					<span class={titleClass}>{prev.data.title}</span>
+					<time datetime={prev.data.date.toISOString()} class={dateClass}>
+						{formatDate(prev.data.date)}
+					</time>
+				</a>
+			) : (
+				<div aria-hidden="true" class="hidden sm:block" />
+			)}
+			{next && (
+				<a href={withBase(`/posts/${next.id}/`)} rel="next" class:list={[linkClass, 'sm:items-end sm:text-right']}>
+					<span class={labelClass}>次の記事 →</span>
+					<span class={shopClass}>{next.data.shop_name}</span>
+					<span class={titleClass}>{next.data.title}</span>
+					<time datetime={next.data.date.toISOString()} class={dateClass}>
+						{formatDate(next.data.date)}
+					</time>
+				</a>
+			)}
+		</nav>
+	)
+}
