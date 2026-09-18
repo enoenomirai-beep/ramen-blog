@@ -1,0 +1,87 @@
+---
+/**
+ * 「系統別／エリア別／タグ別」の各ページ本体。
+ *
+ * パンくず → 見出し（バッジ + 件数）→ 他の項目へのチップ → 記事リスト（PostListItem）。
+ * 3 種類のページで同じ設計を使い回すため、BaseLayout の中に置く形にしてある。
+ */
+import { withBase } from '../consts';
+import type { Post } from '../lib/posts';
+import PostListItem from './PostListItem.astro';
+
+interface Props {
+	/** 分類の名前と一覧ページ（例: { label: '系統別', href: '/styles/', eyebrow: 'Style' }。href は base なし） */
+	kind: { label: string; href: string; eyebrow: string };
+	/** この項目の名前（例: 家系 / 秋葉原 / 豚骨醤油） */
+	name: string;
+	/** 見出しでバッジの後ろに続く語（例: のラーメン / の記事） */
+	suffix: string;
+	/** バッジの見た目。系統は赤、それ以外はグレー */
+	badge?: 'brand' | 'neutral';
+	/** この項目の記事（新しい順） */
+	posts: Post[];
+	/** 同じ分類の他の項目（href は base なし） */
+	others: { name: string; href: string; count: number }[];
+	/** 他の項目チップの前に出すラベル（例: 他の系統:） */
+	othersLabel: string;
+}
+
+const { kind, name, suffix, badge = 'neutral', posts, others, othersLabel } = Astro.props;
+const homeHref = withBase('/');
+const kindHref = withBase(kind.href);
+
+const badgeClass =
+	badge === 'brand'
+		? 'bg-chip-brand text-chip-brand-fg'
+		: 'bg-chip text-chip-fg';
+---
+
+<nav aria-label="パンくずリスト" class="mb-5 text-xs text-ink-muted sm:text-sm">
+	<a href={homeHref} class="hover:text-brand-fg">記事一覧</a>
+	<span aria-hidden="true" class="mx-2 text-ink-faint">/</span>
+	<a href={kindHref} class="hover:text-brand-fg">{kind.label}</a>
+	<span aria-hidden="true" class="mx-2 text-ink-faint">/</span>
+	<span class="font-medium text-ink">{name}</span>
+</nav>
+
+<section class="mb-6 sm:mb-8">
+	<p class="mb-1 text-xs font-bold tracking-widest text-brand-fg uppercase">{kind.eyebrow}</p>
+	<h1 class="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-2xl font-extrabold tracking-tight sm:text-3xl">
+		<span class="inline-flex items-baseline gap-x-1.5">
+			<span class:list={['inline-flex items-center rounded-full px-3 py-1 text-base font-bold sm:text-lg', badgeClass]}>
+				{name}
+			</span>
+			<span>{suffix}</span>
+		</span>
+		<span class="text-base font-semibold text-ink-muted sm:text-lg">{posts.length} 件</span>
+	</h1>
+
+	{
+		others.length > 0 && (
+			<div class="mt-4 flex flex-wrap items-center gap-2 text-sm">
+				<span class="text-ink-muted">{othersLabel}</span>
+				{others.map((other) => (
+					<a
+						href={withBase(other.href)}
+						class="inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-surface-raised px-3 py-1 font-semibold text-ink-muted hover:border-brand-400 hover:text-brand-fg"
+					>
+						{other.name}
+						<span class="rounded-full bg-surface-sunken px-1.5 text-xs tabular-nums text-ink-muted">{other.count}</span>
+					</a>
+				))}
+			</div>
+		)
+	}
+</section>
+
+<section aria-label={`${name}${suffix}の一覧`}>
+	<ol class="flex flex-col gap-4">
+		{
+			posts.map((post) => (
+				<li>
+					<PostListItem post={post} />
+				</li>
+			))
+		}
+	</ol>
+</section>

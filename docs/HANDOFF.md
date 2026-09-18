@@ -35,6 +35,7 @@ Astro 7.3 + Tailwind CSS 4 + MDX。記事は Content Collections（`src/content/
 - [x] グルメサイト風 UI 改修（2026-09-19）: 暖色パレット（`global.css` のテーマトークン。`dark:` 個別指定をやめてトークンの値切り替えに統一）、トップを横型リスト（`PostListItem.astro`、スマホは縦積み）に変更、`StarRating.astro`（0.5 刻み・半星。スキーマの `rating` も `multipleOf(0.5)` に）、店名を主役にした記事ヘッダーと店舗情報テーブル、本文見出しの装飾（`.article-body`）、写真が無い記事は Unsplash のイメージ画像（`src/lib/placeholder.ts`、「イメージ」ラベル付き）。`PostCard.astro` / `RatingStars.astro` と記事用ダミー画像は削除、`make-placeholders.mjs` は OGP 画像専用に
 - [x] 2 本目の本物の記事（2026-09-19）: `bushoya-gaiden-akihabara.md` をサンプルから実際の訪問記事（武将家外伝・2026-09-16・★4.3）に置き換え。写真は IMG_4090.HEIC のまま（ユーザー確認済み）。評価は 0.1 刻み（`multipleOf(0.1)`、`StarRating` は端数ぶん部分塗り）に変更
 - [x] `docs/AI-BRIEF.md`（2026-09-19）: ユーザーが Gemini などに現状を共有してプロンプトを考えてもらうためのブリーフ。機能・記事を変えたら毎回更新する（CLAUDE.md に規約追加）
+- [x] エリア別・タグ別ページ（2026-09-19、Gemini 作成の指示）: `/locations/`・`/locations/[location]/`・`/tags/`・`/tags/[tag]/`。`posts.ts` に `groupByLocation()` / `groupByTag()` / `locationPath()` / `tagPath()` を追加し、系統別と共通の `TermPosts.astro`（ページ本体）/ `TermCard.astro`（一覧カード）に切り出して 3 分類で使い回す。導線: ヘッダーナビ（系統別・エリア別・タグ）、フッター、記事の場所バッジとタグ、店舗情報の「場所」。ヘッダーはスマホで 2 段（ロゴ+切替 / ナビ）に
 - [x] **公開済み（2026-09-18）**: https://enoenomirai-beep.github.io/ramen-blog/
   - リポジトリ: https://github.com/enoenomirai-beep/ramen-blog（`main`、Pages の Source = GitHub Actions）
   - 本番で確認済み: トップ / 記事 3 ページ / `rss.xml` / `sitemap-index.xml` / favicon / OGP・canonical の URL / 画像の読み込み。コンソールエラーなし

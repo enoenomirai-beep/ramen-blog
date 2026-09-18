@@ -18,7 +18,7 @@ Manage the background server with `astro dev stop`, `astro dev status`, and `ast
 Node.js は `C:\Program Files\nodejs`。ツール用シェルの PATH に入っていない場合はコマンド先頭で
 `$env:Path = "C:\Program Files\nodejs;" + $env:Path` を付ける。
 
-検証は `npx astro check`（型）→ `npm run build`（記事数 + トップ + 系統別（一覧 1 + 系統数）ページと rss.xml / sitemap が生成されること。2026-09-19 時点で記事 4・系統 2 = 8 ページ）。
+検証は `npx astro check`（型）→ `npm run build`（記事数 + トップ + 系統別／エリア別／タグ別（各「一覧 1 + 項目数」）ページと rss.xml / sitemap が生成されること。2026-09-19 時点で記事 4・系統 2・エリア 4・タグ 9 = 23 ページ）。
 
 ## 構成と規約
 
@@ -30,7 +30,7 @@ Node.js は `C:\Program Files\nodejs`。ツール用シェルの PATH に入っ�
 - 記事本文の見出し・表・引用の装飾は `global.css` の `.article-body` ルール（`.prose` の上に重ねる。レイヤー外に書いてあるので `prose-*` 修飾子より優先される）
 - 画像は `src/assets/posts/` に置き、フロントマターの `image` で相対パス指定。`image` があれば `image_alt` 必須。`image` が無い記事は `src/lib/placeholder.ts` の Unsplash 画像を「イメージ」ラベル付きで出す
 - 評価 `rating` は 1〜5 の 0.1 刻み。表示は `StarRating.astro`（端数ぶん星を部分的に塗る）。一覧の 1 行は `PostListItem.astro`
-- 記事の取得は `src/lib/posts.ts` の `getPublishedPosts()`（draft 除外・新しい順）を使う。`getCollection` を直接呼ばない。系統別 URL は `stylePath()`
+- 記事の取得は `src/lib/posts.ts` の `getPublishedPosts()`（draft 除外・新しい順）を使う。`getCollection` を直接呼ばない。系統／エリア／タグ別の URL は `stylePath()` / `locationPath()` / `tagPath()`、グループ化は `groupByStyle()` / `groupByLocation()` / `groupByTag()`。分類ページの本体は `TermPosts.astro`、一覧カードは `TermCard.astro` を使い回す（新しい分類を足すときも同じ）
 - 一覧の絞り込み・並び替えは `src/components/PostFilters.astro` のクライアントスクリプト。カード側は `index.astro` の `<li data-post ...>` の data 属性を読む
 - 公開先は GitHub Pages（`https://enoenomirai-beep.github.io/ramen-blog/`）。`astro.config.mjs` の `site` + `base: '/ramen-blog'` から絶対 URL（RSS / sitemap / OGP / canonical）を生成
 - サブパス配信なので、サイト内リンク（`/`, `/posts/...`, `/rss.xml`, favicon）は必ず `src/consts.ts` の `withBase()` を通す。`href="/..."` を直書きしない

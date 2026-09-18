@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import TermPosts from '../../components/TermPosts.astro';
+import { getPublishedPosts, groupByTag, tagPath, type Post } from '../../lib/posts';
+
+export async function getStaticPaths() {
+	const byTag = groupByTag(await getPublishedPosts());
+	// 他のタグへのリンク用に、全タグと記事数も各ページに渡す（多い順）
+	const tags = [...byTag.entries()]
+		.map(([tag, posts]) => ({ tag, count: posts.length }))
+		.sort((a, b) => b.count - a.count);
+	return [...byTag.entries()].map(([tag, posts]) => ({
+		params: { tag },
+		props: { posts, tags },
+	}));
+}
+
+interface Props {
+	/** このタグの記事（新しい順） */
+	posts: Post[];
+	/** 全タグと記事数 */
+	tags: { tag: string; count: number }[];
+}
+
+const { tag } = Astro.params;
+const { posts, tags } = Astro.props;
+const others = tags.filter((t) => t.tag !== tag).map((t) => ({ name: `#${t.tag}`, href: tagPath(t.tag), count: t.count }));
+
+const title = `#${tag} の記事`;
+const description = `タグ「${tag}」が付いたラーメンレビュー ${posts.length} 件。`;
+---
+
+<BaseLayout title={title} description={description}>
+	<TermPosts
+		kind={{ label: 'タグ', href: '/tags/', eyebrow: 'Tag' }}
+		name={`#${tag}`}
+		suffix="の記事"
+		posts={posts}
+		others={others}
+		othersLabel="他のタグ:"
+	/>
+</BaseLayout>

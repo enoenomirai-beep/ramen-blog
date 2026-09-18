@@ -9,7 +9,7 @@
 import { Image } from 'astro:assets';
 import { formatDate, withBase } from '../consts';
 import { PLACEHOLDER_ALT, placeholderImage } from '../lib/placeholder';
-import { stylePath, type Post } from '../lib/posts';
+import { locationPath, stylePath, type Post } from '../lib/posts';
 import StarRating from './StarRating.astro';
 
 interface Props {
@@ -20,6 +20,7 @@ const { post } = Astro.props;
 const { title, date, shop_name, style, location, rating, description, menu, price, image, image_alt } = post.data;
 const href = withBase(`/posts/${post.id}/`);
 const styleHref = withBase(stylePath(style));
+const locationHref = withBase(locationPath(location));
 ---
 
 <article
@@ -70,7 +71,10 @@ const styleHref = withBase(stylePath(style));
 			>
 				{style}
 			</a>
-			<span class="inline-flex items-center gap-1 rounded-full bg-chip px-2.5 py-0.5 font-medium text-chip-fg">
+			<a
+				href={locationHref}
+				class="inline-flex items-center gap-1 rounded-full bg-chip px-2.5 py-0.5 font-medium text-chip-fg hover:bg-brand-600 hover:text-white"
+			>
 				<svg class="size-3" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
 					<path
 						fill-rule="evenodd"
@@ -78,7 +82,7 @@ const styleHref = withBase(stylePath(style));
 						clip-rule="evenodd"></path>
 				</svg>
 				{location}
-			</span>
+			</a>
 			<time datetime={date.toISOString()} class="ml-auto text-ink-faint">{formatDate(date)}</time>
 		</div>
 
