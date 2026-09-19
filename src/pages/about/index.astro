@@ -1,0 +1,61 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { withBase } from '../../consts';
+
+const homeHref = withBase('/');
+---
+
+<BaseLayout
+	title="About"
+	description="「らーめん食べ歩きログ」について。管理人と評価基準（★の目安）の紹介。"
+>
+	<nav aria-label="パンくずリスト" class="mb-5 text-xs text-ink-muted sm:text-sm">
+		<a href={homeHref} class="hover:text-brand-fg">記事一覧</a>
+		<span aria-hidden="true" class="mx-2 text-ink-faint">/</span>
+		<span class="font-medium text-ink">About</span>
+	</nav>
+
+	<article class="mx-auto max-w-3xl">
+		<header class="mb-8">
+			<p class="mb-1 text-xs font-bold tracking-widest text-brand-fg uppercase">About</p>
+			<h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">このブログについて</h1>
+		</header>
+
+		<div class="article-body prose max-w-none">
+			<p>
+				「らーめん食べ歩きログ」は、管理人が実際に食べ歩いたラーメンを記録する個人ブログです。
+				特に<strong>家系ラーメン</strong>を中心に食べ歩いていますが、二郎系や淡麗系など気になったお店には
+				系統を問わず足を運んでいます。写真・注文内容・お会計・感想は、できるだけ訪問時のメモに沿って書いています。
+			</p>
+
+			<h2>管理人について</h2>
+			<p>
+				都内近郊で働きながら、週末を中心にラーメン店を巡っています（このセクションはブログのサンプルとして作成した
+				ダミーテキストです）。家系ラーメンの「乳化したスープ」「鶏油の香り」「海苔の枚数」あたりを見るのが好きで、
+				同じお店でもコールや卓上調味料を変えて何度か通うこともあります。
+			</p>
+
+			<h2>評価基準（★の目安）</h2>
+			<p>
+				評価は 1.0〜5.0 の 0.1 刻みで、あくまで管理人個人の好みによるものです。値段や接客ではなく、
+				基本的に「一杯としての満足度」を基準にしています。
+			</p>
+			<ul>
+				<li><strong>★4.5〜5.0</strong>：また必ず食べに行きたい、個人的な上位に入る一杯</li>
+				<li><strong>★4.0〜4.4</strong>：満足度が高く、人にもすすめやすい一杯</li>
+				<li><strong>★3.5〜3.9</strong>：ちゃんと美味しいが、もう一歩の伸びしろがある一杯</li>
+				<li><strong>★3.0〜3.4</strong>：ふつう。好みや相性が合わなかった部分がある一杯</li>
+				<li><strong>★2.9 以下</strong>：現状ほとんど使っていない評価帯</li>
+			</ul>
+			<p>
+				0.1 刻みにしているのは、「★4 か★5 か」で悩む一杯が多いため、その揺れをそのまま数字に残したいからです。
+			</p>
+
+			<h2>写真について</h2>
+			<p>
+				訪問時に撮った写真がある記事にはその一杯の写真を、無い記事には Unsplash のイメージ画像を
+				「イメージ」ラベル付きで表示しています。イメージ画像は実際に食べた一杯とは異なります。
+			</p>
+		</div>
+	</article>
+</BaseLayout>
