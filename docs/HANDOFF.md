@@ -40,6 +40,7 @@ Astro 7.3 + Tailwind CSS 4 + MDX。記事は Content Collections（`src/content/
 - [x] エリア検索の双方向化・東京 23 区の駅を大幅追加（2026-09-19）: `location-map.ts` を「エリアグループ名 → { prefecture, stations: string[] }」の構造に全面リファクタリング（旧: 駅名 → { prefecture, group }）。`AREA_GROUPS` に秋葉原・神田／神保町／新宿・代々木／池袋／高田馬場／渋谷／上野・御徒町／新橋／東京・大手町／銀座／中野／高円寺／荻窪／蒲田（すべて東京都）とつくばみらい（茨城県）を登録。駅名 → グループの逆引き `LOCATION_INDEX`（Map）を起動時に構築し、`getLocationInfo()`（互換維持）と新設 `getGroupStations(location)`（同じグループの駅名一覧を返す）を提供。`AreaSearchBox.astro` は記事ごとに `getGroupStations()` の結果を `data-group-stations`（"\|" 区切り）に埋め込み、クライアント側はその中のどれかに入力値が部分一致すればヒットさせる方式に変更。これにより「末広町」で検索しても「秋葉原」の記事がヒットするようになった（旧実装は group ラベルの文字列一致だけで、非対称になるケースがあった）。`posts.ts` / `locations/index.astro` は `getLocationInfo()` の型・戻り値が同じなので無修正
 - [x] 店舗情報の拡充: 地図リンク・営業時間・最寄り駅（2026-09-19）: `content.config.ts` に任意項目 `map_url`（`z.url()`）/ `business_hours` / `nearest_station` を追加。`posts/[id].astro` の店舗情報テーブルの型 `meta` に `mapHref` を追加し、「場所」の行に `map_url` があれば値の横に「📍 地図を見る」の外部リンク（`target="_blank" rel="noopener noreferrer"`）を表示。`nearest_station` / `business_hours` はそれぞれ存在する場合だけ行を追加（「場所」の直後・「訪問日」の前）。動作確認用に極太堂（サンプル記事）へダミーの `map_url` / `business_hours` / `nearest_station` を追加
 - [x] 記事本文の複数写真ギャラリー（2026-09-19）: `src/components/PhotoGallery.astro` を新設。`photos: { src: ImageMetadata | string; alt: string; caption?: string }[]` を受け取り、スマホ 1 列／sm 以上 2 列のグリッドでサムネイル表示、クリックで Lightbox（拡大表示・前後移動・Esc／オーバーレイクリック／✕ボタンで閉じる、Vanilla JS）を開く。`src` が文字列（Unsplash などのリモート URL）なら `<img>`、`ImageMetadata`（`src/assets/posts/` から import した画像）なら `astro:assets` の `<Image>` で最適化して表示するので、既存の `npm run photo` の仕組みとは独立していて競合しない。MDX の本文中でしか import できないため、動作確認用に熊田家（`kumadaya-tsukubamirai.md` → `.mdx` にリネーム）へ `import PhotoGallery ...` と 4 枚の Unsplash ダミー画像の使用例を追加
+- [x] About ページ追加・サンプル記事削除（2026-09-19）: `src/pages/about/index.astro` を新設（`/about/`）。ブログの趣旨と評価基準（★の目安）のダミーテキスト。見出しは記事ページと同じ `.article-body prose` で装飾を統一。`BaseLayout.astro` のヘッダー・フッターのナビに「About」リンクを追加。サンプル記事 `kumadaya-tsukubamirai.mdx`（熊田家）と `gokubutodo-jimbocho.md`（極太堂）を削除。これにより系統は「家系」のみ（二郎系が消滅）、エリアは東京都のみ（茨城県が消滅、秋葉原・末広町の 2 駅）、タグは 5 個に減少（記事 2 本 + トップ + About = 15 ページ、`CLAUDE.md` の検証コメントを更新）。トップの絞り込み・並び替え、系統／エリア／タグ別ページ、エリア検索の双方向性は削除後も正常動作を確認済み
 - [x] **公開済み（2026-09-18）**: https://enoenomirai-beep.github.io/ramen-blog/
   - リポジトリ: https://github.com/enoenomirai-beep/ramen-blog（`main`、Pages の Source = GitHub Actions）
   - 本番で確認済み: トップ / 記事 3 ページ / `rss.xml` / `sitemap-index.xml` / favicon / OGP・canonical の URL / 画像の読み込み。コンソールエラーなし
@@ -53,7 +54,6 @@ Astro 7.3 + Tailwind CSS 4 + MDX。記事は Content Collections（`src/content/
 ## そのほかの次の候補
 
 - 実際の訪問記事を書き続ける（記事の作り方は README「記事の追加方法」。ユーザーからはメモ＋写真パスを受け取って Claude が下書き → PR にする流れが定着）
-- サンプル 2 記事（熊田家・極太堂）は本物の記事が増えたら削除してよい。極太堂は架空の店。どちらも画像は Unsplash のイメージ
 
 ## 注意事項
 
