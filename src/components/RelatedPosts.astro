@@ -1,0 +1,84 @@
+---
+/**
+ * 記事詳細ページ下部の関連記事。
+ *
+ * 現在の記事と同じ「系統（style）」または「エリアグループ」（location-map.ts の
+ * 徒歩圏内グループ）に属する記事を、評価が高い順に最大 4 件表示する（自身は除外）。
+ * 該当する記事が無ければ何も表示しない。
+ */
+import { Image } from 'astro:assets';
+import { formatDate, withBase } from '../consts';
+import { getGroupStations } from '../lib/location-map';
+import { PLACEHOLDER_ALT, placeholderImage } from '../lib/placeholder';
+import { getPublishedPosts, type Post } from '../lib/posts';
+import StarRating from './StarRating.astro';
+
+interface Props {
+	currentPost: Post;
+}
+
+const { currentPost } = Astro.props;
+
+const posts = await getPublishedPosts();
+const sameAreaStations = new Set(getGroupStations(currentPost.data.location));
+
+const related = posts
+	.filter((post) => post.id !== currentPost.id)
+	.filter((post) => post.data.style === currentPost.data.style || sameAreaStations.has(post.data.location))
+	.sort((a, b) => b.data.rating - a.data.rating || b.data.date.valueOf() - a.data.date.valueOf())
+	.slice(0, 4);
+---
+
+{
+	related.length > 0 && (
+		<section class="mt-12 border-t border-line pt-8" aria-labelledby="related-posts-heading">
+			<h2 id="related-posts-heading" class="mb-4 text-lg font-extrabold text-ink">
+				関連記事
+			</h2>
+			<ul class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+				{related.map((post) => (
+					<li>
+						<a
+							href={withBase(`/posts/${post.id}/`)}
+							class="group flex h-full gap-3 rounded-xl border border-line bg-surface-raised p-3 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md"
+						>
+							<div class="relative aspect-square w-20 shrink-0 overflow-hidden rounded-lg bg-surface-sunken sm:w-24">
+								{post.data.image ? (
+									<Image
+										src={post.data.image}
+										alt=""
+										widths={[160, 240]}
+										sizes="96px"
+										loading="lazy"
+										class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+									/>
+								) : (
+									<img
+										src={placeholderImage(post.id, 240, 240)}
+										alt={PLACEHOLDER_ALT}
+										width="240"
+										height="240"
+										loading="lazy"
+										decoding="async"
+										class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+									/>
+								)}
+							</div>
+							<div class="flex min-w-0 flex-col gap-1">
+								<div class="flex flex-wrap items-center gap-1 text-[11px]">
+									<span class="rounded-full bg-chip-brand px-2 py-0.5 font-bold text-chip-brand-fg">{post.data.style}</span>
+									<span class="text-ink-faint">{post.data.location}</span>
+								</div>
+								<p class="line-clamp-2 text-sm font-bold text-ink group-hover:text-brand-fg">{post.data.shop_name}</p>
+								<StarRating rating={post.data.rating} size="sm" />
+								<time datetime={post.data.date.toISOString()} class="mt-auto text-xs text-ink-faint">
+									{formatDate(post.data.date)}
+								</time>
+							</div>
+						</a>
+					</li>
+				))}
+			</ul>
+		</section>
+	)
+}

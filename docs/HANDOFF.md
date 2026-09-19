@@ -41,6 +41,14 @@ Astro 7.3 + Tailwind CSS 4 + MDX。記事は Content Collections（`src/content/
 - [x] 店舗情報の拡充: 地図リンク・営業時間・最寄り駅（2026-09-19）: `content.config.ts` に任意項目 `map_url`（`z.url()`）/ `business_hours` / `nearest_station` を追加。`posts/[id].astro` の店舗情報テーブルの型 `meta` に `mapHref` を追加し、「場所」の行に `map_url` があれば値の横に「📍 地図を見る」の外部リンク（`target="_blank" rel="noopener noreferrer"`）を表示。`nearest_station` / `business_hours` はそれぞれ存在する場合だけ行を追加（「場所」の直後・「訪問日」の前）。動作確認用に極太堂（サンプル記事）へダミーの `map_url` / `business_hours` / `nearest_station` を追加
 - [x] 記事本文の複数写真ギャラリー（2026-09-19）: `src/components/PhotoGallery.astro` を新設。`photos: { src: ImageMetadata | string; alt: string; caption?: string }[]` を受け取り、スマホ 1 列／sm 以上 2 列のグリッドでサムネイル表示、クリックで Lightbox（拡大表示・前後移動・Esc／オーバーレイクリック／✕ボタンで閉じる、Vanilla JS）を開く。`src` が文字列（Unsplash などのリモート URL）なら `<img>`、`ImageMetadata`（`src/assets/posts/` から import した画像）なら `astro:assets` の `<Image>` で最適化して表示するので、既存の `npm run photo` の仕組みとは独立していて競合しない。MDX の本文中でしか import できないため、動作確認用に熊田家（`kumadaya-tsukubamirai.md` → `.mdx` にリネーム）へ `import PhotoGallery ...` と 4 枚の Unsplash ダミー画像の使用例を追加
 - [x] About ページ追加・サンプル記事削除（2026-09-19）: `src/pages/about/index.astro` を新設（`/about/`）。ブログの趣旨と評価基準（★の目安）のダミーテキスト。見出しは記事ページと同じ `.article-body prose` で装飾を統一。`BaseLayout.astro` のヘッダー・フッターのナビに「About」リンクを追加。サンプル記事 `kumadaya-tsukubamirai.mdx`（熊田家）と `gokubutodo-jimbocho.md`（極太堂）を削除。これにより系統は「家系」のみ（二郎系が消滅）、エリアは東京都のみ（茨城県が消滅、秋葉原・末広町の 2 駅）、タグは 5 個に減少（記事 2 本 + トップ + About = 15 ページ、`CLAUDE.md` の検証コメントを更新）。トップの絞り込み・並び替え、系統／エリア／タグ別ページ、エリア検索の双方向性は削除後も正常動作を確認済み
+- [x] 関連記事・パンくず・殿堂入りピックアップ・SNS シェア（2026-09-19、ユーザー外出中に自律実装）: 4 コンポーネントを新設
+  - `RelatedPosts.astro`: 記事詳細ページ下部。同じ `style` または `location-map.ts` のエリアグループ（`getGroupStations()`）に属する記事を、自身を除いて評価→日付の降順で最大 4 件表示（該当なしなら非表示）
+  - `Breadcrumbs.astro`: 記事詳細ページ上部。トップ／都道府県／エリアグループ／店名の階層リンク＋ BreadcrumbList の JSON-LD（`is:inline`）。既存の「記事一覧／系統／店名」の簡易パンくずと置き換え
+  - `PickupPosts.astro`: フロントマターに任意項目 `pickup: z.boolean().default(false)` を追加（`content.config.ts`）。`pickup: true` の記事だけをトップページ最上部に 👑 バッジ付きカードで表示（`index.astro` の `PostFilters` セクションより前）。対象が無ければ非表示。動作確認用に iekei Tokyo 王道家（★5.0）へ `pickup: true` を設定
+  - `ShareButtons.astro`: 記事詳細ページ下部。X（旧Twitter）の intent リンク（`hashtags=らーめん食べ歩きログ`）と、クリップボードコピーボタン（Vanilla JS、`navigator.clipboard.writeText()`。コピーできたら 2 秒間「コピーしました」のトースト表示）
+  - `[id].astro` の構成: パンくず → header（バッジ・星・写真・店舗情報）→ 本文 → ShareButtons → RelatedPosts → PostNav・戻るリンク
+  - 色はすべて既存のテーマトークンのみ使用（`dark:` 不使用）。リンクは `withBase()` 経由。記事取得は `getPublishedPosts()` に統一。ルーティング・ページ数は変わらず（15 ページ）
+  - 4 機能ともローカルで動作確認済み。スキップした機能は無し
 - [x] **公開済み（2026-09-18）**: https://enoenomirai-beep.github.io/ramen-blog/
   - リポジトリ: https://github.com/enoenomirai-beep/ramen-blog（`main`、Pages の Source = GitHub Actions）
   - 本番で確認済み: トップ / 記事 3 ページ / `rss.xml` / `sitemap-index.xml` / favicon / OGP・canonical の URL / 画像の読み込み。コンソールエラーなし
