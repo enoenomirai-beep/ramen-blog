@@ -49,6 +49,8 @@ const posts = defineCollection({
 			business_hours: z.string().optional(),
 			/** 最寄り駅（location とは別に、駅名だけを書きたい場合） */
 			nearest_station: z.string().optional(),
+			/** 殿堂入りピックアップとしてトップページ上部に出す場合 true */
+			pickup: z.boolean().default(false),
 			/** 下書きの場合 true（一覧・ビルドから除外） */
 			draft: z.boolean().default(false),
 		})

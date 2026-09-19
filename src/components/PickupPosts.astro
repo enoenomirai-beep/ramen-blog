@@ -1,0 +1,77 @@
+---
+/**
+ * トップページ上部の殿堂入り（ピックアップ）枠。
+ *
+ * フロントマターの `pickup: true` を付けた記事だけを目立つカードで表示する。
+ * 対象記事が無ければ何も表示しない。
+ */
+import { Image } from 'astro:assets';
+import { formatDate, withBase } from '../consts';
+import { PLACEHOLDER_ALT, placeholderImage } from '../lib/placeholder';
+import { getPublishedPosts } from '../lib/posts';
+import StarRating from './StarRating.astro';
+
+const posts = (await getPublishedPosts()).filter((post) => post.data.pickup);
+---
+
+{
+	posts.length > 0 && (
+		<section
+			class="mb-6 overflow-hidden rounded-xl border border-line-strong bg-surface-raised shadow-sm sm:mb-8"
+			aria-labelledby="pickup-heading"
+		>
+			<h2
+				id="pickup-heading"
+				class="flex items-center gap-2 border-b border-line bg-chip-brand px-4 py-2.5 text-sm font-extrabold text-chip-brand-fg"
+			>
+				<span aria-hidden="true">👑</span> 殿堂入りピックアップ
+			</h2>
+			<ul class="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3">
+				{posts.map((post) => (
+					<li>
+						<a
+							href={withBase(`/posts/${post.id}/`)}
+							class="group flex h-full flex-col overflow-hidden rounded-xl border border-line bg-surface shadow-sm transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md"
+						>
+							<div class="relative aspect-video overflow-hidden bg-surface-sunken">
+								{post.data.image ? (
+									<Image
+										src={post.data.image}
+										alt=""
+										widths={[400, 800]}
+										sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+										loading="eager"
+										class="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+									/>
+								) : (
+									<img
+										src={placeholderImage(post.id, 800, 450)}
+										alt={PLACEHOLDER_ALT}
+										width="800"
+										height="450"
+										loading="eager"
+										decoding="async"
+										class="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+									/>
+								)}
+								<span class="absolute top-3 left-3 inline-flex items-center gap-1 rounded-full bg-brand-600 px-3 py-1 text-xs font-bold text-white shadow">
+									<span aria-hidden="true">👑</span> 殿堂入り
+								</span>
+							</div>
+							<div class="flex flex-1 flex-col gap-1.5 p-4">
+								<p class="text-xs font-bold text-ink-faint">
+									{post.data.style} ・ {post.data.location}
+								</p>
+								<h3 class="text-lg font-extrabold text-ink group-hover:text-brand-fg">{post.data.shop_name}</h3>
+								<StarRating rating={post.data.rating} size="sm" />
+								<time datetime={post.data.date.toISOString()} class="mt-auto pt-1 text-xs text-ink-faint">
+									{formatDate(post.data.date)}
+								</time>
+							</div>
+						</a>
+					</li>
+				))}
+			</ul>
+		</section>
+	)
+}

@@ -1,0 +1,62 @@
+---
+/**
+ * 記事詳細ページ上部のパンくずリスト。
+ *
+ * トップ > 都道府県 > エリアグループ（location-map.ts）> 店名 の階層で表示し、
+ * 検索エンジン向けに BreadcrumbList の構造化データ（JSON-LD）も付与する。
+ */
+import { withBase } from '../consts';
+import { getLocationInfo } from '../lib/location-map';
+import { locationPath, type Post } from '../lib/posts';
+
+interface Props {
+	post: Post;
+}
+
+const { post } = Astro.props;
+const info = getLocationInfo(post.data.location);
+
+interface Crumb {
+	name: string;
+	/** base 付きの相対パス。無ければ現在地としてリンクなしで表示する */
+	href?: string;
+}
+
+const crumbs: Crumb[] = [
+	{ name: 'トップ', href: withBase('/') },
+	{ name: info.prefecture, href: withBase('/locations/') },
+	{ name: info.group, href: withBase(locationPath(post.data.location)) },
+	{ name: post.data.shop_name },
+];
+
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'BreadcrumbList',
+	itemListElement: crumbs.map((crumb, i) => ({
+		'@type': 'ListItem',
+		position: i + 1,
+		name: crumb.name,
+		...(crumb.href ? { item: new URL(crumb.href, Astro.site).toString() } : {}),
+	})),
+};
+---
+
+<nav aria-label="パンくずリスト" class="mb-5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-muted sm:text-sm">
+	{
+		crumbs.map((crumb, i) => (
+			<>
+				{i > 0 && <span aria-hidden="true" class="text-ink-faint">/</span>}
+				{crumb.href ? (
+					<a href={crumb.href} class="hover:text-brand-fg">
+						{crumb.name}
+					</a>
+				) : (
+					<span class="font-medium text-ink" aria-current="page">
+						{crumb.name}
+					</span>
+				)}
+			</>
+		))
+	}
+</nav>
+<script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd)} />

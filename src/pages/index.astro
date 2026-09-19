@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import PickupPosts from '../components/PickupPosts.astro';
 import PostListItem from '../components/PostListItem.astro';
 import PostFilters from '../components/PostFilters.astro';
 import { SITE_DESCRIPTION } from '../consts';
@@ -29,6 +30,8 @@ const locations = countBy('location');
 			{SITE_DESCRIPTION}
 		</p>
 	</section>
+
+	<PickupPosts />
 
 	<section class="mb-5 rounded-xl border border-line bg-surface-raised p-4 shadow-sm sm:p-5">
 		<PostFilters styles={styles} locations={locations} total={posts.length} />

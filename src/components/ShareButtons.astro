@@ -1,0 +1,79 @@
+---
+/**
+ * 記事詳細ページ下部のシェアボタン。
+ *
+ * X（旧Twitter）への投稿リンク（ハッシュタグ「#らーめん食べ歩きログ」付き）と、
+ * 記事 URL をクリップボードにコピーするボタン（コピーできたら「コピーしました」の
+ * トーストを表示。Vanilla JS）。
+ */
+import { withBase } from '../consts';
+
+interface Props {
+	/** シェア文に使うタイトル（店名など） */
+	title: string;
+	/** base 無しのパス（例: /posts/foo/） */
+	path: string;
+}
+
+const { title, path } = Astro.props;
+const canonicalUrl = new URL(withBase(path), Astro.site).toString();
+const shareText = `${title} | らーめん食べ歩きログ`;
+const twitterHref = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(canonicalUrl)}&hashtags=${encodeURIComponent('らーめん食べ歩きログ')}`;
+
+const buttonClass =
+	'inline-flex items-center gap-2 rounded-full border border-line-strong bg-surface-raised px-4 py-2 text-sm font-semibold text-ink transition hover:border-brand-400 hover:text-brand-fg';
+---
+
+<div class="flex flex-wrap items-center gap-3" data-share-buttons>
+	<span class="text-sm font-bold text-ink-faint">シェア</span>
+	<a href={twitterHref} target="_blank" rel="noopener noreferrer" class={buttonClass} aria-label="Xでシェア">
+		<svg class="size-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+			<path
+				fill-rule="evenodd"
+				d="M4.3 4.3a1 1 0 0 1 1.4 0L10 8.6l4.3-4.3a1 1 0 1 1 1.4 1.4L11.4 10l4.3 4.3a1 1 0 0 1-1.4 1.4L10 11.4l-4.3 4.3a1 1 0 0 1-1.4-1.4L8.6 10 4.3 5.7a1 1 0 0 1 0-1.4Z"
+				clip-rule="evenodd"
+			/>
+		</svg>
+		X でシェア
+	</a>
+	<button type="button" class={buttonClass} data-copy-button data-url={canonicalUrl}>
+		<svg class="size-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+			<path d="M8 2a2 2 0 0 0-2 2v1H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V6.4a2 2 0 0 0-.6-1.4l-2.4-2.4A2 2 0 0 0 12.6 2H8Zm4.6 2 2.4 2.4H13a1 1 0 0 1-1-1V2.4l.6.6ZM11 4H8v1a2 2 0 0 1 2 2v7h2V6a2 2 0 0 0-1-1Zm-1 3H5v9h7V9H11a1 1 0 0 1-1-1V7Z" />
+		</svg>
+		URL をコピー
+	</button>
+</div>
+
+<span
+	data-share-toast
+	hidden
+	role="status"
+	aria-live="polite"
+	class="pointer-events-none fixed inset-x-0 bottom-6 z-50 mx-auto w-fit rounded-full bg-ink px-4 py-2 text-sm font-semibold text-surface shadow-lg"
+>
+	コピーしました
+</span>
+
+<script>
+	document.querySelectorAll<HTMLElement>('[data-share-buttons]').forEach((root) => {
+		const copyButton = root.querySelector<HTMLButtonElement>('[data-copy-button]');
+		const url = copyButton?.dataset.url;
+		if (!copyButton || !url) return;
+
+		const toast = document.querySelector<HTMLElement>('[data-share-toast]');
+		let hideTimer: ReturnType<typeof setTimeout> | undefined;
+
+		async function copy() {
+			await navigator.clipboard.writeText(url!);
+			if (toast) {
+				toast.hidden = false;
+				clearTimeout(hideTimer);
+				hideTimer = setTimeout(() => {
+					toast.hidden = true;
+				}, 2000);
+			}
+		}
+
+		copyButton.addEventListener('click', copy);
+	});
+</script>

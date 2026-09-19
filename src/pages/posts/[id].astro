@@ -2,6 +2,9 @@
 import { Image } from 'astro:assets';
 import { render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import RelatedPosts from '../../components/RelatedPosts.astro';
+import ShareButtons from '../../components/ShareButtons.astro';
 import StarRating from '../../components/StarRating.astro';
 import PostNav from '../../components/PostNav.astro';
 import TableOfContents from '../../components/TableOfContents.astro';
@@ -63,13 +66,7 @@ const locationHref = withBase(locationPath(location));
 ---
 
 <BaseLayout title={title} description={description} ogImage={image} type="article">
-	<nav aria-label="パンくずリスト" class="mb-5 text-xs text-ink-muted sm:text-sm">
-		<a href={homeHref} class="hover:text-brand-fg">記事一覧</a>
-		<span aria-hidden="true" class="mx-2 text-ink-faint">/</span>
-		<a href={styleHref} class="hover:text-brand-fg">{style}</a>
-		<span aria-hidden="true" class="mx-2 text-ink-faint">/</span>
-		<span class="font-medium text-ink">{shop_name}</span>
-	</nav>
+	<Breadcrumbs post={post} />
 
 	<article class="mx-auto max-w-3xl">
 		<header class="mb-8">
@@ -194,6 +191,12 @@ const locationHref = withBase(locationPath(location));
 		<div class="article-body prose max-w-none prose-headings:scroll-mt-6">
 			<Content />
 		</div>
+
+		<section class="mt-8 border-t border-line pt-6">
+			<ShareButtons title={shop_name} path={`/posts/${post.id}/`} />
+		</section>
+
+		<RelatedPosts currentPost={post} />
 
 		<footer class="mt-12 border-t border-line pt-6">
 			<PostNav prev={prev} next={next} />
