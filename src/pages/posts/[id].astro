@@ -3,6 +3,7 @@ import { Image } from 'astro:assets';
 import { render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CalorieMeter from '../../components/CalorieMeter.astro';
 import Comments from '../../components/Comments.astro';
 import RelatedPosts from '../../components/RelatedPosts.astro';
 import ShareButtons from '../../components/ShareButtons.astro';
@@ -201,6 +202,7 @@ const ogImageUrl = withBase(`/og/${post.id}.png`);
 					}
 				</dl>
 			</section>
+			<CalorieMeter style={style} />
 		</header>
 
 		<TableOfContents headings={headings} />

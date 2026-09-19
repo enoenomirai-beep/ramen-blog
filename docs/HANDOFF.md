@@ -1,6 +1,6 @@
 # 作業引き継ぎメモ
 
-最終更新: 2026-09-20（Claude Code セッションからの引き継ぎ）
+最終更新: 2026-09-20（Claude Code セッションからの引き継ぎ、ラーメン出費ダッシュボード・PWA 化・沿線検索・免罪符メーターを追加）
 
 ## プロジェクト概要
 
@@ -68,6 +68,13 @@ Astro 7.3 + Tailwind CSS 4 + MDX。記事は Content Collections（`src/content/
   - 開発中、先に走っていた `astro dev` の長時間プロセスが `npm install` 後に sharp を見失う（`MissingSharp`）現象に遭遇したが、`preview_stop` → `preview_start` で再起動すると解消した（`npm run build` の毎回フレッシュなプロセスでは常に成功していたので、コード側の問題ではなく起動済みプロセスの node_modules スナップショットが古くなっていただけ）
   - 色はすべて既存のテーマトークン・固定色（`accent-*` など）のみ使用（`dark:` 不使用）。リンクは `withBase()` 経由。記事取得は `getPublishedPosts()` に統一。ルーティング・ページ数は変わらず（17 ページ、`/og/*.png` は API エンドポイントなので `astro build` のページ数カウントに含まれない）
   - 4 機能ともローカルで動作確認済み。スキップした機能は無し
+- [x] ラーメン出費ダッシュボード・PWA 化・沿線検索・免罪符メーター（2026-09-20、ユーザー外出中に自律実装）
+  - `src/pages/dashboard.astro`（`/dashboard/`）: 全記事の `price`（未記入は 1 杯の目安額 ¥800 でフォールバック）を集計。「今年の投資総額」「平均単価」「総投資額（全期間）」の 3 カードと、月別出費合計の棒グラフ＋表。`BaseLayout.astro` のヘッダー・フッターに「出費ダッシュボード」ナビを追加
+  - PWA 化: まず `@vite-pwa/astro`（最新 1.2.0）を試したが、peer dependency が `astro@^1〜5` までで Astro 7.3 とは非対応。`--legacy-peer-deps` で強制インストールし `astro check` / `npm run build` 自体は通ったが、ビルド後の HTML に `<link rel="manifest">` や Service Worker 登録スクリプトが一切挿入されず（`grep` で確認）、PWA として機能しなかったため撤去（アンインストール、`astro.config.mjs` の変更も戻した）。代わりに `public/manifest.webmanifest`（アプリ名「らーめんログ」、テーマカラー `#a52d14`）と `public/sw.js`（キャッシュ優先＋裏でネットワーク更新の Service Worker。オフラインでキャッシュに無いページ遷移はトップページで代替）を手書きし、`BaseLayout.astro` に `<link rel="manifest">` / `<link rel="apple-touch-icon">` / `apple-mobile-web-app-*` メタタグと `navigator.serviceWorker.register()` の登録スクリプト（`define:vars` で `withBase()` 済みの URL を渡す）を追加。アイコンは `scripts/make-pwa-icons.mjs`（sharp で🍜絵文字をブランドカラー背景に乗せて PNG化）で `public/pwa/`（192/512/512-maskable/apple-touch-icon）に生成。`public/` 直下の手書きファイルは Astro の処理を通らないため base（`/ramen-blog`）を直接文字列で持っており、**base を変えるときはこの 2 ファイルも直す必要がある**（`.gitignore` に dev モード用の `dev-dist/` を追加）
+  - 沿線検索: `location-map.ts` の `AREA_GROUPS` を `stations: string[]` から `stations: { name: string; lines: string[] }[]` にリファクタリングし、各駅に鉄道路線名を追加（山手線・つくばエクスプレス・丸ノ内線など、東京 23 区・茨城方面の登録済み駅に実際の路線を付与）。新設 `getLines(location)` で駅名 → 路線名一覧を逆引き。`AreaSearchBox.astro` の検索対象に路線名（`data-lines`）を追加し、「山手線」で検索すると山手線が通るすべての駅の記事がヒットするようにした。`getGroupStations()` / `getCoordinates()` / `getLocationInfo()` の戻り値・呼び出し側（`map.astro`・`posts.ts`）は変更なし
+  - 免罪符メーター: `src/lib/nutrition.ts`（系統名 → 概算 kcal・PFC のハードコード辞書、未登録系統は `DEFAULT_NUTRITION` にフォールバック）と `src/components/CalorieMeter.astro`（PFCバランスのプログレスバー＋「スクワット◯時間／ランニング◯km」のユーモア換算。運動換算は固定係数 `300kcal/時間`・`70kcal/km` の概算）を新設。`posts/[id].astro` の店舗情報セクションの下に設置
+  - 色はすべて既存のテーマトークン・固定色（`brand-*` / `accent-*` / `soy-*`）のみ使用（`dark:` 不使用。`soy-*` は本 PR で初めて実際に使用）。リンクは `withBase()` 経由。記事取得は `getPublishedPosts()` に統一。ページ数は 17→18（出費ダッシュボード追加分。`manifest.webmanifest` / `sw.js` は静的アセットなのでページ数に含まれない）
+  - 4 機能ともローカルで動作確認済み（`astro check` 0 エラー、`npm run build` 18 ページ成功、dev サーバーでダッシュボード・免罪符メーター・沿線検索・PWA 登録を目視確認）。スキップした機能は無し（`@vite-pwa/astro` は撤去したが、手書き実装で機能自体は完成させた）
 - [x] **公開済み（2026-09-18）**: https://enoenomirai-beep.github.io/ramen-blog/
   - リポジトリ: https://github.com/enoenomirai-beep/ramen-blog（`main`、Pages の Source = GitHub Actions）
   - 本番で確認済み: トップ / 記事 3 ページ / `rss.xml` / `sitemap-index.xml` / favicon / OGP・canonical の URL / 画像の読み込み。コンソールエラーなし

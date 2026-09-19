@@ -1,0 +1,144 @@
+---
+/**
+ * ラーメン出費・家計簿ダッシュボード。
+ *
+ * 記事の `price`（会計額）を集計して、「今年の投資総額」「平均単価」「月別の出費推移」を出す。
+ * `price` が無い記事は、ラーメン1杯の目安額（800円）としてフォールバックする
+ * （0円だと平均・グラフが実態より低く出てしまうため）。
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { withBase } from '../consts';
+import { getPublishedPosts, type Post } from '../lib/posts';
+
+const DEFAULT_PRICE = 800;
+function priceOf(post: Post): number {
+	return post.data.price ?? DEFAULT_PRICE;
+}
+
+const posts = await getPublishedPosts();
+
+const currentYear = new Date().getFullYear();
+const thisYearPosts = posts.filter((post) => post.data.date.getFullYear() === currentYear);
+const totalThisYear = thisYearPosts.reduce((sum, post) => sum + priceOf(post), 0);
+
+const totalAll = posts.reduce((sum, post) => sum + priceOf(post), 0);
+const avgPrice = posts.length > 0 ? Math.round(totalAll / posts.length) : 0;
+
+// 月別（YYYY-MM）の出費合計・件数。日付の古い順
+interface MonthlyStat {
+	key: string;
+	label: string;
+	total: number;
+	count: number;
+}
+const monthlyMap = new Map<string, MonthlyStat>();
+for (const post of posts) {
+	const d = post.data.date;
+	const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+	const label = `${d.getFullYear()}年${d.getMonth() + 1}月`;
+	const stat = monthlyMap.get(key) ?? { key, label, total: 0, count: 0 };
+	stat.total += priceOf(post);
+	stat.count += 1;
+	monthlyMap.set(key, stat);
+}
+const monthly = [...monthlyMap.values()].sort((a, b) => a.key.localeCompare(b.key));
+const maxMonthlyTotal = Math.max(1, ...monthly.map((m) => m.total));
+
+const homeHref = withBase('/');
+---
+
+<BaseLayout
+	title="ラーメン出費ダッシュボード"
+	description="ラーメンに使ったお金を集計する家計簿ダッシュボード。今年の投資総額・平均単価・月別の出費推移。"
+>
+	<nav aria-label="パンくずリスト" class="mb-5 text-xs text-ink-muted sm:text-sm">
+		<a href={homeHref} class="hover:text-brand-fg">記事一覧</a>
+		<span aria-hidden="true" class="mx-2 text-ink-faint">/</span>
+		<span class="font-medium text-ink">ラーメン出費ダッシュボード</span>
+	</nav>
+
+	<section class="mb-6 sm:mb-8">
+		<p class="mb-1 text-xs font-bold tracking-widest text-brand-fg uppercase">Dashboard</p>
+		<h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">ラーメン出費ダッシュボード</h1>
+		<p class="mt-2 max-w-2xl text-sm leading-relaxed text-ink-muted sm:text-base">
+			記事の会計額を集計した、ラーメンへの投資額の記録です。会計額が未記入の記事は 1 杯の目安額（¥{DEFAULT_PRICE.toLocaleString(
+				'ja-JP',
+			)}）として計算しています。
+		</p>
+	</section>
+
+	{
+		posts.length === 0 ? (
+			<p class="rounded-xl border border-dashed border-line-strong bg-surface-raised px-6 py-12 text-center text-sm text-ink-muted">
+				集計できる記事がまだありません。
+			</p>
+		) : (
+			<>
+				<div class="mb-6 grid grid-cols-1 gap-3 sm:mb-8 sm:grid-cols-3 sm:gap-4">
+					<div class="rounded-xl border border-line bg-surface-raised p-4 shadow-sm sm:p-5">
+						<p class="text-xs font-bold text-ink-faint">今年（{currentYear}年）のラーメン投資総額</p>
+						<p class="mt-2 text-2xl font-extrabold tracking-tight text-brand-fg sm:text-3xl">
+							¥{totalThisYear.toLocaleString('ja-JP')}
+						</p>
+						<p class="mt-1 text-xs text-ink-faint">{thisYearPosts.length}杯分</p>
+					</div>
+					<div class="rounded-xl border border-line bg-surface-raised p-4 shadow-sm sm:p-5">
+						<p class="text-xs font-bold text-ink-faint">平均単価</p>
+						<p class="mt-2 text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">
+							¥{avgPrice.toLocaleString('ja-JP')}
+						</p>
+						<p class="mt-1 text-xs text-ink-faint">全{posts.length}杯の平均</p>
+					</div>
+					<div class="rounded-xl border border-line bg-surface-raised p-4 shadow-sm sm:p-5">
+						<p class="text-xs font-bold text-ink-faint">総投資額（全期間）</p>
+						<p class="mt-2 text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">
+							¥{totalAll.toLocaleString('ja-JP')}
+						</p>
+						<p class="mt-1 text-xs text-ink-faint">記事{posts.length}件</p>
+					</div>
+				</div>
+
+				<section class="rounded-xl border border-line bg-surface-raised p-4 shadow-sm sm:p-5" aria-labelledby="monthly-heading">
+					<h2 id="monthly-heading" class="text-sm font-bold text-ink">月別の出費推移</h2>
+
+					<div class="mt-5 flex items-end gap-2 overflow-x-auto pb-1" aria-hidden="true">
+						{monthly.map((m) => (
+							<div class="flex min-w-[2.75rem] flex-1 flex-col items-center gap-1.5">
+								<span class="text-[10px] font-bold text-ink-faint tabular-nums">¥{m.total.toLocaleString('ja-JP')}</span>
+								<div class="flex h-32 w-full items-end rounded-md bg-surface-sunken">
+									<div
+										class="w-full rounded-md bg-brand-500"
+										style={`height: ${Math.max(4, (m.total / maxMonthlyTotal) * 100)}%`}
+									/>
+								</div>
+								<span class="text-[10px] font-medium text-ink-faint whitespace-nowrap">
+									{m.label.replace(/^\d+年/, '')}
+								</span>
+							</div>
+						))}
+					</div>
+
+					<table class="mt-6 w-full text-left text-sm">
+						<caption class="sr-only">月別の出費合計と記事数</caption>
+						<thead>
+							<tr class="border-b border-line-strong text-xs text-ink-faint">
+								<th scope="col" class="py-2 font-bold">月</th>
+								<th scope="col" class="py-2 font-bold">出費合計</th>
+								<th scope="col" class="py-2 font-bold">杯数</th>
+							</tr>
+						</thead>
+						<tbody>
+							{monthly.map((m) => (
+								<tr class="border-b border-line last:border-b-0">
+									<td class="py-2 font-medium text-ink">{m.label}</td>
+									<td class="py-2 font-medium text-ink">¥{m.total.toLocaleString('ja-JP')}</td>
+									<td class="py-2 text-ink-muted">{m.count}杯</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</section>
+			</>
+		)
+	}
+</BaseLayout>

@@ -18,7 +18,7 @@ Manage the background server with `astro dev stop`, `astro dev status`, and `ast
 Node.js は `C:\Program Files\nodejs`。ツール用シェルの PATH に入っていない場合はコマンド先頭で
 `$env:Path = "C:\Program Files\nodejs;" + $env:Path` を付ける。
 
-検証は `npx astro check`（型）→ `npm run build`（記事数 + トップ + About + マップ + ランキング + 系統別／エリア別／タグ別（各「一覧 1 + 項目数」）ページと rss.xml / sitemap が生成されること。2026-09-19 時点で記事 2・系統 1・エリア 2・タグ 5 + トップ + About + マップ + ランキング = 17 ページ）。
+検証は `npx astro check`（型）→ `npm run build`（記事数 + トップ + About + マップ + ランキング + 出費ダッシュボード + 系統別／エリア別／タグ別（各「一覧 1 + 項目数」）ページと rss.xml / sitemap / manifest.webmanifest / sw.js が生成されること。2026-09-20 時点で記事 2・系統 1・エリア 2・タグ 5 + トップ + About + マップ + ランキング + 出費ダッシュボード = 18 ページ）。
 
 ## 構成と規約
 
