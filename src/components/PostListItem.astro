@@ -17,7 +17,8 @@ interface Props {
 }
 
 const { post } = Astro.props;
-const { title, date, shop_name, style, location, rating, description, menu, price, image, image_alt } = post.data;
+const { title, date, shop_name, style, location, rating, description, menu, price, image, image_alt, visits, features } =
+	post.data;
 const href = withBase(`/posts/${post.id}/`);
 const styleHref = withBase(stylePath(style));
 const locationHref = withBase(locationPath(location));
@@ -83,6 +84,13 @@ const locationHref = withBase(locationPath(location));
 				</svg>
 				{location}
 			</a>
+			{
+				visits >= 2 && (
+					<span class="inline-flex items-center gap-0.5 rounded-full bg-chip-brand px-2 py-0.5 font-bold text-chip-brand-fg">
+						🔥 訪問{visits}回
+					</span>
+				)
+			}
 			<time datetime={date.toISOString()} class="ml-auto text-ink-faint">{formatDate(date)}</time>
 		</div>
 
@@ -111,6 +119,18 @@ const locationHref = withBase(locationPath(location));
 				)
 			}
 		</div>
+
+		{
+			features.length > 0 && (
+				<div class="flex flex-wrap items-center gap-1.5">
+					{features.map((feature) => (
+						<span class="inline-flex items-center rounded-full bg-chip px-2 py-0.5 text-[11px] font-medium text-chip-fg">
+							{feature}
+						</span>
+					))}
+				</div>
+			)
+		}
 
 		{description && <p class="line-clamp-2 text-sm leading-relaxed text-ink-muted">{description}</p>}
 	</div>

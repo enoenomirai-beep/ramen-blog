@@ -51,6 +51,10 @@ const posts = defineCollection({
 			nearest_station: z.string().optional(),
 			/** 殿堂入りピックアップとしてトップページ上部に出す場合 true */
 			pickup: z.boolean().default(false),
+			/** 訪問回数（再訪した記事で 2 以上を指定すると「訪問回数」バッジが出る） */
+			visits: z.number().int().min(1).default(1),
+			/** 営業状況などの特徴タグ（例: ["深夜営業", "通し営業", "ライス無料"]） */
+			features: z.array(z.string()).default([]),
 			/** 下書きの場合 true（一覧・ビルドから除外） */
 			draft: z.boolean().default(false),
 		})

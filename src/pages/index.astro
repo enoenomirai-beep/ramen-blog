@@ -3,7 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import PickupPosts from '../components/PickupPosts.astro';
 import PostListItem from '../components/PostListItem.astro';
 import PostFilters from '../components/PostFilters.astro';
-import { SITE_DESCRIPTION } from '../consts';
+import { SITE_DESCRIPTION, withBase } from '../consts';
 import { getPublishedPosts } from '../lib/posts';
 
 // 下書きを除き、日付の新しい順
@@ -20,6 +20,9 @@ function countBy(key: 'style' | 'location') {
 }
 const styles = countBy('style');
 const locations = countBy('location');
+
+// 今日の一杯ガチャ用: 公開済み記事の URL 一覧（base 込み）
+const gachaUrls = posts.map((post) => withBase(`/posts/${post.id}/`));
 ---
 
 <BaseLayout>
@@ -30,6 +33,25 @@ const locations = countBy('location');
 			{SITE_DESCRIPTION}
 		</p>
 	</section>
+
+	{
+		gachaUrls.length > 0 && (
+			<section
+				class="mb-6 flex flex-col items-center gap-2 rounded-xl border border-line-strong bg-surface-raised p-5 text-center shadow-sm sm:mb-8"
+				data-gacha
+				data-gacha-urls={JSON.stringify(gachaUrls)}
+			>
+				<p class="text-sm font-bold text-ink-faint">今日は何を食べる？</p>
+				<button
+					type="button"
+					data-gacha-button
+					class="inline-flex items-center gap-2 rounded-full bg-brand-600 px-6 py-3 text-base font-extrabold text-white shadow transition hover:-translate-y-0.5 hover:bg-brand-700"
+				>
+					🎲 今日の一杯ガチャを回す
+				</button>
+			</section>
+		)
+	}
 
 	<PickupPosts />
 
@@ -63,3 +85,17 @@ const locations = countBy('location');
 		</p>
 	</section>
 </BaseLayout>
+
+<script>
+	// 今日の一杯ガチャ: 公開済み記事からランダムに 1 件選んで移動する
+	document.querySelectorAll<HTMLElement>('[data-gacha]').forEach((root) => {
+		const button = root.querySelector<HTMLButtonElement>('[data-gacha-button]');
+		const urls = JSON.parse(root.dataset.gachaUrls ?? '[]') as string[];
+		if (!button || urls.length === 0) return;
+
+		button.addEventListener('click', () => {
+			const url = urls[Math.floor(Math.random() * urls.length)];
+			location.href = url;
+		});
+	});
+</script>
