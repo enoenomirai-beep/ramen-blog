@@ -31,6 +31,8 @@ const rssHref = withBase('/rss.xml');
 const stylesHref = withBase('/styles/');
 const locationsHref = withBase('/locations/');
 const tagsHref = withBase('/tags/');
+const mapHref = withBase('/map/');
+const rankingHref = withBase('/ranking/');
 const aboutHref = withBase('/about/');
 
 const navLinkClass =
@@ -101,6 +103,8 @@ const navLinkClass =
 					<a href={stylesHref} class={navLinkClass}>系統別</a>
 					<a href={locationsHref} class={navLinkClass}>エリア別</a>
 					<a href={tagsHref} class={navLinkClass}>タグ</a>
+					<a href={mapHref} class={navLinkClass}>マップ</a>
+					<a href={rankingHref} class={navLinkClass}>ランキング</a>
 					<a href={aboutHref} class={navLinkClass}>About</a>
 					<a href={rssHref} class={navLinkClass} title="RSS フィード">
 						<span class="sr-only">RSS フィード</span>
@@ -131,6 +135,8 @@ const navLinkClass =
 					<a href={stylesHref} class="hover:text-brand-fg">系統別</a>
 					<a href={locationsHref} class="hover:text-brand-fg">エリア別</a>
 					<a href={tagsHref} class="hover:text-brand-fg">タグ</a>
+					<a href={mapHref} class="hover:text-brand-fg">マップ</a>
+					<a href={rankingHref} class="hover:text-brand-fg">ランキング</a>
 					<a href={aboutHref} class="hover:text-brand-fg">About</a>
 					<a href={rssHref} class="hover:text-brand-fg">RSS</a>
 				</nav>

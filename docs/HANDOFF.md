@@ -49,6 +49,16 @@ Astro 7.3 + Tailwind CSS 4 + MDX。記事は Content Collections（`src/content/
   - `[id].astro` の構成: パンくず → header（バッジ・星・写真・店舗情報）→ 本文 → ShareButtons → RelatedPosts → PostNav・戻るリンク
   - 色はすべて既存のテーマトークンのみ使用（`dark:` 不使用）。リンクは `withBase()` 経由。記事取得は `getPublishedPosts()` に統一。ルーティング・ページ数は変わらず（15 ページ）
   - 4 機能ともローカルで動作確認済み。スキップした機能は無し
+- [x] ラーメンマップ・今日の一杯ガチャ・訪問回数バッジ・マイベストランキング・特徴タグ（2026-09-19、ユーザー外出中に自律実装）
+  - `location-map.ts` の `AREA_GROUPS` 各エントリに代表座標 `lat`/`lng` を追加し、`getCoordinates(location)` を新設（辞書に無い location は undefined）
+  - `src/pages/map.astro`: Leaflet（CDN の UMD 版、unpkg + OpenStreetMap タイル。npm 依存追加なし）で全記事をピン留め。同じエリアの記事は座標が重なるので、記事 id の FNV-1a ハッシュで ±0.003 度ほどずらす。ピンのポップアップに店名・系統・場所・評価と記事へのリンク。`fitBounds()` でピン全体が収まるように自動ズーム
+  - `src/pages/index.astro`: 「今日の一杯ガチャ」ボタンを新設。公開済み記事の URL（`withBase()` 済み）を `data-gacha-urls` に埋め込み、クリックで Vanilla JS がランダムに 1 件選んで `location.href` で移動
+  - `content.config.ts` に任意項目 `visits: z.number().int().min(1).default(1)` と `features: z.array(z.string()).default([])` を追加。`visits` が 2 以上のときだけ `[id].astro`（スコア欄）と `PostListItem.astro`（バッジ行）に「🔥 訪問（回数）」バッジを表示。`features` は両方の場所でタグの並びに `bg-chip` のバッジとして表示
+  - `src/pages/ranking.astro`: 全記事を `rating` の降順（同点は日付降順）で並べ、1〜3 位に 👑🥈🥉 のアイコン
+  - `BaseLayout.astro` のヘッダー・フッターのナビに「マップ」「ランキング」を追加
+  - 動作確認用に iekei Tokyo 王道家へ `visits: 3` / `features: ["通し営業","ライス無料"]`、武将家外伝へ `features: ["深夜営業"]` を設定
+  - 色はすべて既存のテーマトークン・固定色（`brand-*`）のみ使用（`dark:` 不使用）。リンクは `withBase()` 経由。記事取得は `getPublishedPosts()` に統一。`map.astro` / `ranking.astro` は Astro の directory build format によりそれぞれ `/map/` `/ranking/` に対応（17 ページ）
+  - 5 機能ともローカルで動作確認済み。スキップした機能は無し
 - [x] **公開済み（2026-09-18）**: https://enoenomirai-beep.github.io/ramen-blog/
   - リポジトリ: https://github.com/enoenomirai-beep/ramen-blog（`main`、Pages の Source = GitHub Actions）
   - 本番で確認済み: トップ / 記事 3 ページ / `rss.xml` / `sitemap-index.xml` / favicon / OGP・canonical の URL / 画像の読み込み。コンソールエラーなし

@@ -1,0 +1,122 @@
+---
+/**
+ * ラーメンマップ。全記事の店舗を Leaflet（CDN・UMD 版）で地図上にピン留めする。
+ *
+ * ピンの位置は location-map.ts の「エリアグループの代表座標（駅の目安）」で、
+ * 店舗の正確な位置ではない。同じエリアの記事が重ならないよう、記事ごとに
+ * 少しだけ位置をずらしている。
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { withBase } from '../consts';
+import { getCoordinates } from '../lib/location-map';
+import { getPublishedPosts } from '../lib/posts';
+
+const posts = await getPublishedPosts();
+
+// 文字列から安定した -0.5〜0.5 の値を作る（同じ記事にはいつも同じズレになる。FNV-1a）
+function jitterUnit(seed: string): number {
+	let h = 0x811c9dc5;
+	for (const ch of seed) {
+		h ^= ch.charCodeAt(0);
+		h = Math.imul(h, 0x01000193) >>> 0;
+	}
+	return (h % 1000) / 1000 - 0.5;
+}
+
+interface Pin {
+	shopName: string;
+	style: string;
+	location: string;
+	rating: number;
+	lat: number;
+	lng: number;
+	href: string;
+}
+
+const pins: Pin[] = posts.flatMap((post) => {
+	const coords = getCoordinates(post.data.location);
+	if (!coords) return [];
+	// 徒歩圏内グループが同じ記事は同じ座標になるので、±0.003 度（目安 300m 弱）ほどずらす
+	return [
+		{
+			shopName: post.data.shop_name,
+			style: post.data.style,
+			location: post.data.location,
+			rating: post.data.rating,
+			lat: coords.lat + jitterUnit(`${post.id}-lat`) * 0.006,
+			lng: coords.lng + jitterUnit(`${post.id}-lng`) * 0.006,
+			href: withBase(`/posts/${post.id}/`),
+		},
+	];
+});
+
+const homeHref = withBase('/');
+---
+
+<BaseLayout title="ラーメンマップ" description="訪れたラーメン店をエリアの目安の位置で地図上に一覧できます。">
+	<nav aria-label="パンくずリスト" class="mb-5 text-xs text-ink-muted sm:text-sm">
+		<a href={homeHref} class="hover:text-brand-fg">記事一覧</a>
+		<span aria-hidden="true" class="mx-2 text-ink-faint">/</span>
+		<span class="font-medium text-ink">ラーメンマップ</span>
+	</nav>
+
+	<section class="mb-6 sm:mb-8">
+		<p class="mb-1 text-xs font-bold tracking-widest text-brand-fg uppercase">Map</p>
+		<h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">ラーメンマップ</h1>
+		<p class="mt-2 max-w-2xl text-sm leading-relaxed text-ink-muted sm:text-base">
+			訪れたお店をエリアの目安の位置にピン留めしています（駅の周辺の目安で、正確な店舗位置ではありません）。ピンをタップすると記事に飛べます。
+		</p>
+	</section>
+
+	{
+		pins.length > 0 ? (
+			<div
+				id="ramen-map"
+				data-pins={JSON.stringify(pins)}
+				class="h-[70vh] min-h-[420px] w-full overflow-hidden rounded-xl border border-line shadow-sm"
+			/>
+		) : (
+			<p class="rounded-xl border border-dashed border-line-strong bg-surface-raised px-6 py-12 text-center text-sm text-ink-muted">
+				地図に表示できる記事がまだありません。
+			</p>
+		)
+	}
+
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+	<script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+	<script>
+		interface Pin {
+			shopName: string;
+			style: string;
+			location: string;
+			rating: number;
+			lat: number;
+			lng: number;
+			href: string;
+		}
+
+		const container = document.getElementById('ramen-map');
+		if (container) {
+			const pins: Pin[] = JSON.parse(container.dataset.pins ?? '[]');
+			const L = (window as unknown as { L: any }).L;
+
+			const map = L.map(container).setView([35.68, 139.75], 11);
+			L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+				maxZoom: 18,
+			}).addTo(map);
+
+			for (const pin of pins) {
+				L.marker([pin.lat, pin.lng])
+					.addTo(map)
+					.bindPopup(
+						`<a href="${pin.href}" style="font-weight:700;">${pin.shopName}</a><br>${pin.style} ・ ${pin.location} ・ ★${pin.rating.toFixed(1)}`,
+					);
+			}
+
+			if (pins.length > 1) {
+				map.fitBounds(pins.map((pin) => [pin.lat, pin.lng]) as [number, number][], { padding: [32, 32] });
+			}
+		}
+	</script>
+</BaseLayout>
