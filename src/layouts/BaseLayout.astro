@@ -12,18 +12,20 @@ interface Props {
 	description?: string;
 	/** OGP 画像（省略時はサイト共通のデフォルト画像） */
 	ogImage?: ImageMetadata;
+	/** 動的生成した OGP 画像の URL（base 込み・`withBase()` 済み）。指定時は ogImage より優先する */
+	ogImageUrl?: string;
 	/** og:type */
 	type?: 'website' | 'article';
 }
 
-const { title, description = SITE_DESCRIPTION, ogImage = ogDefault, type = 'website' } = Astro.props;
+const { title, description = SITE_DESCRIPTION, ogImage = ogDefault, ogImageUrl, type = 'website' } = Astro.props;
 const pageTitle = title ? `${title} | ${SITE_TITLE}` : SITE_TITLE;
 
 // 絶対 URL は astro.config.mjs の site を基準にする（Astro.url.pathname と画像の src は base 込み）
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const rssUrl = new URL(withBase('/rss.xml'), Astro.site);
 const og = await getImage({ src: ogImage, width: 1200, height: 630, format: 'jpg' });
-const ogImageUrl = new URL(og.src, Astro.site);
+const resolvedOgImageUrl = ogImageUrl ? new URL(ogImageUrl, Astro.site) : new URL(og.src, Astro.site);
 
 // サイト内リンク（base 付き）
 const homeHref = withBase('/');
@@ -72,7 +74,7 @@ const navLinkClass =
 		<meta property="og:title" content={title ?? SITE_TITLE} />
 		<meta property="og:description" content={description} />
 		<meta property="og:url" content={canonical} />
-		<meta property="og:image" content={ogImageUrl} />
+		<meta property="og:image" content={resolvedOgImageUrl} />
 		<meta property="og:image:width" content="1200" />
 		<meta property="og:image:height" content="630" />
 
@@ -80,7 +82,7 @@ const navLinkClass =
 		<meta name="twitter:card" content="summary_large_image" />
 		<meta name="twitter:title" content={title ?? SITE_TITLE} />
 		<meta name="twitter:description" content={description} />
-		<meta name="twitter:image" content={ogImageUrl} />
+		<meta name="twitter:image" content={resolvedOgImageUrl} />
 	</head>
 	<body class="flex min-h-dvh flex-col bg-surface text-ink antialiased">
 		<!-- 暖簾のような深い赤のヘッダー。下端に鶏油色のライン -->

@@ -69,6 +69,23 @@ const homeHref = withBase('/');
 	</section>
 
 	{
+		pins.length > 0 && (
+			<div class="mb-4 flex flex-wrap items-center gap-3">
+				<button
+					type="button"
+					data-geo-button
+					class="inline-flex items-center gap-2 rounded-full border border-line-strong bg-surface-raised px-4 py-2 text-sm font-semibold text-ink transition hover:border-brand-400 hover:text-brand-fg"
+				>
+					📍 現在地から近いお店を探す
+				</button>
+				<p data-geo-status role="status" aria-live="polite" class="text-sm text-ink-muted" />
+			</div>
+		)
+	}
+
+	<ol data-geo-results hidden class="mb-4 flex flex-col gap-2" />
+
+	{
 		pins.length > 0 ? (
 			<div
 				id="ramen-map"
@@ -117,6 +134,79 @@ const homeHref = withBase('/');
 			if (pins.length > 1) {
 				map.fitBounds(pins.map((pin) => [pin.lat, pin.lng]) as [number, number][], { padding: [32, 32] });
 			}
+
+			// 現在地から近いお店を探す（Geolocation API + 距離計算はすべて Vanilla JS）
+			const geoButton = document.querySelector<HTMLButtonElement>('[data-geo-button]');
+			const geoStatus = document.querySelector<HTMLElement>('[data-geo-status]');
+			const geoResults = document.querySelector<HTMLOListElement>('[data-geo-results]');
+
+			function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+				const R = 6371;
+				const dLat = ((lat2 - lat1) * Math.PI) / 180;
+				const dLng = ((lng2 - lng1) * Math.PI) / 180;
+				const a =
+					Math.sin(dLat / 2) ** 2 +
+					Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+				return 2 * R * Math.asin(Math.sqrt(a));
+			}
+
+			geoButton?.addEventListener('click', () => {
+				if (!navigator.geolocation) {
+					if (geoStatus) geoStatus.textContent = 'この端末では現在地を取得できません。';
+					return;
+				}
+				if (geoStatus) geoStatus.textContent = '現在地を取得中…';
+
+				navigator.geolocation.getCurrentPosition(
+					(position) => {
+						const { latitude, longitude } = position.coords;
+						if (geoStatus) geoStatus.textContent = '';
+
+						map.setView([latitude, longitude], 14);
+						L.marker([latitude, longitude], {
+							icon: L.divIcon({
+								className: '',
+								html: '<span style="display:block;width:16px;height:16px;border-radius:9999px;background:#2563eb;border:3px solid #fff;box-shadow:0 0 0 2px rgba(37,99,235,.45);"></span>',
+								iconSize: [16, 16],
+							}),
+						})
+							.addTo(map)
+							.bindPopup('現在地');
+
+						const nearby = pins
+							.map((pin) => ({ ...pin, distanceKm: haversineKm(latitude, longitude, pin.lat, pin.lng) }))
+							.sort((a, b) => a.distanceKm - b.distanceKm)
+							.slice(0, 3);
+
+						if (geoResults) {
+							geoResults.hidden = false;
+							geoResults.innerHTML = '';
+							for (const pin of nearby) {
+								const li = document.createElement('li');
+								const a = document.createElement('a');
+								a.href = pin.href;
+								a.className =
+									'flex items-center justify-between gap-3 rounded-xl border border-line bg-surface-raised px-4 py-3 shadow-sm transition hover:border-brand-300 hover:shadow-md';
+
+								const nameSpan = document.createElement('span');
+								nameSpan.className = 'font-bold text-ink';
+								nameSpan.textContent = pin.shopName;
+
+								const distSpan = document.createElement('span');
+								distSpan.className = 'shrink-0 text-sm font-semibold text-brand-fg';
+								distSpan.textContent = `${pin.distanceKm.toFixed(1)} km`;
+
+								a.append(nameSpan, distSpan);
+								li.appendChild(a);
+								geoResults.appendChild(li);
+							}
+						}
+					},
+					() => {
+						if (geoStatus) geoStatus.textContent = '現在地を取得できませんでした（位置情報の利用を許可してください）。';
+					},
+				);
+			});
 		}
 	</script>
 </BaseLayout>
