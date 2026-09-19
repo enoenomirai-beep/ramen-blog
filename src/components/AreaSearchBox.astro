@@ -1,14 +1,16 @@
 ---
 /**
- * エリア別ページ上部の近接駅対応インクリメンタルサーチ。
+ * エリア別ページ上部の近接駅・沿線対応インクリメンタルサーチ。
  *
  * 記事ごとに「同じグループ（徒歩圏内）に属する駅名一覧」を location-map.ts の
  * getGroupStations() で事前計算して埋め込み、クライアント側ではその中のどれかに
  * 入力値が部分一致すれば表示する（Vanilla JS）。
  * グループの駅一覧はどちらの記事も同じなので、双方向にヒットする
  * （「秋葉原」で検索しても「末広町」で検索しても、お互いの記事が出る）。
+ * 同様に、その駅を通る鉄道路線名（getLines()）も検索対象にしているので、
+ * 「山手線」「つくばエクスプレス」のような沿線名でもヒットする。
  */
-import { getGroupStations, getLocationInfo } from '../lib/location-map';
+import { getGroupStations, getLines, getLocationInfo } from '../lib/location-map';
 import type { Post } from '../lib/posts';
 import PostListItem from './PostListItem.astro';
 
@@ -38,7 +40,7 @@ const { posts } = Astro.props;
 			type="search"
 			inputmode="search"
 			autocomplete="off"
-			placeholder="駅名・エリア名で検索（例: 秋葉原 → 近くの末広町もまとめてヒット）"
+			placeholder="駅名・エリア名・沿線名で検索（例: 秋葉原、山手線）"
 			class="w-full rounded-full border border-line-strong bg-surface-raised py-2.5 pr-4 pl-10 text-sm font-medium text-ink placeholder:text-ink-faint hover:border-brand-400 focus:border-brand-500"
 			data-area-search-input
 		/>
@@ -54,11 +56,14 @@ const { posts } = Astro.props;
 					const info = getLocationInfo(post.data.location);
 					// 同じグループ（徒歩圏内）の駅名一覧。駅名に "|" は使わない前提の区切り文字
 					const groupStations = getGroupStations(post.data.location).join('|');
+					// その駅を通る鉄道路線名（「山手線」などの沿線名でも検索できるようにする）
+					const lines = getLines(post.data.location).join('|');
 					return (
 						<li
 							data-area-search-item
 							data-location={post.data.location}
 							data-group-stations={groupStations}
+							data-lines={lines}
 							data-prefecture={info.prefecture}
 						>
 							<PostListItem post={post} />
@@ -94,10 +99,12 @@ const { posts } = Astro.props;
 			let visible = 0;
 			for (const item of items) {
 				const d = item.dataset;
-				// 同じグループの駅名のどれか、または都道府県に部分一致すればヒット（双方向）
+				// 同じグループの駅名・沿線名のどれか、または都道府県に部分一致すればヒット（双方向）
 				const stations = (d.groupStations ?? '').split('|');
+				const lines = (d.lines ?? '').split('|');
 				const match =
 					stations.some((station) => station.toLowerCase().includes(query)) ||
+					lines.some((line) => line.toLowerCase().includes(query)) ||
 					(d.prefecture ?? '').toLowerCase().includes(query);
 				item.hidden = !match;
 				if (match) visible++;

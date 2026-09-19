@@ -1,5 +1,7 @@
 # build output
 dist/
+# vite-pwa dev-mode service worker output
+dev-dist/
 # generated types
 .astro/
 # local dev-server config for Claude desktop (machine-specific)
