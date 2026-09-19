@@ -1,6 +1,6 @@
 # らーめん食べ歩きログ — 現状ブリーフ（他の AI に渡す用）
 
-最終更新: 2026-09-19（ラーメンマップ・今日の一杯ガチャ・訪問回数バッジ・ランキング・特徴タグを追加。PR 作成中）
+最終更新: 2026-09-20（動的 OGP 画像・ラーメン草カレンダー・現在地検索・コメント欄（Giscus）を追加。PR 作成中）
 
 このファイルは、プロジェクトの現状を **別の AI（Gemini など）に共有して次の指示（プロンプト）を考えてもらう**ためのまとめです。
 実装は Claude Code が行い、変更のたびにこのファイルも更新します。
@@ -18,9 +18,9 @@
 | 領域 | 内容 |
 |---|---|
 | 記事 | Markdown（`src/content/posts/*.md`）。フロントマター: `title` / `date` / `shop_name` / `style`（系統）/ `location` / `rating`（1〜5、0.1 刻み）/ `image` / `image_alt` / `description` / `menu` / `price` / `tags` / `map_url` / `business_hours` / `nearest_station` / `pickup` / `visits`（訪問回数、既定 1）/ `features`（特徴タグの配列）/ `draft` |
-| トップ | **今日の一杯ガチャ**（🎲 ボタンを押すと公開済み記事からランダムに 1 件選んで移動。Vanilla JS）→ **殿堂入りピックアップ**（`PickupPosts`。`pickup: true` の記事を 👑 バッジ付きの目立つカードで上部に表示、無ければ非表示）→ 左に写真・右に店舗情報の**横型リスト**（スマホは縦積み）。系統タグ・場所・評価（★n 以上）で絞り込み、新しい順／古い順／評価順で並び替え。条件は URL クエリに同期。カードには `visits` が 2 以上のとき「🔥 訪問n回」バッジ、`features` があればバッジを表示 |
-| 記事ページ | **パンくずリスト**（`Breadcrumbs`。トップ／都道府県／エリアグループ／店名の階層リンク＋ BreadcrumbList の JSON-LD）、店名を主役にしたヘッダー、星評価（端数ぶん部分塗り）＋ `visits` が 2 以上のとき「🔥 訪問回数：n回」バッジ、店舗情報テーブル（`map_url` があれば「場所」の横に「📍 地図を見る」の外部リンク、`nearest_station` / `business_hours` があれば行を追加。どれも任意項目）、写真、本文（h2 は太い左ライン＋下線、h3 はオレンジの下線）、目次（h2/h3 から自動生成・折りたたみ可）。**複数写真ギャラリー**（`PhotoGallery` コンポーネント。MDX 記事の本文中に置ける。スマホ 1 列／PC 2 列、クリックで Lightbox 拡大表示）。本文の下に**SNS シェア＆ URL コピー**（`ShareButtons`。X への投稿リンク＋クリップボードコピー、コピー後は「コピーしました」トースト）と**関連記事**（`RelatedPosts`。同じ系統またはエリアグループの記事を評価順に最大 4 件）、その下に前後記事ナビ。`features` は系統・場所バッジの並びに追加表示 |
-| ラーメンマップ | `/map/`。Leaflet（CDN の UMD 版・unpkg、OpenStreetMap タイル）で全記事をピン留め。位置は `location-map.ts` の `AREA_GROUPS` に追加した各エリアの代表座標（`lat`/`lng`。駅の目安で店舗の正確な位置ではない）で、同じエリアの記事は重ならないよう記事ごとに少しずらす。ピンをタップすると店名・系統・評価のポップアップが出て、記事へのリンクがある |
+| トップ | **今日の一杯ガチャ**（🎲 ボタンを押すと公開済み記事からランダムに 1 件選んで移動。Vanilla JS）→ **殿堂入りピックアップ**（`PickupPosts`。`pickup: true` の記事を 👑 バッジ付きの目立つカードで上部に表示、無ければ非表示）→ **ラーメン草カレンダー**（`ContributionCalendar`。GitHub の Contributions 風に、過去 1 年分の日付マスを描画し記事がある日をアクセントカラーで塗る。マスにホバーすると店名がネイティブ title で出る。JS 不要）→ 左に写真・右に店舗情報の**横型リスト**（スマホは縦積み）。系統タグ・場所・評価（★n 以上）で絞り込み、新しい順／古い順／評価順で並び替え。条件は URL クエリに同期。カードには `visits` が 2 以上のとき「🔥 訪問n回」バッジ、`features` があればバッジを表示 |
+| 記事ページ | **パンくずリスト**（`Breadcrumbs`。トップ／都道府県／エリアグループ／店名の階層リンク＋ BreadcrumbList の JSON-LD）、店名を主役にしたヘッダー、星評価（端数ぶん部分塗り）＋ `visits` が 2 以上のとき「🔥 訪問回数：n回」バッジ、店舗情報テーブル（`map_url` があれば「場所」の横に「📍 地図を見る」の外部リンク、`nearest_station` / `business_hours` があれば行を追加。どれも任意項目）、**動的 OGP 画像**（`src/pages/og/[slug].png.ts`。店名・評価（★）・系統を暖色グラデーションに重ねてビルド時に生成する 1200x630 の PNG。`og:image` / `twitter:image` が指す）、写真、本文（h2 は太い左ライン＋下線、h3 はオレンジの下線）、目次（h2/h3 から自動生成・折りたたみ可）。**複数写真ギャラリー**（`PhotoGallery` コンポーネント。MDX 記事の本文中に置ける。スマホ 1 列／PC 2 列、クリックで Lightbox 拡大表示）。本文の下に**SNS シェア＆ URL コピー**（`ShareButtons`。X への投稿リンク＋クリップボードコピー、コピー後は「コピーしました」トースト）と**関連記事**（`RelatedPosts`。同じ系統またはエリアグループの記事を評価順に最大 4 件）と**コメント欄**（`Comments`。Giscus/GitHub Discussions。`data-repo-id` / `data-category-id` はプレースホルダーで、https://giscus.app で発行される実際の値への置き換えが必要）、その下に前後記事ナビ。`features` は系統・場所バッジの並びに追加表示 |
+| ラーメンマップ | `/map/`。Leaflet（CDN の UMD 版・unpkg、OpenStreetMap タイル）で全記事をピン留め。位置は `location-map.ts` の `AREA_GROUPS` に追加した各エリアの代表座標（`lat`/`lng`。駅の目安で店舗の正確な位置ではない）で、同じエリアの記事は重ならないよう記事ごとに少しずらす。ピンをタップすると店名・系統・評価のポップアップが出て、記事へのリンクがある。**「📍 現在地から近いお店を探す」**ボタンで `navigator.geolocation` から現在地を取得し、Haversine 距離で近い順に 3 件リスト表示＋地図の中心を現在地に移動 |
 | マイベスト・ランキング | `/ranking/`。全記事を評価（`rating`）の降順で並べ、1〜3 位に 👑🥈🥉 のアイコンを表示 |
 | 系統別・エリア別・タグ別 | `/styles/`・`/locations/`・`/tags/`（一覧）と `/styles/家系/`・`/locations/秋葉原/`・`/tags/豚骨醤油/` のような項目ごとの一覧。フロントマターの `style` / `location` / `tags` から自動生成。ヘッダー・フッターのナビと記事のバッジ／タグからたどれる |
 | About | `/about/`（`src/pages/about/index.astro`、固定ページ）。ブログの趣旨と評価基準（★の目安）のダミーテキスト。ヘッダー・フッターのナビに追加済み |
@@ -43,8 +43,9 @@
 - **色はテーマトークンで指定**（`bg-surface` / `text-ink` / `border-line` / `text-brand-fg` / バッジ用 `bg-chip-brand` など、`src/styles/global.css`）。ライト／ダークはトークンの値が切り替わる仕組みなので、`dark:` を個別に書かない
 - サブパス配信（`/ramen-blog/`）なので、サイト内リンクは `withBase()` を通す
 - 記事データの取得は `src/lib/posts.ts` の `getPublishedPosts()` に統一
-- 主なコンポーネント: `PostListItem`（一覧の 1 行）/ `StarRating`（星）/ `PostFilters`（絞り込み）/ `TermPosts`・`TermCard`（系統／エリア／タグ別ページ）/ `AreaSearchBox`（エリアの近接駅検索）/ `PhotoGallery`（記事本文の複数写真・Lightbox）/ `Breadcrumbs`（パンくず＋ JSON-LD）/ `RelatedPosts`（関連記事）/ `PickupPosts`（殿堂入りピックアップ）/ `ShareButtons`（SNS シェア＆ URL コピー）/ `TableOfContents` / `PostNav` / `ThemeToggle`。ページ: `map.astro`（ラーメンマップ）/ `ranking.astro`（マイベスト・ランキング）
+- 主なコンポーネント: `PostListItem`（一覧の 1 行）/ `StarRating`（星）/ `PostFilters`（絞り込み）/ `TermPosts`・`TermCard`（系統／エリア／タグ別ページ）/ `AreaSearchBox`（エリアの近接駅検索）/ `PhotoGallery`（記事本文の複数写真・Lightbox）/ `Breadcrumbs`（パンくず＋ JSON-LD）/ `RelatedPosts`（関連記事）/ `PickupPosts`（殿堂入りピックアップ）/ `ContributionCalendar`（ラーメン草カレンダー）/ `ShareButtons`（SNS シェア＆ URL コピー）/ `Comments`（Giscus コメント欄）/ `TableOfContents` / `PostNav` / `ThemeToggle`。ページ: `map.astro`（ラーメンマップ）/ `ranking.astro`（マイベスト・ランキング）/ `og/[slug].png.ts`（動的 OGP 画像）
 - 地図のピン座標は `location-map.ts` の `AREA_GROUPS` 各エントリの `lat`/`lng`（エリアの代表座標）。`getCoordinates(location)` で引く。辞書に無い location は座標が無いため地図には出ない（ビルドは失敗しない）
+- 動的 OGP 画像は satori（HTML/CSS 風オブジェクト → SVG）+ `@resvg/resvg-js`（SVG → PNG）+ `@fontsource/noto-sans-jp`（日本語フォント、`node_modules` から直接 `fs.readFile`）をビルド時に使う。★ 記号はフォントに字形が無いので `StarRating.astro` と同じ SVG パスで描画し、絵文字は使わない（Noto Sans JP に絵文字グリフが無く tofu 文字化けするため）
 - 記事本文に複数の写真を並べたいときは、記事ファイルを `.mdx`（`.md` ではなく）にして `import PhotoGallery from '../../components/PhotoGallery.astro'` → `<PhotoGallery photos={[{ src, alt, caption? }, ...]} />` を本文中に置く。`src` は `src/assets/posts/` からインポートした画像（`npm run photo` で取り込んだもの。最適化される）でも、Unsplash などのリモート URL 文字列でもよい
 - エリア（駅）に紐づく都道府県・近接駅グループは `src/lib/location-map.ts` の `AREA_GROUPS`（グループ名がキー、値が `{ prefecture, stations }`）で管理。新しい `location` を使う記事を追加したら、該当するグループの `stations` に駅名を足す（未登録でもビルドは失敗しない）。`getLocationInfo()` / `getGroupStations()` で駅名から逆引きする
 - 詳細な規約は `CLAUDE.md`、使い方は `README.md`、作業履歴は `docs/HANDOFF.md`
@@ -61,7 +62,7 @@
 
 - 記事の全文検索（店名・本文などのキーワード。エリア〔駅〕検索は実装済み）
 - 最寄駅の複数指定、営業時間の曜日別対応など、店舗情報のさらなる拡充（地図リンク・営業時間・最寄り駅は実装済み）
-- OGP 画像の自動生成（店名・評価入り）
+- Giscus のコメント欄は Discussions 有効化＋アプリインストールが未完了（`data-repo-id` / `data-category-id` がプレースホルダーのまま。https://giscus.app で発行して置き換えが必要）
 - アクセス解析、独自ドメイン
 
 ## 7. Claude への指示の書き方のコツ

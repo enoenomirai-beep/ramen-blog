@@ -1,6 +1,6 @@
 # 作業引き継ぎメモ
 
-最終更新: 2026-09-19（Claude Code セッションからの引き継ぎ）
+最終更新: 2026-09-20（Claude Code セッションからの引き継ぎ）
 
 ## プロジェクト概要
 
@@ -59,6 +59,15 @@ Astro 7.3 + Tailwind CSS 4 + MDX。記事は Content Collections（`src/content/
   - 動作確認用に iekei Tokyo 王道家へ `visits: 3` / `features: ["通し営業","ライス無料"]`、武将家外伝へ `features: ["深夜営業"]` を設定
   - 色はすべて既存のテーマトークン・固定色（`brand-*`）のみ使用（`dark:` 不使用）。リンクは `withBase()` 経由。記事取得は `getPublishedPosts()` に統一。`map.astro` / `ranking.astro` は Astro の directory build format によりそれぞれ `/map/` `/ranking/` に対応（17 ページ）
   - 5 機能ともローカルで動作確認済み。スキップした機能は無し
+- [x] 動的 OGP 画像・ラーメン草カレンダー・現在地から探す・コメント欄（Giscus）（2026-09-20、ユーザー外出中に自律実装）
+  - `npm install satori @resvg/resvg-js @fontsource/noto-sans-jp` を追加（devDependencies ではなく dependencies。ビルド時に使うため）
+  - `src/pages/og/[slug].png.ts`: 記事ごとの OGP 画像（1200x630）をビルド時に静的生成する API エンドポイント。satori で店名・評価・系統を暖色グラデーションに重ねた SVG を作り、`@resvg/resvg-js` の `Resvg` で PNG化。フォントは `@fontsource/noto-sans-jp` の `files/noto-sans-jp-japanese-{400,700}-normal.woff` を `fs.readFile` で直接読む（`japanese` サブセットでないと大半の漢字が無い）。★ は文字ではなく `StarRating.astro` と同じ SVG パスで描く（Noto Sans JP に ★ や 🍜 の字形が無く、文字だと tofu（□×）になったため）。`BaseLayout.astro` に `ogImageUrl?: string` prop を追加（`ogImage: ImageMetadata` より優先）。`[id].astro` は `ogImageUrl={withBase(\`/og/${post.id}.png\`)}` を渡す
+  - `src/components/ContributionCalendar.astro`: 「ラーメン草」カレンダー。過去 53 週（約 1 年）を日曜始まりの週×7日のマスで描画。記事がある日を `bg-accent-400`（1 件）/ `bg-accent-600`（2 件以上）で塗る。ホバーの店名表示はネイティブの `title` 属性（JS 不要）。横に長いので `overflow-x-auto` でスマホは横スクロール。トップページの `PickupPosts` の下、`PostFilters` の上に設置
+  - `src/pages/map.astro`: 「📍 現在地から近いお店を探す」ボタンを追加。`navigator.geolocation.getCurrentPosition()` で現在地を取得し、Haversine 公式で全ピンとの距離（km）を計算、近い順に 3 件を `<ol data-geo-results>` にカードとして表示。地図は現在地に `setView()`、現在地に青い `L.divIcon` マーカーを追加。権限拒否・非対応時は `data-geo-status` にエラー文を表示。ロジックは既存の Leaflet 初期化スクリプトに同居させ、`map` / `L` / `pins` をそのまま参照
+  - `src/components/Comments.astro`: Giscus（GitHub Discussions）のコメント欄。`data-repo="enoenomirai-beep/ramen-blog"` は実際の値、`data-repo-id` / `data-category-id` はプレースホルダー（`REPLACE_WITH_GISCUS_REPO_ID` 等）。giscus の `<script>` を JS で動的に生成し、初期 `data-theme` をそのページの `document.documentElement.dataset.theme` から設定、`MutationObserver` でダークモード切り替えを giscus 側にも `postMessage` で同期。`[id].astro` の `RelatedPosts` の下・`PostNav` の上に設置。**現状は giscus 未設定（`giscus is not installed on this repository` というエラーが出る）ので、https://giscus.app でこのリポジトリの Discussions を有効化し、giscus app をインストールしてから発行される実際の `repo-id` / `category-id` に置き換える必要がある**
+  - 開発中、先に走っていた `astro dev` の長時間プロセスが `npm install` 後に sharp を見失う（`MissingSharp`）現象に遭遇したが、`preview_stop` → `preview_start` で再起動すると解消した（`npm run build` の毎回フレッシュなプロセスでは常に成功していたので、コード側の問題ではなく起動済みプロセスの node_modules スナップショットが古くなっていただけ）
+  - 色はすべて既存のテーマトークン・固定色（`accent-*` など）のみ使用（`dark:` 不使用）。リンクは `withBase()` 経由。記事取得は `getPublishedPosts()` に統一。ルーティング・ページ数は変わらず（17 ページ、`/og/*.png` は API エンドポイントなので `astro build` のページ数カウントに含まれない）
+  - 4 機能ともローカルで動作確認済み。スキップした機能は無し
 - [x] **公開済み（2026-09-18）**: https://enoenomirai-beep.github.io/ramen-blog/
   - リポジトリ: https://github.com/enoenomirai-beep/ramen-blog（`main`、Pages の Source = GitHub Actions）
   - 本番で確認済み: トップ / 記事 3 ページ / `rss.xml` / `sitemap-index.xml` / favicon / OGP・canonical の URL / 画像の読み込み。コンソールエラーなし
@@ -72,6 +81,7 @@ Astro 7.3 + Tailwind CSS 4 + MDX。記事は Content Collections（`src/content/
 ## そのほかの次の候補
 
 - 実際の訪問記事を書き続ける（記事の作り方は README「記事の追加方法」。ユーザーからはメモ＋写真パスを受け取って Claude が下書き → PR にする流れが定着）
+- Giscus コメント欄の本番設定: https://giscus.app でこのリポジトリ（`enoenomirai-beep/ramen-blog`）の Discussions を有効化し、giscus app をインストールして発行される `repo-id` / `category-id` を `src/components/Comments.astro` のプレースホルダーに反映する
 
 ## 注意事項
 

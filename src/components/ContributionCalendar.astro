@@ -1,0 +1,98 @@
+---
+/**
+ * 「ラーメン草」カレンダー（GitHub の Contributions グラフ風）。
+ *
+ * 過去約 1 年分の日付マスを描画し、記事の `date` がある日をアクセントカラーで
+ * 塗る。マスにホバーすると、その日に食べた店名がネイティブの title 属性で
+ * 出る（JS 不要）。横に長いので、スマホでは横スクロールできるようにする。
+ */
+import { formatDate } from '../consts';
+import { getPublishedPosts } from '../lib/posts';
+
+const posts = await getPublishedPosts();
+
+// 日付（yyyy-mm-dd, UTC 基準）→ その日の記事
+const postsByDate = new Map<string, { shopName: string }[]>();
+for (const post of posts) {
+	const key = post.data.date.toISOString().slice(0, 10);
+	const list = postsByDate.get(key);
+	const entry = { shopName: post.data.shop_name };
+	if (list) list.push(entry);
+	else postsByDate.set(key, [entry]);
+}
+
+const WEEKS = 53;
+const today = new Date();
+today.setUTCHours(0, 0, 0, 0);
+
+const start = new Date(today);
+start.setUTCDate(start.getUTCDate() - (WEEKS * 7 - 1));
+start.setUTCDate(start.getUTCDate() - start.getUTCDay()); // 直近の日曜まで遡って週の先頭を揃える
+
+interface Day {
+	key: string;
+	count: number;
+	shopNames: string[];
+}
+
+const days: Day[] = [];
+for (const cursor = new Date(start); cursor <= today; cursor.setUTCDate(cursor.getUTCDate() + 1)) {
+	const key = cursor.toISOString().slice(0, 10);
+	const dayPosts = postsByDate.get(key) ?? [];
+	days.push({ key, count: dayPosts.length, shopNames: dayPosts.map((p) => p.shopName) });
+}
+
+// 7 日ごとに 1 週（1 列）にする。日曜始まりなので、常にきれいに 7 個ずつ割れる
+const weeks: Day[][] = [];
+for (let i = 0; i < days.length; i += 7) {
+	weeks.push(days.slice(i, i + 7));
+}
+
+function cellClass(count: number): string {
+	if (count === 0) return 'bg-surface-sunken border border-line';
+	if (count === 1) return 'bg-accent-400';
+	return 'bg-accent-600';
+}
+
+function tooltip(day: Day): string {
+	const dateLabel = formatDate(new Date(day.key));
+	return day.count > 0 ? `${dateLabel}：${day.shopNames.join('、')}` : `${dateLabel}：記事なし`;
+}
+
+const totalCount = posts.length;
+---
+
+<section class="mb-6 rounded-xl border border-line bg-surface-raised p-4 shadow-sm sm:mb-8 sm:p-5">
+	<div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+		<h2 class="text-sm font-bold text-ink-faint">🌱 ラーメン草（過去 1 年）</h2>
+		<p class="text-xs text-ink-muted">
+			この 1 年で <span class="font-bold text-ink">{totalCount}</span> 件の記事
+		</p>
+	</div>
+
+	<div class="-mx-1 overflow-x-auto px-1 pb-1">
+		<div class="inline-flex gap-1">
+			{
+				weeks.map((week) => (
+					<div class="flex flex-col gap-1">
+						{week.map((day) => (
+							<div
+								class:list={['size-2.5 rounded-sm sm:size-3', cellClass(day.count)]}
+								title={tooltip(day)}
+								aria-hidden="true"
+							/>
+						))}
+					</div>
+				))
+			}
+		</div>
+	</div>
+
+	<div class="mt-3 flex items-center justify-end gap-1.5 text-[11px] text-ink-faint">
+		<span>少ない</span>
+		<span class="size-2.5 rounded-sm bg-surface-sunken border border-line" />
+		<span class="size-2.5 rounded-sm bg-accent-400" />
+		<span class="size-2.5 rounded-sm bg-accent-600" />
+		<span>多い</span>
+	</div>
+</section>

@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import ContributionCalendar from '../components/ContributionCalendar.astro';
 import PickupPosts from '../components/PickupPosts.astro';
 import PostListItem from '../components/PostListItem.astro';
 import PostFilters from '../components/PostFilters.astro';
@@ -54,6 +55,8 @@ const gachaUrls = posts.map((post) => withBase(`/posts/${post.id}/`));
 	}
 
 	<PickupPosts />
+
+	<ContributionCalendar />
 
 	<section class="mb-5 rounded-xl border border-line bg-surface-raised p-4 shadow-sm sm:p-5">
 		<PostFilters styles={styles} locations={locations} total={posts.length} />

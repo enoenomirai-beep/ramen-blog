@@ -3,6 +3,7 @@ import { Image } from 'astro:assets';
 import { render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import Comments from '../../components/Comments.astro';
 import RelatedPosts from '../../components/RelatedPosts.astro';
 import ShareButtons from '../../components/ShareButtons.astro';
 import StarRating from '../../components/StarRating.astro';
@@ -65,9 +66,11 @@ if (price !== undefined) meta.push({ label: '価格', value: `¥${price.toLocale
 const homeHref = withBase('/');
 const styleHref = withBase(stylePath(style));
 const locationHref = withBase(locationPath(location));
+// 店名・評価・系統を重ねた動的 OGP 画像（src/pages/og/[slug].png.ts）
+const ogImageUrl = withBase(`/og/${post.id}.png`);
 ---
 
-<BaseLayout title={title} description={description} ogImage={image} type="article">
+<BaseLayout title={title} description={description} ogImageUrl={ogImageUrl} type="article">
 	<Breadcrumbs post={post} />
 
 	<article class="mx-auto max-w-3xl">
@@ -211,6 +214,8 @@ const locationHref = withBase(locationPath(location));
 		</section>
 
 		<RelatedPosts currentPost={post} />
+
+		<Comments />
 
 		<footer class="mt-12 border-t border-line pt-6">
 			<PostNav prev={prev} next={next} />
