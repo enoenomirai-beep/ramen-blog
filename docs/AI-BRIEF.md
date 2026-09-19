@@ -1,6 +1,6 @@
 # らーめん食べ歩きログ — 現状ブリーフ（他の AI に渡す用）
 
-最終更新: 2026-09-20（記事詳細ページに Review 構造化データ（JSON-LD）を追加。PR 作成中）
+最終更新: 2026-09-20（MDX 記事用のアフィリエイト・広告カード `AffiliateCard` を追加。PR 作成中）
 
 このファイルは、プロジェクトの現状を **別の AI（Gemini など）に共有して次の指示（プロンプト）を考えてもらう**ためのまとめです。
 実装は Claude Code が行い、変更のたびにこのファイルも更新します。
@@ -31,6 +31,7 @@
 | エリア別ナビ・近接駅・沿線検索 | `/locations/` は `src/lib/location-map.ts`（**エリアグループ名 → { 都道府県, 徒歩圏内の駅一覧（各駅に鉄道路線名 `lines` 付き） }** の辞書。秋葉原・神田／神保町／新宿・代々木／池袋／高田馬場／渋谷／上野・御徒町／新橋／東京・大手町／銀座／中野／高円寺／荻窪／蒲田など東京 23 区の主要エリアを事前登録）を使って**都道府県ごとに折りたたみ表示**、その下に駅（location）一覧。ページ上部の検索窓（`AreaSearchBox`）は駅名・路線名を入れると同じグループの他の駅やその路線が通る駅の記事もまとめてヒットする**双方向**のインクリメンタルサーチ（「秋葉原」でも「末広町」でも、「山手線」でも、お互いの記事が出る）。辞書に無い location は自動で「その他」県・単独グループにフォールバックするので、新しい記事を追加してビルドするだけで反映される |
 | 見た目 | 暖色パレット（暖簾の深い赤のヘッダー、鶏油のオレンジ、琥珀の星、オフホワイト背景、ダークグレー文字）。**ダークモード**（OS 設定に従い、ヘッダーのボタンで切り替え・保存） |
 | 写真 | `npm run photo -- <写真> <スラッグ>` で取り込み（iPhone の HEIC 可、縮小・EXIF/GPS 削除）。写真が無い記事には Unsplash のイメージ画像を「イメージ」ラベル付きで表示 |
+| アフィリエイト・広告カード | `AffiliateCard.astro`。MDX 記事の本文中に置ける、収益化用の商品紹介カード（`url` / `imageUrl` / `title` / `description` / `buttonText` を props で渡す）。カード全体が 1 つのリンクで、hover でカード全体がわずかに浮き上がり、CTA ボタン部分はさらに大きく浮き上がる（`group-hover:-translate-y-1`）。画像左上に景品表示法対策の「PR」ラベル、リンクには `rel="sponsored"` を付与（Google 推奨のアフィリエイトリンクの書き方） |
 | その他 | RSS（`/rss.xml`）、sitemap、OGP / Twitter カード、レスポンシブ（375px 確認済み） |
 
 ## 3. いまの記事
@@ -47,7 +48,8 @@
 - **色はテーマトークンで指定**（`bg-surface` / `text-ink` / `border-line` / `text-brand-fg` / バッジ用 `bg-chip-brand` など、`src/styles/global.css`）。ライト／ダークはトークンの値が切り替わる仕組みなので、`dark:` を個別に書かない
 - サブパス配信（`/ramen-blog/`）なので、サイト内リンクは `withBase()` を通す
 - 記事データの取得は `src/lib/posts.ts` の `getPublishedPosts()` に統一
-- 主なコンポーネント: `PostListItem`（一覧の 1 行）/ `StarRating`（星）/ `PostFilters`（絞り込み）/ `TermPosts`・`TermCard`（系統／エリア／タグ別ページ）/ `AreaSearchBox`（エリアの近接駅・沿線検索）/ `PhotoGallery`（記事本文の複数写真・Lightbox）/ `Breadcrumbs`（パンくず＋ JSON-LD）/ `RelatedPosts`（関連記事）/ `PickupPosts`（殿堂入りピックアップ）/ `ContributionCalendar`（ラーメン草カレンダー）/ `ShareButtons`（SNS シェア＆ URL コピー）/ `Comments`（Giscus コメント欄）/ `CalorieMeter`（免罪符メーター）/ `TableOfContents` / `PostNav` / `ThemeToggle`。ページ: `map.astro`（ラーメンマップ）/ `ranking.astro`（マイベスト・ランキング）/ `dashboard.astro`（出費ダッシュボード）/ `og/[slug].png.ts`（動的 OGP 画像）
+- 主なコンポーネント: `PostListItem`（一覧の 1 行）/ `StarRating`（星）/ `PostFilters`（絞り込み）/ `TermPosts`・`TermCard`（系統／エリア／タグ別ページ）/ `AreaSearchBox`（エリアの近接駅・沿線検索）/ `PhotoGallery`（記事本文の複数写真・Lightbox）/ `AffiliateCard`（記事本文のアフィリエイト・広告カード）/ `Breadcrumbs`（パンくず＋ JSON-LD）/ `RelatedPosts`（関連記事）/ `PickupPosts`（殿堂入りピックアップ）/ `ContributionCalendar`（ラーメン草カレンダー）/ `ShareButtons`（SNS シェア＆ URL コピー）/ `Comments`（Giscus コメント欄）/ `CalorieMeter`（免罪符メーター）/ `TableOfContents` / `PostNav` / `ThemeToggle`。ページ: `map.astro`（ラーメンマップ）/ `ranking.astro`（マイベスト・ランキング）/ `dashboard.astro`（出費ダッシュボード）/ `og/[slug].png.ts`（動的 OGP 画像）
+- `AffiliateCard` は `PhotoGallery` と同じく MDX 記事の本文中でしか使えない（`.md` ではなく `.mdx` にして `import AffiliateCard from '../../components/AffiliateCard.astro'` → `<AffiliateCard url="..." imageUrl="..." title="..." description="..." buttonText="..." />` を本文中に置く）。現時点ではどの記事にも実際には使っていない（サンプル記事の熊田家は 2026-09-19 に削除済みのため、レイアウト確認は一時的なテスト記事で行い、確認後に削除した）
 - 地図のピン座標は `location-map.ts` の `AREA_GROUPS` 各エントリの `lat`/`lng`（エリアの代表座標）。`getCoordinates(location)` で引く。辞書に無い location は座標が無いため地図には出ない（ビルドは失敗しない）
 - 動的 OGP 画像は satori（HTML/CSS 風オブジェクト → SVG）+ `@resvg/resvg-js`（SVG → PNG）+ `@fontsource/noto-sans-jp`（日本語フォント、`node_modules` から直接 `fs.readFile`）をビルド時に使う。★ 記号はフォントに字形が無いので `StarRating.astro` と同じ SVG パスで描画し、絵文字は使わない（Noto Sans JP に絵文字グリフが無く tofu 文字化けするため）
 - 記事本文に複数の写真を並べたいときは、記事ファイルを `.mdx`（`.md` ではなく）にして `import PhotoGallery from '../../components/PhotoGallery.astro'` → `<PhotoGallery photos={[{ src, alt, caption? }, ...]} />` を本文中に置く。`src` は `src/assets/posts/` からインポートした画像（`npm run photo` で取り込んだもの。最適化される）でも、Unsplash などのリモート URL 文字列でもよい
