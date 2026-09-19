@@ -1,0 +1,61 @@
+---
+/**
+ * MDX 記事の本文中に置く、アフィリエイト・広告用の商品紹介カード。
+ *
+ * カード全体を 1 つのリンクにして CTA ボタンだけでなく画像・タイトルもクリックできるようにし、
+ * ボタン部分はカード全体の hover と連動して浮き上がる（group-hover）。
+ * `rel="sponsored"` を付けているのは、Google がアフィリエイトリンクに推奨するマークアップのため
+ * （SEO 上、通常のリンクと区別してもらうことでペナルティを避ける）。
+ * ステマ規制（景品表示法）対策として、画像の左上に小さく「PR」ラベルを表示する。
+ */
+interface Props {
+	/** アフィリエイトリンク先の URL */
+	url: string;
+	/** 商品・サービスの画像 URL */
+	imageUrl: string;
+	/** 商品・サービス名 */
+	title: string;
+	/** 短い説明文 */
+	description: string;
+	/** CTA ボタンの文言（例: 「宅麺でこの味をお取り寄せ」） */
+	buttonText: string;
+}
+
+const { url, imageUrl, title, description, buttonText } = Astro.props;
+---
+
+<a
+	href={url}
+	target="_blank"
+	rel="sponsored noopener noreferrer"
+	class="group my-8 grid overflow-hidden rounded-2xl border border-line-strong border-t-4 border-t-accent-500 bg-surface-raised shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg sm:grid-cols-[160px_1fr]"
+>
+	<div class="relative aspect-16/10 overflow-hidden bg-surface-sunken sm:aspect-auto sm:h-full">
+		<img
+			src={imageUrl}
+			alt={title}
+			loading="lazy"
+			decoding="async"
+			class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+		/>
+		<span class="absolute top-2 left-2 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-white">
+			PR
+		</span>
+	</div>
+
+	<div class="flex flex-col gap-2 p-4 sm:p-5">
+		<p class="text-xs font-bold tracking-widest text-brand-fg uppercase">おすすめ</p>
+		<p class="text-lg leading-snug font-extrabold text-ink sm:text-xl">{title}</p>
+		<p class="text-sm leading-relaxed text-ink-muted">{description}</p>
+		<span
+			class="mt-2 inline-flex w-fit items-center gap-1.5 rounded-full bg-accent-500 px-5 py-2.5 text-sm font-bold text-white shadow transition group-hover:-translate-y-1 group-hover:bg-accent-600 group-hover:shadow-md"
+		>
+			{buttonText}
+			<svg class="size-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+				<path
+					d="M12.293 4.293a1 1 0 0 1 1.414 0l4 4a1 1 0 0 1 0 1.414l-4 4a1 1 0 0 1-1.414-1.414L14.586 11H4a1 1 0 1 1 0-2h10.586l-2.293-2.293a1 1 0 0 1 0-1.414z"
+				></path>
+			</svg>
+		</span>
+	</div>
+</a>

@@ -1,6 +1,6 @@
 # 作業引き継ぎメモ
 
-最終更新: 2026-09-20（Claude Code セッションからの引き継ぎ、記事詳細ページに Review 構造化データ（JSON-LD）を追加）
+最終更新: 2026-09-20（Claude Code セッションからの引き継ぎ、MDX 記事用のアフィリエイト・広告カード AffiliateCard を追加）
 
 ## プロジェクト概要
 
@@ -80,6 +80,12 @@ Astro 7.3 + Tailwind CSS 4 + MDX。記事は Content Collections（`src/content/
   - `src/pages/posts/[id].astro` で schema.org の `Review` を組み立てて渡す: `itemReviewed`（`Restaurant` / `shop_name`）、`reviewRating`（`Rating` / `ratingValue: rating` / `bestRating: 5` / `worstRating: 1`）、`author`（`Organization` / `SITE_TITLE`）、`datePublished`（`date` の ISO 文字列）、`name`（記事タイトル）、`reviewBody`（`description`）。検索結果に★評価のリッチリザルトが出ることを狙った SEO 対応
   - `npm run build` した `dist/posts/*/index.html` の `<head>` に正しい JSON-LD が出力されていることを Node で `JSON.parse` して確認済み（`ratingValue` が 5 / 4.3 とフロントマターの `rating` と一致）。トップページなど記事ページ以外には出力されないことも確認済み
   - 色・リンク・記事取得の変更なし（構造化データのみの追加のため）。ページ数・ルーティングは変わらず（18 ページ）
+- [x] アフィリエイト・広告カード AffiliateCard（2026-09-20、ユーザー外出中に自律実装）
+  - `src/components/AffiliateCard.astro`: MDX 記事の本文中に置ける商品紹介カード。props は `url` / `imageUrl` / `title` / `description` / `buttonText`。カード全体を 1 つの `<a>`（`rel="sponsored noopener noreferrer" target="_blank"`）にして画像・タイトルもクリック可能にし、CTA ボタン（`accent-500` の丸ボタン）は `group-hover:-translate-y-1` でカード全体の hover と連動して浮き上がる。カード自体にも `hover:-translate-y-0.5 hover:shadow-lg` を付け、上端に `accent-500` の太いアクセントボーダー。画像左上に景品表示法（ステマ規制）対策の「PR」ラベルを表示
+  - **確認方法の補足**: 指示では「サンプル記事（熊田家など）の末尾に配置して確認」とあったが、熊田家などのサンプル記事は 2026-09-19 のグルメサイト風 UI 改修時に削除済みで存在しない。そのため一時的なテスト記事（`src/content/posts/scratch-affiliate-test.mdx`）を作成し、`AffiliateCard` を配置してデスクトップ／モバイル幅・ライト／ダークモード・hover アニメーションを確認したあと、確認が済んだ時点でそのテスト記事は削除した（実際の記事には組み込んでいない。使うときは対象記事を `.mdx` にして import する）
+  - 開発中、新規コンポーネントに使った `sm:grid-cols-[160px_1fr]` などの Tailwind クラスが、稼働中の `astro dev` プロセスに反映されず 1 カラムのままになる現象に遭遇。`preview_stop` → `preview_start` で dev サーバーを再起動すると解消した（`npm run build` は毎回フレッシュなプロセスなので影響なし。過去にも似た症状〔`MissingSharp`〕があり、コード側の問題ではなく起動済みプロセスのキャッシュが古くなる dev サーバー特有の現象と判断）
+  - 色はすべて既存のテーマトークン・固定色（`accent-*` / `black/60`）のみ使用（`dark:` 不使用。ライト／ダーク両方で確認済み）。ページ数・ルーティングは変わらず（18 ページ。コンポーネント追加のみ）
+  - スキップした機能はなし
 - [x] **公開済み（2026-09-18）**: https://enoenomirai-beep.github.io/ramen-blog/
   - リポジトリ: https://github.com/enoenomirai-beep/ramen-blog（`main`、Pages の Source = GitHub Actions）
   - 本番で確認済み: トップ / 記事 3 ページ / `rss.xml` / `sitemap-index.xml` / favicon / OGP・canonical の URL / 画像の読み込み。コンソールエラーなし
