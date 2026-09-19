@@ -10,7 +10,7 @@ import ShareButtons from '../../components/ShareButtons.astro';
 import StarRating from '../../components/StarRating.astro';
 import PostNav from '../../components/PostNav.astro';
 import TableOfContents from '../../components/TableOfContents.astro';
-import { formatDate, withBase } from '../../consts';
+import { SITE_TITLE, formatDate, withBase } from '../../consts';
 import { PLACEHOLDER_ALT, placeholderImage } from '../../lib/placeholder';
 import { getPublishedPosts, locationPath, stylePath, tagPath, type Post } from '../../lib/posts';
 
@@ -69,9 +69,32 @@ const styleHref = withBase(stylePath(style));
 const locationHref = withBase(locationPath(location));
 // 店名・評価・系統を重ねた動的 OGP 画像（src/pages/og/[slug].png.ts）
 const ogImageUrl = withBase(`/og/${post.id}.png`);
+
+// 検索結果にレビューの評価（★）を出すための構造化データ（Google 推奨の Review + Restaurant）
+const structuredData = {
+	'@context': 'https://schema.org',
+	'@type': 'Review',
+	name: title,
+	reviewBody: description,
+	itemReviewed: {
+		'@type': 'Restaurant',
+		name: shop_name,
+	},
+	reviewRating: {
+		'@type': 'Rating',
+		ratingValue: rating,
+		bestRating: 5,
+		worstRating: 1,
+	},
+	author: {
+		'@type': 'Organization',
+		name: SITE_TITLE,
+	},
+	datePublished: date.toISOString(),
+};
 ---
 
-<BaseLayout title={title} description={description} ogImageUrl={ogImageUrl} type="article">
+<BaseLayout title={title} description={description} ogImageUrl={ogImageUrl} type="article" structuredData={structuredData}>
 	<Breadcrumbs post={post} />
 
 	<article class="mx-auto max-w-3xl">

@@ -1,6 +1,6 @@
 # 作業引き継ぎメモ
 
-最終更新: 2026-09-20（Claude Code セッションからの引き継ぎ、ラーメン出費ダッシュボード・PWA 化・沿線検索・免罪符メーターを追加）
+最終更新: 2026-09-20（Claude Code セッションからの引き継ぎ、記事詳細ページに Review 構造化データ（JSON-LD）を追加）
 
 ## プロジェクト概要
 
@@ -75,6 +75,11 @@ Astro 7.3 + Tailwind CSS 4 + MDX。記事は Content Collections（`src/content/
   - 免罪符メーター: `src/lib/nutrition.ts`（系統名 → 概算 kcal・PFC のハードコード辞書、未登録系統は `DEFAULT_NUTRITION` にフォールバック）と `src/components/CalorieMeter.astro`（PFCバランスのプログレスバー＋「スクワット◯時間／ランニング◯km」のユーモア換算。運動換算は固定係数 `300kcal/時間`・`70kcal/km` の概算）を新設。`posts/[id].astro` の店舗情報セクションの下に設置
   - 色はすべて既存のテーマトークン・固定色（`brand-*` / `accent-*` / `soy-*`）のみ使用（`dark:` 不使用。`soy-*` は本 PR で初めて実際に使用）。リンクは `withBase()` 経由。記事取得は `getPublishedPosts()` に統一。ページ数は 17→18（出費ダッシュボード追加分。`manifest.webmanifest` / `sw.js` は静的アセットなのでページ数に含まれない）
   - 4 機能ともローカルで動作確認済み（`astro check` 0 エラー、`npm run build` 18 ページ成功、dev サーバーでダッシュボード・免罪符メーター・沿線検索・PWA 登録を目視確認）。スキップした機能は無し（`@vite-pwa/astro` は撤去したが、手書き実装で機能自体は完成させた）
+- [x] SEO 構造化データ（JSON-LD）（2026-09-20、ユーザー外出中に自律実装）
+  - `BaseLayout.astro` に汎用の `structuredData?: Record<string, unknown>` prop を追加。渡された場合は `<head>` に `<script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />` として出力する（既存の `Breadcrumbs.astro` の `BreadcrumbList` JSON-LD と同じ書き方）
+  - `src/pages/posts/[id].astro` で schema.org の `Review` を組み立てて渡す: `itemReviewed`（`Restaurant` / `shop_name`）、`reviewRating`（`Rating` / `ratingValue: rating` / `bestRating: 5` / `worstRating: 1`）、`author`（`Organization` / `SITE_TITLE`）、`datePublished`（`date` の ISO 文字列）、`name`（記事タイトル）、`reviewBody`（`description`）。検索結果に★評価のリッチリザルトが出ることを狙った SEO 対応
+  - `npm run build` した `dist/posts/*/index.html` の `<head>` に正しい JSON-LD が出力されていることを Node で `JSON.parse` して確認済み（`ratingValue` が 5 / 4.3 とフロントマターの `rating` と一致）。トップページなど記事ページ以外には出力されないことも確認済み
+  - 色・リンク・記事取得の変更なし（構造化データのみの追加のため）。ページ数・ルーティングは変わらず（18 ページ）
 - [x] **公開済み（2026-09-18）**: https://enoenomirai-beep.github.io/ramen-blog/
   - リポジトリ: https://github.com/enoenomirai-beep/ramen-blog（`main`、Pages の Source = GitHub Actions）
   - 本番で確認済み: トップ / 記事 3 ページ / `rss.xml` / `sitemap-index.xml` / favicon / OGP・canonical の URL / 画像の読み込み。コンソールエラーなし

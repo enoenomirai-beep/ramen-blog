@@ -16,9 +16,18 @@ interface Props {
 	ogImageUrl?: string;
 	/** og:type */
 	type?: 'website' | 'article';
+	/** 検索エンジン向けの構造化データ（JSON-LD）。指定したページの <head> にそのまま出力する */
+	structuredData?: Record<string, unknown>;
 }
 
-const { title, description = SITE_DESCRIPTION, ogImage = ogDefault, ogImageUrl, type = 'website' } = Astro.props;
+const {
+	title,
+	description = SITE_DESCRIPTION,
+	ogImage = ogDefault,
+	ogImageUrl,
+	type = 'website',
+	structuredData,
+} = Astro.props;
 const pageTitle = title ? `${title} | ${SITE_TITLE}` : SITE_TITLE;
 
 // 絶対 URL は astro.config.mjs の site を基準にする（Astro.url.pathname と画像の src は base 込み）
@@ -93,6 +102,8 @@ const navLinkClass =
 		<meta name="twitter:title" content={title ?? SITE_TITLE} />
 		<meta name="twitter:description" content={description} />
 		<meta name="twitter:image" content={resolvedOgImageUrl} />
+
+		{structuredData && <script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />}
 	</head>
 	<body class="flex min-h-dvh flex-col bg-surface text-ink antialiased">
 		<!-- 暖簾のような深い赤のヘッダー。下端に鶏油色のライン -->
