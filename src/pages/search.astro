@@ -1,0 +1,121 @@
+---
+/**
+ * 記事の全文検索。
+ *
+ * AreaSearchBox.astro と同じ方式：全記事の PostListItem をあらかじめ非表示で埋め込み、
+ * 検索キーワードにマッチした記事だけ hidden を外して表示する（Vanilla JS。API 呼び出し無し）。
+ * 検索対象は店名・記事タイトル・系統・場所・タグ・特徴タグ・注文・説明文と、本文の生ソースから
+ * stripMarkdown() で見出し記号などを除いたプレーンテキスト。
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostListItem from '../components/PostListItem.astro';
+import { withBase } from '../consts';
+import { stripMarkdown } from '../lib/markdown';
+import { getPublishedPosts } from '../lib/posts';
+
+const posts = await getPublishedPosts();
+const homeHref = withBase('/');
+
+const searchItems = posts.map((post) => {
+	const { shop_name, title, style, location, tags, features, menu, description } = post.data;
+	const haystack = [shop_name, title, style, location, ...tags, ...features, menu ?? '', description ?? '', stripMarkdown(post.body ?? '')]
+		.join(' ')
+		.toLowerCase();
+	return { post, haystack };
+});
+---
+
+<BaseLayout title="記事を検索" description="店名・本文・系統・エリア・タグなどのキーワードで記事を検索できます。">
+	<nav aria-label="パンくずリスト" class="mb-5 text-xs text-ink-muted sm:text-sm">
+		<a href={homeHref} class="hover:text-brand-fg">記事一覧</a>
+		<span aria-hidden="true" class="mx-2 text-ink-faint">/</span>
+		<span class="font-medium text-ink">検索</span>
+	</nav>
+
+	<section class="mb-6 sm:mb-8">
+		<p class="mb-1 text-xs font-bold tracking-widest text-brand-fg uppercase">Search</p>
+		<h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">記事を検索</h1>
+		<p class="mt-2 max-w-2xl text-sm leading-relaxed text-ink-muted sm:text-base">
+			店名・本文・系統・エリア・タグなどのキーワードで記事を検索できます。
+		</p>
+	</section>
+
+	<div class="relative mb-6">
+		<svg
+			class="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-ink-faint"
+			viewBox="0 0 20 20"
+			fill="currentColor"
+			aria-hidden="true"
+		>
+			<path
+				fill-rule="evenodd"
+				d="M8.5 3a5.5 5.5 0 1 0 3.38 9.84l3.64 3.65a.75.75 0 1 0 1.06-1.06l-3.65-3.64A5.5 5.5 0 0 0 8.5 3ZM4.5 8.5a4 4 0 1 1 8 0 4 4 0 0 1-8 0Z"
+				clip-rule="evenodd"></path>
+		</svg>
+		<label for="search-input" class="sr-only">キーワードで記事を検索</label>
+		<input
+			id="search-input"
+			type="search"
+			inputmode="search"
+			autocomplete="off"
+			placeholder="キーワードを入力（例: 家系、末広町、燻製チャーシュー）"
+			class="w-full rounded-full border border-line-strong bg-surface-raised py-2.5 pr-4 pl-10 text-sm font-medium text-ink placeholder:text-ink-faint hover:border-brand-400 focus:border-brand-500"
+			data-search-input
+		/>
+	</div>
+
+	<p data-search-status hidden class="mb-3 text-sm text-ink-muted">
+		<span data-search-count class="font-bold text-ink">0</span> 件ヒット
+	</p>
+
+	<ol class="flex flex-col gap-4" data-search-results>
+		{
+			searchItems.map(({ post, haystack }) => (
+				<li data-search-item data-haystack={haystack} hidden>
+					<PostListItem post={post} />
+				</li>
+			))
+		}
+	</ol>
+
+	<p data-search-prompt class="rounded-xl border border-dashed border-line-strong bg-surface-raised px-6 py-12 text-center text-sm text-ink-muted">
+		キーワードを入力すると、ここに検索結果が表示されます。
+	</p>
+	<p data-search-empty hidden class="rounded-xl border border-dashed border-line-strong bg-surface-raised px-6 py-12 text-center text-sm text-ink-muted">
+		該当する記事はありません。
+	</p>
+</BaseLayout>
+
+<script>
+	const input = document.querySelector<HTMLInputElement>('[data-search-input]');
+	const items = Array.from(document.querySelectorAll<HTMLElement>('[data-search-item]'));
+	const statusEl = document.querySelector<HTMLElement>('[data-search-status]');
+	const countEl = document.querySelector<HTMLElement>('[data-search-count]');
+	const promptEl = document.querySelector<HTMLElement>('[data-search-prompt]');
+	const emptyEl = document.querySelector<HTMLElement>('[data-search-empty]');
+
+	function render() {
+		if (!input) return;
+		const query = input.value.trim().toLowerCase();
+		const hasQuery = query !== '';
+
+		if (promptEl) promptEl.hidden = hasQuery;
+		if (statusEl) statusEl.hidden = !hasQuery;
+
+		let visible = 0;
+		for (const item of items) {
+			const match = hasQuery && (item.dataset.haystack ?? '').includes(query);
+			item.hidden = !match;
+			if (match) visible++;
+		}
+		if (countEl) countEl.textContent = String(visible);
+		if (emptyEl) emptyEl.hidden = !hasQuery || visible > 0;
+	}
+
+	// ヘッダーなどから /search/?q=キーワード で開かれた場合、その語で検索した状態にする
+	const initialQuery = new URLSearchParams(location.search).get('q');
+	if (initialQuery && input) input.value = initialQuery;
+
+	input?.addEventListener('input', render);
+	render();
+</script>
