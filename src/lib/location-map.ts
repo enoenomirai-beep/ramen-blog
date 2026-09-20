@@ -187,6 +187,12 @@ export const AREA_GROUPS: Record<string, AreaGroup> = {
 		lat: 35.9427,
 		lng: 139.9713,
 	},
+	めじろ台エリア: {
+		prefecture: '東京都',
+		stations: [{ name: 'めじろ台', lines: ['京王線'] }],
+		lat: 35.6367,
+		lng: 139.3538,
+	},
 };
 
 export interface LocationInfo {
