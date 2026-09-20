@@ -106,7 +106,7 @@ Astro 7.3 + Tailwind CSS 4 + MDX。記事は Content Collections（`src/content/
   - 色はすべて既存のテーマトークンのみ使用（`dark:` 不使用）。リンクは `withBase()` 経由。記事取得は `getPublishedPosts()` に統一。ページ数は 18→19
 - [x] AffiliateCard / BlogCard を実記事に組み込み（2026-09-20）
   - `iekei-tokyo-suehirocho.md` / `bushoya-gaiden-akihabara.md` を `.mdx` にリネーム（`git mv`）し、`import AffiliateCard ...` / `import BlogCard ...` を追加
-  - `BlogCard`（相手の記事へ「あわせて読みたい」で誘導）は「トッピング」セクションの直後、`AffiliateCard`（宅麺のダミー商品）は「総評」セクションの直後（本文テーブルの前）に設置。互いの記事を `slug` で相互リンク
+  - `BlogCard`（相手の記事へ「あわせて読みたい」で誘導）は記事中盤の「スープ」セクションの直後、`AffiliateCard`（宅麺のダミー商品）は「総評」セクションの直後（本文テーブルの前）に設置し、記事全体に埋め込みが分散するようにした（ユーザーから「記事の途中にも埋め込みしたい」との要望を受けて、当初どちらも後半に固まっていた配置から調整）。互いの記事を `slug` で相互リンク
   - `AffiliateCard` の `url` は `https://example.com/affiliate` のダミー値（ユーザーが「とりあえずダミーで進めて」と明示的に指示）。実際のアフィリエイトプログラムに登録したら差し替えが必要
   - 開発中、`.md` → `.mdx` のリネーム＋本文編集を `astro dev` の起動中プロセスに反映させるには再起動が必要だった（新規ファイル同様、Astro の Content Collections が起動時にしかフルスキャンしないためと判断。`npm run build` は毎回フレッシュなので無関係）。`npm run build` 後の `dist/posts/*/index.html` を `grep` して両記事に両コンポーネントが出力されていることを確認して検証済み
   - 色・リンク・記事取得の変更なし（既存コンポーネントをそのまま利用）。ページ数・ルーティングは変わらず（19 ページ）
