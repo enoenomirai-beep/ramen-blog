@@ -13,7 +13,7 @@ price: 1250
 tags: ["豚骨醤油", "自家製麺", "燻製チャーシュー"]
 pickup: true
 visits: 3
-features: ["通し営業", "ライス無料"]
+features: ["通し営業"]
 ---
 
 ## 訪問の経緯
