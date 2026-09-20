@@ -1,6 +1,6 @@
 # らーめん食べ歩きログ — 現状ブリーフ（他の AI に渡す用）
 
-最終更新: 2026-09-20（記事の全文検索ページ `/search/` を追加。PR 作成中）
+最終更新: 2026-09-20（AffiliateCard / BlogCard を実記事に組み込み。PR 作成中）
 
 このファイルは、プロジェクトの現状を **別の AI（Gemini など）に共有して次の指示（プロンプト）を考えてもらう**ためのまとめです。
 実装は Claude Code が行い、変更のたびにこのファイルも更新します。
@@ -42,8 +42,8 @@
 
 | 種別 | 記事 | 評価 |
 |---|---|---|
-| 本物 | iekei Tokyo 王道家（末広町・家系・2026-09-10）— `pickup: true`／`visits: 3`／`features: ["通し営業"]` | 5.0 |
-| 本物 | 武将家外伝（秋葉原・家系・2026-09-16）— `features: ["深夜営業"]` | 4.3 |
+| 本物 | iekei Tokyo 王道家（末広町・家系・2026-09-10、`.mdx`）— `pickup: true`／`visits: 3`／`features: ["通し営業"]`。本文中に `BlogCard`（→武将家外伝）と `AffiliateCard`（宅麺のダミー） | 5.0 |
+| 本物 | 武将家外伝（秋葉原・家系・2026-09-16、`.mdx`）— `features: ["深夜営業"]`。本文中に `BlogCard`（→iekei Tokyo 王道家）と `AffiliateCard`（宅麺のダミー） | 4.3 |
 
 サンプル記事（熊田家・極太堂）は 2026-09-19 に削除済み。`PhotoGallery` コンポーネントの使用例（`.mdx`、複数写真ギャラリー）も熊田家と一緒に無くなったので、実際に使う記事が増えたら改めて `.mdx` 化して使う
 
@@ -54,7 +54,7 @@
 - 記事データの取得は `src/lib/posts.ts` の `getPublishedPosts()` に統一
 - 主なコンポーネント: `PostListItem`（一覧の 1 行）/ `StarRating`（星）/ `PostFilters`（絞り込み）/ `TermPosts`・`TermCard`（系統／エリア／タグ別ページ）/ `AreaSearchBox`（エリアの近接駅・沿線検索）/ `PhotoGallery`（記事本文の複数写真・Lightbox）/ `AffiliateCard`（記事本文のアフィリエイト・広告カード）/ `BlogCard`（記事本文の内部リンクカード）/ `Breadcrumbs`（パンくず＋ JSON-LD）/ `RelatedPosts`（関連記事）/ `PickupPosts`（殿堂入りピックアップ）/ `ContributionCalendar`（ラーメン草カレンダー）/ `ShareButtons`（SNS シェア＆ URL コピー）/ `Comments`（Giscus コメント欄）/ `CalorieMeter`（免罪符メーター）/ `FloatingCTA`（スマホ用フローティング CTA）/ `GoogleAnalytics`（GA4 計測タグ）/ `TableOfContents` / `PostNav` / `ThemeToggle`。ページ: `map.astro`（ラーメンマップ）/ `ranking.astro`（マイベスト・ランキング）/ `dashboard.astro`（出費ダッシュボード）/ `search.astro`（全文検索）/ `og/[slug].png.ts`（動的 OGP 画像）
 - 記事本文（Markdown/MDX 生ソース）からプレーンテキストを取り出す `stripMarkdown()`（`src/lib/markdown.ts`）は、読了時間の計算（`reading-time.ts`）と全文検索（`search.astro`）の両方で共有している
-- `AffiliateCard` は `PhotoGallery` と同じく MDX 記事の本文中でしか使えない（`.md` ではなく `.mdx` にして `import AffiliateCard from '../../components/AffiliateCard.astro'` → `<AffiliateCard url="..." imageUrl="..." title="..." description="..." buttonText="..." />` を本文中に置く）。現時点ではどの記事にも実際には使っていない（サンプル記事の熊田家は 2026-09-19 に削除済みのため、レイアウト確認は一時的なテスト記事で行い、確認後に削除した）
+- `AffiliateCard` / `BlogCard` は `PhotoGallery` と同じく MDX 記事の本文中でしか使えない（`.md` ではなく `.mdx` にして `import ... from '../../components/AffiliateCard.astro'` のように置く）。2026-09-20 に実記事（`iekei-tokyo-suehirocho.mdx` / `bushoya-gaiden-akihabara.mdx`）へ組み込み済み。`AffiliateCard` の `url` は `https://example.com/affiliate` のダミー値のままなので、実際のアフィリエイトプログラムに登録したら差し替える必要がある
 - 地図のピン座標は `location-map.ts` の `AREA_GROUPS` 各エントリの `lat`/`lng`（エリアの代表座標）。`getCoordinates(location)` で引く。辞書に無い location は座標が無いため地図には出ない（ビルドは失敗しない）
 - 動的 OGP 画像は satori（HTML/CSS 風オブジェクト → SVG）+ `@resvg/resvg-js`（SVG → PNG）+ `@fontsource/noto-sans-jp`（日本語フォント、`node_modules` から直接 `fs.readFile`）をビルド時に使う。★ 記号はフォントに字形が無いので `StarRating.astro` と同じ SVG パスで描画し、絵文字は使わない（Noto Sans JP に絵文字グリフが無く tofu 文字化けするため）
 - 記事本文に複数の写真を並べたいときは、記事ファイルを `.mdx`（`.md` ではなく）にして `import PhotoGallery from '../../components/PhotoGallery.astro'` → `<PhotoGallery photos={[{ src, alt, caption? }, ...]} />` を本文中に置く。`src` は `src/assets/posts/` からインポートした画像（`npm run photo` で取り込んだもの。最適化される）でも、Unsplash などのリモート URL 文字列でもよい
@@ -76,7 +76,6 @@
 
 - 最寄駅の複数指定、営業時間の曜日別対応など、店舗情報のさらなる拡充（地図リンク・営業時間・最寄り駅は実装済み）
 - 独自ドメイン
-- `AffiliateCard` / `BlogCard` はまだどの記事にも実際には使っていない（コンポーネントとしては完成済み）。実際の提携先が決まったら記事を `.mdx` にして組み込む
 - PWA の `@vite-pwa/astro` 導入は見送り（2026-09-20）: 最新版（1.2.0）でも peer dependency が `astro@^1〜5` までで、この場の Astro 7.3 とは合わない。`--legacy-peer-deps` で強制インストールしてビルド自体は通ったが、`manifest.webmanifest` への `<link rel="manifest">` や Service Worker 登録スクリプトが生成 HTML に一切挿入されず（Astro 7 の静的ビルドパイプラインとの相性問題と判断）、PWA としては機能しなかったため撤去。代わりに `public/manifest.webmanifest` と `public/sw.js` を手書きし、`BaseLayout.astro` からリンク・登録している（キャッシュ優先＋バックグラウンド更新の簡易 Service Worker）。将来 `@vite-pwa/astro` が Astro 7 に対応したら乗り換えを検討してもよい
 
 ## 7. Claude への指示の書き方のコツ

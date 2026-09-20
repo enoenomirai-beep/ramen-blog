@@ -1,6 +1,6 @@
 # 作業引き継ぎメモ
 
-最終更新: 2026-09-20（Claude Code セッションからの引き継ぎ、記事の全文検索ページ `/search/` を追加）
+最終更新: 2026-09-20（Claude Code セッションからの引き継ぎ、AffiliateCard / BlogCard を実記事に組み込み）
 
 ## プロジェクト概要
 
@@ -104,6 +104,12 @@ Astro 7.3 + Tailwind CSS 4 + MDX。記事は Content Collections（`src/content/
   - 開発中、`astro dev` の再起動直後に一時的に `504 Outdated Optimize Dep` エラーが出たが、数秒待って再読み込みすると解消した（Vite の依存最適化キャッシュの再構築待ちで、コード側の問題ではない）
   - 「小麦感」（本文にのみ登場する語）や「燻製」（タグに登場する語）で検索して正しい記事がヒットすること、0 件時の表示、`?q=` での直接検索、モバイル幅・ライト/ダークモードを確認済み
   - 色はすべて既存のテーマトークンのみ使用（`dark:` 不使用）。リンクは `withBase()` 経由。記事取得は `getPublishedPosts()` に統一。ページ数は 18→19
+- [x] AffiliateCard / BlogCard を実記事に組み込み（2026-09-20）
+  - `iekei-tokyo-suehirocho.md` / `bushoya-gaiden-akihabara.md` を `.mdx` にリネーム（`git mv`）し、`import AffiliateCard ...` / `import BlogCard ...` を追加
+  - `BlogCard`（相手の記事へ「あわせて読みたい」で誘導）は「トッピング」セクションの直後、`AffiliateCard`（宅麺のダミー商品）は「総評」セクションの直後（本文テーブルの前）に設置。互いの記事を `slug` で相互リンク
+  - `AffiliateCard` の `url` は `https://example.com/affiliate` のダミー値（ユーザーが「とりあえずダミーで進めて」と明示的に指示）。実際のアフィリエイトプログラムに登録したら差し替えが必要
+  - 開発中、`.md` → `.mdx` のリネーム＋本文編集を `astro dev` の起動中プロセスに反映させるには再起動が必要だった（新規ファイル同様、Astro の Content Collections が起動時にしかフルスキャンしないためと判断。`npm run build` は毎回フレッシュなので無関係）。`npm run build` 後の `dist/posts/*/index.html` を `grep` して両記事に両コンポーネントが出力されていることを確認して検証済み
+  - 色・リンク・記事取得の変更なし（既存コンポーネントをそのまま利用）。ページ数・ルーティングは変わらず（19 ページ）
 - [x] **公開済み（2026-09-18）**: https://enoenomirai-beep.github.io/ramen-blog/
   - リポジトリ: https://github.com/enoenomirai-beep/ramen-blog（`main`、Pages の Source = GitHub Actions）
   - 本番で確認済み: トップ / 記事 3 ページ / `rss.xml` / `sitemap-index.xml` / favicon / OGP・canonical の URL / 画像の読み込み。コンソールエラーなし
