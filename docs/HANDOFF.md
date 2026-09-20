@@ -1,6 +1,6 @@
 # 作業引き継ぎメモ
 
-最終更新: 2026-09-20（Claude Code セッションからの引き継ぎ、MDX 記事用のアフィリエイト・広告カード AffiliateCard を追加）
+最終更新: 2026-09-20（Claude Code セッションからの引き継ぎ、読了時間表示・BlogCard・スマホ用フローティング CTA・GA4 導入の土台を追加）
 
 ## プロジェクト概要
 
@@ -86,6 +86,15 @@ Astro 7.3 + Tailwind CSS 4 + MDX。記事は Content Collections（`src/content/
   - 開発中、新規コンポーネントに使った `sm:grid-cols-[160px_1fr]` などの Tailwind クラスが、稼働中の `astro dev` プロセスに反映されず 1 カラムのままになる現象に遭遇。`preview_stop` → `preview_start` で dev サーバーを再起動すると解消した（`npm run build` は毎回フレッシュなプロセスなので影響なし。過去にも似た症状〔`MissingSharp`〕があり、コード側の問題ではなく起動済みプロセスのキャッシュが古くなる dev サーバー特有の現象と判断）
   - 色はすべて既存のテーマトークン・固定色（`accent-*` / `black/60`）のみ使用（`dark:` 不使用。ライト／ダーク両方で確認済み）。ページ数・ルーティングは変わらず（18 ページ。コンポーネント追加のみ）
   - スキップした機能はなし
+- [x] 読了時間表示・BlogCard・スマホ用フローティング CTA・GA4 導入の土台（2026-09-20、ユーザー就寝中に自律実装）
+  - `src/lib/reading-time.ts`: 記事の Markdown 生ソース（Content Collections の `entry.body`。デフォルトで保持される）から見出し記号・強調・リンク・コードブロック・HTML/JSX タグを除いたおおよそのプレーンテキストの文字数を、日本語の読書速度の目安 450字/分で割って分数にする `estimateReadingMinutes()`。`posts/[id].astro` のスコア欄（訪問日・お会計と同じ行）に「⏱️ 約◯分で読めます」として表示
+  - `src/components/BlogCard.astro`: MDX 記事の本文中に `<BlogCard slug="..." />` で置ける内部リンクカード（サムネイル・店名・記事タイトル・星評価の横長カード）。`getPublishedPosts()` から `slug` に一致する記事を探し、無ければ何も表示しない（存在しない slug でもビルドが失敗しない）
+  - `src/components/FloatingCTA.astro`: スマホ（`md` 未満）限定で画面下部に固定表示する「🔍 エリアから探す」「🍜 トップへ戻る」の 2 ボタンバー。`BaseLayout.astro` に常時マウント。フッターとの重なりを避けるため `<footer>` に `pb-20 md:pb-0` を追加（フッター末尾に空の余白を作り、スクロール最下部でもフッターの実際のリンクがバーに隠れないようにする定番のテクニック）。既存の `ShareButtons.astro` の「コピーしました」トースト（`fixed bottom-6`）がこのバーと重なる位置だったため、`bottom-24 md:bottom-6` に変更してモバイルでは避けるようにした
+  - `src/components/GoogleAnalytics.astro`: GA4 計測タグの土台。`PUBLIC_GA_MEASUREMENT_ID` 環境変数（`.env.example` を新設）を読み、プレースホルダー（`G-XXXXXXXXXX`）または未設定の間は gtag のスクリプトを一切出力しない（存在しない ID への無駄なリクエストを避ける）。`BaseLayout.astro` の `<head>` に常時マウント。実際の測定 ID を設定して計測が始まることは、ローカルで `.env` に仮の ID を設定して `npm run build` → 生成された HTML に gtag のスクリプトタグが出力されることを確認して検証済み（検証後は `.env` を削除）。**本番（GitHub Pages）で実際に計測を始めるには、GitHub Actions の secrets/vars に `PUBLIC_GA_MEASUREMENT_ID` を追加してビルド時に渡す必要がある**（現在の `deploy.yml` は env を渡していない）
+  - 開発中、新しく追加した Tailwind クラスや新しいページの変更が、起動中の `astro dev` プロセスに反映されない・ブラウザタブが古い HTML をキャッシュしたままになる現象に複数回遭遇。`preview_stop` → `preview_start` でのサーバー再起動と、ブラウザタブの `force: true` での再読み込みでその都度解消した（`npm run build` は毎回フレッシュなプロセスなので無関係。コード側の問題ではなく、長時間起動した dev サーバー・ブラウザタブ双方のキャッシュが古くなる dev 環境特有の現象と判断。今後も似た症状が出たら同じ対処でよい）
+  - 動作確認用に一時テスト記事（`scratch-blogcard-test.mdx`）で `BlogCard`（存在する slug 2 件・存在しない slug 1 件）の表示を確認し、確認後に削除した（実記事には組み込んでいない）
+  - 色はすべて既存のテーマトークン・固定色のみ使用（`dark:` 不使用）。リンクは `withBase()` 経由。記事取得は `getPublishedPosts()` に統一。ページ数・ルーティングは変わらず（18 ページ）
+  - 4 機能ともローカルで動作確認済み。スキップした機能はなし
 - [x] **公開済み（2026-09-18）**: https://enoenomirai-beep.github.io/ramen-blog/
   - リポジトリ: https://github.com/enoenomirai-beep/ramen-blog（`main`、Pages の Source = GitHub Actions）
   - 本番で確認済み: トップ / 記事 3 ページ / `rss.xml` / `sitemap-index.xml` / favicon / OGP・canonical の URL / 画像の読み込み。コンソールエラーなし
@@ -100,6 +109,7 @@ Astro 7.3 + Tailwind CSS 4 + MDX。記事は Content Collections（`src/content/
 
 - 実際の訪問記事を書き続ける（記事の作り方は README「記事の追加方法」。ユーザーからはメモ＋写真パスを受け取って Claude が下書き → PR にする流れが定着）
 - Giscus コメント欄の本番設定: https://giscus.app でこのリポジトリ（`enoenomirai-beep/ramen-blog`）の Discussions を有効化し、giscus app をインストールして発行される `repo-id` / `category-id` を `src/components/Comments.astro` のプレースホルダーに反映する
+- GA4 アクセス解析の本番設定: https://analytics.google.com でプロパティを作成し、発行される測定 ID（`G-XXXXXXXXXX`）を GitHub Actions の secrets/vars に `PUBLIC_GA_MEASUREMENT_ID` として追加する（`.github/workflows/deploy.yml` 側でビルドに渡す設定も必要）
 
 ## 注意事項
 

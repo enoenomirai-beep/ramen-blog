@@ -1,6 +1,6 @@
 # らーめん食べ歩きログ — 現状ブリーフ（他の AI に渡す用）
 
-最終更新: 2026-09-20（MDX 記事用のアフィリエイト・広告カード `AffiliateCard` を追加。PR 作成中）
+最終更新: 2026-09-20（読了時間表示・内部リンクカード BlogCard・スマホ用フローティング CTA・GA4 導入の土台を追加。PR 作成中）
 
 このファイルは、プロジェクトの現状を **別の AI（Gemini など）に共有して次の指示（プロンプト）を考えてもらう**ためのまとめです。
 実装は Claude Code が行い、変更のたびにこのファイルも更新します。
@@ -23,7 +23,10 @@
 | 沿線検索 | `location-map.ts` の各駅に鉄道路線名（`lines`）を追加（山手線・つくばエクスプレスなど）。エリア別ページの `AreaSearchBox`（インクリメンタルサーチ）が路線名にも部分一致するようになり、「山手線」で検索すると山手線が通るすべての駅の記事がヒットする |
 | 免罪符メーター | 記事詳細ページの店舗情報の下に、系統（`style`）に応じた概算カロリー・PFC（タンパク質・脂質・炭水化物）バランスをプログレスバーで表示し、「これを消費するにはスクワット◯時間／ランニング◯km」というユーモアのある運動換算を添える（`CalorieMeter.astro` + `src/lib/nutrition.ts` のハードコードされた目安値） |
 | トップ | **今日の一杯ガチャ**（🎲 ボタンを押すと公開済み記事からランダムに 1 件選んで移動。Vanilla JS）→ **殿堂入りピックアップ**（`PickupPosts`。`pickup: true` の記事を 👑 バッジ付きの目立つカードで上部に表示、無ければ非表示）→ **ラーメン草カレンダー**（`ContributionCalendar`。GitHub の Contributions 風に、過去 1 年分の日付マスを描画し記事がある日をアクセントカラーで塗る。マスにホバーすると店名がネイティブ title で出る。JS 不要）→ 左に写真・右に店舗情報の**横型リスト**（スマホは縦積み）。系統タグ・場所・評価（★n 以上）で絞り込み、新しい順／古い順／評価順で並び替え。条件は URL クエリに同期。カードには `visits` が 2 以上のとき「🔥 訪問n回」バッジ、`features` があればバッジを表示 |
-| 記事ページ | **パンくずリスト**（`Breadcrumbs`。トップ／都道府県／エリアグループ／店名の階層リンク＋ BreadcrumbList の JSON-LD）、店名を主役にしたヘッダー、星評価（端数ぶん部分塗り）＋ `visits` が 2 以上のとき「🔥 訪問回数：n回」バッジ、店舗情報テーブル（`map_url` があれば「場所」の横に「📍 地図を見る」の外部リンク、`nearest_station` / `business_hours` があれば行を追加。どれも任意項目）、**動的 OGP 画像**（`src/pages/og/[slug].png.ts`。店名・評価（★）・系統を暖色グラデーションに重ねてビルド時に生成する 1200x630 の PNG。`og:image` / `twitter:image` が指す）、**Review 構造化データ（JSON-LD）**（`<head>` に schema.org の `Review`/`Restaurant`/`Rating` を出力。店名・評価・訪問日をマッピングし、検索結果に★評価が出るのを狙う。SEO 目的）、写真、本文（h2 は太い左ライン＋下線、h3 はオレンジの下線）、目次（h2/h3 から自動生成・折りたたみ可）。**複数写真ギャラリー**（`PhotoGallery` コンポーネント。MDX 記事の本文中に置ける。スマホ 1 列／PC 2 列、クリックで Lightbox 拡大表示）。本文の下に**SNS シェア＆ URL コピー**（`ShareButtons`。X への投稿リンク＋クリップボードコピー、コピー後は「コピーしました」トースト）と**関連記事**（`RelatedPosts`。同じ系統またはエリアグループの記事を評価順に最大 4 件）と**コメント欄**（`Comments`。Giscus/GitHub Discussions。`data-repo-id` / `data-category-id` はプレースホルダーで、https://giscus.app で発行される実際の値への置き換えが必要）、その下に前後記事ナビ。`features` は系統・場所バッジの並びに追加表示 |
+| 記事ページ | **パンくずリスト**（`Breadcrumbs`。トップ／都道府県／エリアグループ／店名の階層リンク＋ BreadcrumbList の JSON-LD）、店名を主役にしたヘッダー、星評価（端数ぶん部分塗り）＋ `visits` が 2 以上のとき「🔥 訪問回数：n回」バッジ、**読了時間の目安**（「⏱️ 約◯分で読めます」。本文の Markdown 生ソースから見出し記号・リンク・タグなどを除いたおおよその文字数 ÷ 450字/分で算出。`src/lib/reading-time.ts`）、店舗情報テーブル（`map_url` があれば「場所」の横に「📍 地図を見る」の外部リンク、`nearest_station` / `business_hours` があれば行を追加。どれも任意項目）、**動的 OGP 画像**（`src/pages/og/[slug].png.ts`。店名・評価（★）・系統を暖色グラデーションに重ねてビルド時に生成する 1200x630 の PNG。`og:image` / `twitter:image` が指す）、**Review 構造化データ（JSON-LD）**（`<head>` に schema.org の `Review`/`Restaurant`/`Rating` を出力。店名・評価・訪問日をマッピングし、検索結果に★評価が出るのを狙う。SEO 目的）、写真、本文（h2 は太い左ライン＋下線、h3 はオレンジの下線）、目次（h2/h3 から自動生成・折りたたみ可）。**複数写真ギャラリー**（`PhotoGallery` コンポーネント。MDX 記事の本文中に置ける。スマホ 1 列／PC 2 列、クリックで Lightbox 拡大表示）。本文の下に**SNS シェア＆ URL コピー**（`ShareButtons`。X への投稿リンク＋クリップボードコピー、コピー後は「コピーしました」トースト。トーストの位置はスマホのフローティング CTA と重ならないよう `bottom-24 md:bottom-6`）と**関連記事**（`RelatedPosts`。同じ系統またはエリアグループの記事を評価順に最大 4 件）と**コメント欄**（`Comments`。Giscus/GitHub Discussions。`data-repo-id` / `data-category-id` はプレースホルダーで、https://giscus.app で発行される実際の値への置き換えが必要）、その下に前後記事ナビ。`features` は系統・場所バッジの並びに追加表示 |
+| 内部リンクカード（回遊率向上） | `BlogCard.astro`。MDX 記事の本文中に `<BlogCard slug="iekei-tokyo-suehirocho" />` のように置ける、他の記事へ誘導する横長カード（サムネイル・店名・記事タイトル・星評価）。`slug` に一致する公開済み記事が無ければ何も表示しない（ビルド失敗しない） |
+| スマホ用フローティング CTA（回遊率向上） | `FloatingCTA.astro`。`BaseLayout.astro` に常時マウントし、`md` 未満（スマホ）でのみ画面下部に固定表示される「🔍 エリアから探す」「🍜 トップへ戻る」の 2 ボタンバー。`<footer>` に `pb-20 md:pb-0` を付けて、フッターの内容とバーが重ならないようにしている（この 2 つはセットで変更する） |
+| GA4（Google アナリティクス）導入の土台 | `GoogleAnalytics.astro`。`BaseLayout.astro` の `<head>` に常時マウント。`PUBLIC_GA_MEASUREMENT_ID` 環境変数（`.env.example` 参照）に実際の測定 ID（`G-XXXXXXXXXX` 形式）を設定すると次のビルドから計測が始まる。未設定の間は gtag のスクリプトを一切出力しない |
 | ラーメンマップ | `/map/`。Leaflet（CDN の UMD 版・unpkg、OpenStreetMap タイル）で全記事をピン留め。位置は `location-map.ts` の `AREA_GROUPS` に追加した各エリアの代表座標（`lat`/`lng`。駅の目安で店舗の正確な位置ではない）で、同じエリアの記事は重ならないよう記事ごとに少しずらす。ピンをタップすると店名・系統・評価のポップアップが出て、記事へのリンクがある。**「📍 現在地から近いお店を探す」**ボタンで `navigator.geolocation` から現在地を取得し、Haversine 距離で近い順に 3 件リスト表示＋地図の中心を現在地に移動 |
 | マイベスト・ランキング | `/ranking/`。全記事を評価（`rating`）の降順で並べ、1〜3 位に 👑🥈🥉 のアイコンを表示 |
 | 系統別・エリア別・タグ別 | `/styles/`・`/locations/`・`/tags/`（一覧）と `/styles/家系/`・`/locations/秋葉原/`・`/tags/豚骨醤油/` のような項目ごとの一覧。フロントマターの `style` / `location` / `tags` から自動生成。ヘッダー・フッターのナビと記事のバッジ／タグからたどれる |
@@ -48,7 +51,7 @@
 - **色はテーマトークンで指定**（`bg-surface` / `text-ink` / `border-line` / `text-brand-fg` / バッジ用 `bg-chip-brand` など、`src/styles/global.css`）。ライト／ダークはトークンの値が切り替わる仕組みなので、`dark:` を個別に書かない
 - サブパス配信（`/ramen-blog/`）なので、サイト内リンクは `withBase()` を通す
 - 記事データの取得は `src/lib/posts.ts` の `getPublishedPosts()` に統一
-- 主なコンポーネント: `PostListItem`（一覧の 1 行）/ `StarRating`（星）/ `PostFilters`（絞り込み）/ `TermPosts`・`TermCard`（系統／エリア／タグ別ページ）/ `AreaSearchBox`（エリアの近接駅・沿線検索）/ `PhotoGallery`（記事本文の複数写真・Lightbox）/ `AffiliateCard`（記事本文のアフィリエイト・広告カード）/ `Breadcrumbs`（パンくず＋ JSON-LD）/ `RelatedPosts`（関連記事）/ `PickupPosts`（殿堂入りピックアップ）/ `ContributionCalendar`（ラーメン草カレンダー）/ `ShareButtons`（SNS シェア＆ URL コピー）/ `Comments`（Giscus コメント欄）/ `CalorieMeter`（免罪符メーター）/ `TableOfContents` / `PostNav` / `ThemeToggle`。ページ: `map.astro`（ラーメンマップ）/ `ranking.astro`（マイベスト・ランキング）/ `dashboard.astro`（出費ダッシュボード）/ `og/[slug].png.ts`（動的 OGP 画像）
+- 主なコンポーネント: `PostListItem`（一覧の 1 行）/ `StarRating`（星）/ `PostFilters`（絞り込み）/ `TermPosts`・`TermCard`（系統／エリア／タグ別ページ）/ `AreaSearchBox`（エリアの近接駅・沿線検索）/ `PhotoGallery`（記事本文の複数写真・Lightbox）/ `AffiliateCard`（記事本文のアフィリエイト・広告カード）/ `BlogCard`（記事本文の内部リンクカード）/ `Breadcrumbs`（パンくず＋ JSON-LD）/ `RelatedPosts`（関連記事）/ `PickupPosts`（殿堂入りピックアップ）/ `ContributionCalendar`（ラーメン草カレンダー）/ `ShareButtons`（SNS シェア＆ URL コピー）/ `Comments`（Giscus コメント欄）/ `CalorieMeter`（免罪符メーター）/ `FloatingCTA`（スマホ用フローティング CTA）/ `GoogleAnalytics`（GA4 計測タグ）/ `TableOfContents` / `PostNav` / `ThemeToggle`。ページ: `map.astro`（ラーメンマップ）/ `ranking.astro`（マイベスト・ランキング）/ `dashboard.astro`（出費ダッシュボード）/ `og/[slug].png.ts`（動的 OGP 画像）
 - `AffiliateCard` は `PhotoGallery` と同じく MDX 記事の本文中でしか使えない（`.md` ではなく `.mdx` にして `import AffiliateCard from '../../components/AffiliateCard.astro'` → `<AffiliateCard url="..." imageUrl="..." title="..." description="..." buttonText="..." />` を本文中に置く）。現時点ではどの記事にも実際には使っていない（サンプル記事の熊田家は 2026-09-19 に削除済みのため、レイアウト確認は一時的なテスト記事で行い、確認後に削除した）
 - 地図のピン座標は `location-map.ts` の `AREA_GROUPS` 各エントリの `lat`/`lng`（エリアの代表座標）。`getCoordinates(location)` で引く。辞書に無い location は座標が無いため地図には出ない（ビルドは失敗しない）
 - 動的 OGP 画像は satori（HTML/CSS 風オブジェクト → SVG）+ `@resvg/resvg-js`（SVG → PNG）+ `@fontsource/noto-sans-jp`（日本語フォント、`node_modules` から直接 `fs.readFile`）をビルド時に使う。★ 記号はフォントに字形が無いので `StarRating.astro` と同じ SVG パスで描画し、絵文字は使わない（Noto Sans JP に絵文字グリフが無く tofu 文字化けするため）
@@ -72,7 +75,9 @@
 - 記事の全文検索（店名・本文などのキーワード。エリア〔駅〕・沿線検索は実装済み）
 - 最寄駅の複数指定、営業時間の曜日別対応など、店舗情報のさらなる拡充（地図リンク・営業時間・最寄り駅は実装済み）
 - Giscus のコメント欄は Discussions 有効化＋アプリインストールが未完了（`data-repo-id` / `data-category-id` がプレースホルダーのまま。https://giscus.app で発行して置き換えが必要）
-- アクセス解析、独自ドメイン
+- GA4 アクセス解析は土台のみ（`GoogleAnalytics.astro`）。https://analytics.google.com でプロパティを作成し、発行される測定 ID（`G-XXXXXXXXXX`）を `.env` の `PUBLIC_GA_MEASUREMENT_ID` に設定すれば計測が始まる（`.env` は gitignore 対象。GitHub Pages でビルドする場合は GitHub Actions の secrets/vars に設定してビルド時に渡す必要がある）
+- 独自ドメイン
+- `AffiliateCard` / `BlogCard` はまだどの記事にも実際には使っていない（コンポーネントとしては完成済み）。実際の提携先が決まったら記事を `.mdx` にして組み込む
 - PWA の `@vite-pwa/astro` 導入は見送り（2026-09-20）: 最新版（1.2.0）でも peer dependency が `astro@^1〜5` までで、この場の Astro 7.3 とは合わない。`--legacy-peer-deps` で強制インストールしてビルド自体は通ったが、`manifest.webmanifest` への `<link rel="manifest">` や Service Worker 登録スクリプトが生成 HTML に一切挿入されず（Astro 7 の静的ビルドパイプラインとの相性問題と判断）、PWA としては機能しなかったため撤去。代わりに `public/manifest.webmanifest` と `public/sw.js` を手書きし、`BaseLayout.astro` からリンク・登録している（キャッシュ優先＋バックグラウンド更新の簡易 Service Worker）。将来 `@vite-pwa/astro` が Astro 7 に対応したら乗り換えを検討してもよい
 
 ## 7. Claude への指示の書き方のコツ

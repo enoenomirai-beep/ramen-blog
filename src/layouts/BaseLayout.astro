@@ -3,6 +3,8 @@ import '../styles/global.css';
 import type { ImageMetadata } from 'astro';
 import { getImage } from 'astro:assets';
 import ogDefault from '../assets/og-default.jpg';
+import FloatingCTA from '../components/FloatingCTA.astro';
+import GoogleAnalytics from '../components/GoogleAnalytics.astro';
 import ThemeToggle from '../components/ThemeToggle.astro';
 import { SITE_DESCRIPTION, SITE_TITLE, withBase } from '../consts';
 
@@ -104,6 +106,8 @@ const navLinkClass =
 		<meta name="twitter:image" content={resolvedOgImageUrl} />
 
 		{structuredData && <script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />}
+
+		<GoogleAnalytics />
 	</head>
 	<body class="flex min-h-dvh flex-col bg-surface text-ink antialiased">
 		<!-- 暖簾のような深い赤のヘッダー。下端に鶏油色のライン -->
@@ -149,7 +153,7 @@ const navLinkClass =
 			<slot />
 		</main>
 
-		<footer class="border-t border-line bg-surface-sunken">
+		<footer class="border-t border-line bg-surface-sunken pb-20 md:pb-0">
 			<div
 				class="mx-auto flex w-full max-w-6xl flex-col items-center gap-2 px-4 py-6 text-xs text-ink-muted sm:flex-row sm:justify-between sm:px-6 lg:px-8"
 			>
@@ -167,6 +171,8 @@ const navLinkClass =
 				</nav>
 			</div>
 		</footer>
+
+		<FloatingCTA />
 
 	<script is:inline define:vars={{ swUrl }}>
 		// オフラインでもキャッシュ済みのページを表示できるように Service Worker を登録する
