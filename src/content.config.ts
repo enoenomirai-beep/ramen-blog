@@ -1,6 +1,7 @@
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
+import { WEEKDAYS } from './lib/business-hours';
 
 /**
  * ラーメンレビュー記事コレクション
@@ -45,10 +46,16 @@ const posts = defineCollection({
 			tags: z.array(z.string()).default([]),
 			/** GoogleマップなどのURL（記事ページの「場所」に「地図を見る」リンクを表示） */
 			map_url: z.url().optional(),
-			/** 営業時間（例: "11:00〜15:00 / 17:00〜21:00"） */
-			business_hours: z.string().optional(),
-			/** 最寄り駅（location とは別に、駅名だけを書きたい場合） */
-			nearest_station: z.string().optional(),
+			/**
+			 * 営業時間。単純な文字列（例: "11:00〜15:00 / 17:00〜21:00"）のほか、
+			 * 曜日によって時間が違う場合は `{ days: ["月","火",...], hours: "..." }` の配列で指定できる
+			 * （例: [{ days: ["月","火","水","木","金"], hours: "11:00〜21:00" }, { days: ["土","日"], hours: "11:00〜15:00" }]）
+			 */
+			business_hours: z
+				.union([z.string(), z.array(z.object({ days: z.array(z.enum(WEEKDAYS)).min(1), hours: z.string().min(1) })).min(1)])
+				.optional(),
+			/** 最寄り駅（location とは別に、駅名だけを書きたい場合）。複数ある場合は配列で指定できる */
+			nearest_station: z.union([z.string(), z.array(z.string()).min(1)]).optional(),
 			/** 殿堂入りピックアップとしてトップページ上部に出す場合 true */
 			pickup: z.boolean().default(false),
 			/** 訪問回数（再訪した記事で 2 以上を指定すると「訪問回数」バッジが出る） */
