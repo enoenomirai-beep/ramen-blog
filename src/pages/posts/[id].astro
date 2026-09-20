@@ -14,6 +14,7 @@ import { SITE_TITLE, formatDate, withBase } from '../../consts';
 import { PLACEHOLDER_ALT, placeholderImage } from '../../lib/placeholder';
 import { getPublishedPosts, locationPath, stylePath, tagPath, type Post } from '../../lib/posts';
 import { estimateReadingMinutes } from '../../lib/reading-time';
+import { formatBusinessHours } from '../../lib/business-hours';
 
 export async function getStaticPaths() {
 	// 新しい順（一覧と同じ）。前後ナビ用に隣の記事も props で渡す
@@ -60,8 +61,11 @@ const meta: { label: string; value: string; href?: string; mapHref?: string }[] 
 	{ label: '系統', value: style, href: withBase(stylePath(style)) },
 	{ label: '場所', value: location, href: withBase(locationPath(location)), mapHref: map_url },
 ];
-if (nearest_station) meta.push({ label: '最寄り駅', value: nearest_station });
-if (business_hours) meta.push({ label: '営業時間', value: business_hours });
+if (nearest_station) {
+	const nearestStations = Array.isArray(nearest_station) ? nearest_station : [nearest_station];
+	meta.push({ label: '最寄り駅', value: nearestStations.join('・') });
+}
+if (business_hours) meta.push({ label: '営業時間', value: formatBusinessHours(business_hours) });
 meta.push({ label: '訪問日', value: formatDate(date) });
 if (menu) meta.push({ label: '注文', value: menu });
 if (price !== undefined) meta.push({ label: '価格', value: `¥${price.toLocaleString('ja-JP')}` });

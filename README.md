@@ -201,6 +201,19 @@ MDX（`.mdx`）ファイルにすると、本文中に `PhotoGallery` / `Affilia
 スキーマは [`src/content.config.ts`](src/content.config.ts) で定義しており、
 必須項目が欠けていたり型が違う場合はビルド時にエラーになります。
 
+`nearest_station`（最寄り駅）と `business_hours`（営業時間）は、単純な文字列のほかに、より詳しい書き方にも対応しています。
+
+```yaml
+nearest_station: ["秋葉原駅", "末広町駅"]   # 複数の最寄り駅を配列で指定できる（「・」区切りで表示）
+business_hours:                              # 曜日によって営業時間が違う場合は配列で指定できる
+  - days: ["月", "火", "水", "木", "金"]
+    hours: "11:00〜15:00 / 17:00〜21:00"
+  - days: ["土", "日"]
+    hours: "11:00〜21:00（通し営業）"
+```
+
+連続した曜日（`["月","火","水","木","金"]` など）は「月〜金」のようにまとめて表示されます（[`src/lib/business-hours.ts`](src/lib/business-hours.ts)）。
+
 エリア別ページの近接駅検索・沿線検索・地図のピン座標を有効にするには、
 `location` に指定した場所を [`src/lib/location-map.ts`](src/lib/location-map.ts) の `AREA_GROUPS` にも登録してください
 （未登録でもビルドは失敗しません。「その他」扱いになるだけです）。

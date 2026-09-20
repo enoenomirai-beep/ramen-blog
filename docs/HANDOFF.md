@@ -1,6 +1,6 @@
 # 作業引き継ぎメモ
 
-最終更新: 2026-09-20（Claude Code セッションからの引き継ぎ、AffiliateCard / BlogCard を実記事に組み込み）
+最終更新: 2026-09-20（Claude Code セッションからの引き継ぎ、最寄り駅の複数指定・営業時間の曜日別対応を追加）
 
 ## プロジェクト概要
 
@@ -110,6 +110,12 @@ Astro 7.3 + Tailwind CSS 4 + MDX。記事は Content Collections（`src/content/
   - `AffiliateCard` の `url` は `https://example.com/affiliate` のダミー値（ユーザーが「とりあえずダミーで進めて」と明示的に指示）。実際のアフィリエイトプログラムに登録したら差し替えが必要
   - 開発中、`.md` → `.mdx` のリネーム＋本文編集を `astro dev` の起動中プロセスに反映させるには再起動が必要だった（新規ファイル同様、Astro の Content Collections が起動時にしかフルスキャンしないためと判断。`npm run build` は毎回フレッシュなので無関係）。`npm run build` 後の `dist/posts/*/index.html` を `grep` して両記事に両コンポーネントが出力されていることを確認して検証済み
   - 色・リンク・記事取得の変更なし（既存コンポーネントをそのまま利用）。ページ数・ルーティングは変わらず（19 ページ）
+- [x] 最寄り駅の複数指定・営業時間の曜日別対応（2026-09-20）
+  - `src/lib/business-hours.ts` を新設。`WEEKDAYS`（月〜日の順序）と `formatBusinessHours()` を定義。連続した曜日は「月〜金」のようにまとめ、そうでなければ「月・水・金」のように列挙する
+  - `content.config.ts`: `nearest_station` を `z.union([z.string(), z.array(z.string()).min(1)])` に、`business_hours` を `z.union([z.string(), z.array(z.object({ days: z.array(z.enum(WEEKDAYS)).min(1), hours: z.string().min(1) })).min(1)])` に変更（どちらも既存の単純な文字列と、新しい配列形式の両方を受け付ける）。既存記事はどちらのフィールドも未設定だったため後方互換の問題は無し
+  - `posts/[id].astro`: `nearest_station` は配列なら `・` 区切りで結合、`business_hours` は `formatBusinessHours()` を通してから店舗情報テーブルに表示。表示先の UI・テーブル構造は変更していない
+  - 実際の店舗の営業時間・最寄り駅は記事に無い情報を創作しないという方針上、実記事には組み込まず、一時テスト記事（`scratch-shopinfo-test.mdx`）で複数駅（3 駅）・曜日別営業時間（平日/土日）の表示を確認し、確認後に削除した。実際に使うときは記事のフロントマターに `nearest_station: ["◯◯駅", "△△駅"]` や `business_hours: [{ days: ["月","火","水","木","金"], hours: "..." }, { days: ["土","日"], hours: "..." }]` のように書く
+  - 色・リンク・記事取得の変更なし。ページ数・ルーティングは変わらず（19 ページ）
 - [x] **公開済み（2026-09-18）**: https://enoenomirai-beep.github.io/ramen-blog/
   - リポジトリ: https://github.com/enoenomirai-beep/ramen-blog（`main`、Pages の Source = GitHub Actions）
   - 本番で確認済み: トップ / 記事 3 ページ / `rss.xml` / `sitemap-index.xml` / favicon / OGP・canonical の URL / 画像の読み込み。コンソールエラーなし
