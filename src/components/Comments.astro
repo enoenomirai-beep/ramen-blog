@@ -2,10 +2,10 @@
 /**
  * Giscus（GitHub Discussions を使った無料のコメント欄）。
  *
- * data-repo-id / data-category-id は https://giscus.app で発行される値に
- * 置き換える必要がある。リポジトリで Discussions を有効化し、giscus app を
- * インストールしてから発行される（現状はプレースホルダーのまま）。
- * data-repo はこのリポジトリ名（enoenomirai-beep/ramen-blog）を設定済み。
+ * 2026-09-20 に Discussions を有効化・giscus app をインストールし、
+ * https://giscus.app で発行された実際の repo-id / category-id に設定済み。
+ * カテゴリは giscus 推奨の「Announcements」（一般ユーザーが新規 Discussion を
+ * 作成できないようにし、giscus と管理者だけが各記事用の Discussion を作れる）。
  *
  * サイトのダークモード切り替えに giscus 側のテーマも同期させる（Vanilla JS）。
  */
@@ -28,10 +28,9 @@
 		script.async = true;
 		script.crossOrigin = 'anonymous';
 		script.setAttribute('data-repo', 'enoenomirai-beep/ramen-blog');
-		// TODO: https://giscus.app で Discussions を有効化して発行される実際の ID に置き換える
-		script.setAttribute('data-repo-id', 'REPLACE_WITH_GISCUS_REPO_ID');
-		script.setAttribute('data-category', 'Comments');
-		script.setAttribute('data-category-id', 'REPLACE_WITH_GISCUS_CATEGORY_ID');
+		script.setAttribute('data-repo-id', 'R_kgDOUf9VvQ');
+		script.setAttribute('data-category', 'Announcements');
+		script.setAttribute('data-category-id', 'DIC_kwDOUf9Vvc4DF_4P');
 		script.setAttribute('data-mapping', 'pathname');
 		script.setAttribute('data-strict', '0');
 		script.setAttribute('data-reactions-enabled', '1');
