@@ -1,0 +1,60 @@
+---
+/**
+ * MDX 記事の本文中に置く、他の記事へ誘導するためのブログカード風の内部リンク。
+ * `<BlogCard slug="iekei-tokyo-suehirocho" />` のように呼び出す。
+ *
+ * slug に対応する公開済み記事が無い場合は何も表示しない（誤字などでビルドが失敗しないように）。
+ */
+import { Image } from 'astro:assets';
+import { withBase } from '../consts';
+import { PLACEHOLDER_ALT, placeholderImage } from '../lib/placeholder';
+import { getPublishedPosts } from '../lib/posts';
+import StarRating from './StarRating.astro';
+
+interface Props {
+	/** 記事のスラッグ（ファイル名。例: "iekei-tokyo-suehirocho"） */
+	slug: string;
+}
+
+const { slug } = Astro.props;
+const posts = await getPublishedPosts();
+const post = posts.find((p) => p.id === slug);
+---
+
+{
+	post && (
+		<a
+			href={withBase(`/posts/${post.id}/`)}
+			class="group my-6 grid grid-cols-[104px_1fr] overflow-hidden rounded-xl border border-line bg-surface-raised shadow-sm transition not-prose hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md sm:grid-cols-[140px_1fr]"
+		>
+			<div class="relative aspect-square overflow-hidden bg-surface-sunken">
+				{post.data.image ? (
+					<Image
+						src={post.data.image}
+						alt=""
+						widths={[208, 280]}
+						sizes="140px"
+						loading="lazy"
+						class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+					/>
+				) : (
+					<img
+						src={placeholderImage(post.id, 280, 280)}
+						alt={PLACEHOLDER_ALT}
+						width="280"
+						height="280"
+						loading="lazy"
+						decoding="async"
+						class="h-full w-full object-cover"
+					/>
+				)}
+			</div>
+			<div class="flex min-w-0 flex-col justify-center gap-1 p-3 sm:p-4">
+				<p class="text-xs font-bold text-brand-fg">あわせて読みたい</p>
+				<p class="truncate text-base font-extrabold text-ink group-hover:text-brand-fg sm:text-lg">{post.data.shop_name}</p>
+				<p class="line-clamp-1 text-sm text-ink-muted">{post.data.title}</p>
+				<StarRating rating={post.data.rating} size="sm" />
+			</div>
+		</a>
+	)
+}

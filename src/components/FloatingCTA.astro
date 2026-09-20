@@ -1,0 +1,32 @@
+---
+/**
+ * スマホ専用の追従アクションバー（画面下部固定）。回遊率向上のため、記事を読み終えた後や
+ * スクロール中でもすぐに他の記事を探せるようにする。md 以上（PC・タブレット）では非表示。
+ *
+ * フッターと重ならないよう、BaseLayout.astro 側で <footer> にこのバーの高さ分の
+ * padding-bottom（モバイルのみ）を追加している。この 2 つはセットで変更すること。
+ */
+import { withBase } from '../consts';
+
+const homeHref = withBase('/');
+const locationsHref = withBase('/locations/');
+---
+
+<nav
+	aria-label="クイックアクション"
+	class="fixed inset-x-0 bottom-0 z-40 flex items-center gap-2 border-t border-line bg-surface-raised px-3 pt-2.5 shadow-[0_-4px_16px_rgba(0,0,0,0.12)] md:hidden"
+	style="padding-bottom: calc(0.625rem + env(safe-area-inset-bottom));"
+>
+	<a
+		href={locationsHref}
+		class="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-line-strong bg-surface-raised px-4 py-2.5 text-sm font-bold text-ink transition active:scale-95"
+	>
+		🔍 エリアから探す
+	</a>
+	<a
+		href={homeHref}
+		class="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-brand-600 px-4 py-2.5 text-sm font-bold text-white shadow transition active:scale-95"
+	>
+		🍜 トップへ戻る
+	</a>
+</nav>

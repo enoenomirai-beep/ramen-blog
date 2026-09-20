@@ -13,6 +13,7 @@ import TableOfContents from '../../components/TableOfContents.astro';
 import { SITE_TITLE, formatDate, withBase } from '../../consts';
 import { PLACEHOLDER_ALT, placeholderImage } from '../../lib/placeholder';
 import { getPublishedPosts, locationPath, stylePath, tagPath, type Post } from '../../lib/posts';
+import { estimateReadingMinutes } from '../../lib/reading-time';
 
 export async function getStaticPaths() {
 	// 新しい順（一覧と同じ）。前後ナビ用に隣の記事も props で渡す
@@ -51,6 +52,7 @@ const {
 	features,
 } = post.data;
 const { Content, headings } = await render(post);
+const readingMinutes = estimateReadingMinutes(post.body ?? '');
 
 // 店舗情報の表。mapHref がある行は値の横に「地図を見る」リンクを添える（場所の行で使う）
 const meta: { label: string; value: string; href?: string; mapHref?: string }[] = [
@@ -153,6 +155,7 @@ const structuredData = {
 					)
 				}
 				<div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-ink-muted">
+					<span>⏱️ 約{readingMinutes}分で読めます</span>
 					<span>
 						<span class="mr-1 text-xs font-bold text-ink-faint">訪問日</span>
 						<time datetime={date.toISOString()} class="font-medium text-ink">{formatDate(date)}</time>

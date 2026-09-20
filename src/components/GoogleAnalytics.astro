@@ -1,0 +1,33 @@
+---
+/**
+ * GA4（Google アナリティクス 4）計測タグの土台。
+ *
+ * `PUBLIC_GA_MEASUREMENT_ID` 環境変数（.env.example 参照）に実際の測定 ID を設定すれば、
+ * 次のビルドから自動で計測が始まる。未設定（プレースホルダーの "G-XXXXXXXXXX" のまま、または
+ * 空）の間は gtag のスクリプトを一切出力しない（存在しない ID にリクエストを送らないようにする）。
+ * `BaseLayout.astro` の <head> に常時マウントしているので、全ページで自動的に計測対象になる。
+ */
+interface Props {
+	measurementId?: string;
+}
+
+const PLACEHOLDER_ID = 'G-XXXXXXXXXX';
+const { measurementId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID || PLACEHOLDER_ID } = Astro.props;
+const isConfigured = Boolean(measurementId) && measurementId !== PLACEHOLDER_ID;
+---
+
+{
+	isConfigured && (
+		<>
+			<script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`} />
+			<script is:inline define:vars={{ measurementId }}>
+				window.dataLayer = window.dataLayer || [];
+				function gtag(...args) {
+					window.dataLayer.push(args);
+				}
+				gtag('js', new Date());
+				gtag('config', measurementId);
+			</script>
+		</>
+	)
+}
