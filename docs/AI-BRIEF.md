@@ -42,7 +42,7 @@
 
 | 種別 | 記事 | 評価 |
 |---|---|---|
-| 本物 | iekei Tokyo 王道家（末広町・家系・2026-09-10、`.mdx`）— `pickup: true`／`visits: 3`／`features: ["通し営業"]`。本文中に `BlogCard`（→武将家外伝）と `AffiliateCard`（宅麺のダミー） | 5.0 |
+| 本物 | iekei Tokyo 王道家（末広町・家系・2026-09-10、`.mdx`）— `pickup: true`／`visits: 3`／`features: ["通し営業"]`。本文中に `BlogCard`（→武将家外伝）と `AffiliateCard`（宅麺のダミー） | 4.8 |
 | 本物 | 武将家外伝（秋葉原・家系・2026-09-16、`.mdx`）— `features: ["深夜営業"]`。本文中に `BlogCard`（→iekei Tokyo 王道家）と `AffiliateCard`（宅麺のダミー） | 4.3 |
 | 本物 | ラーメン二郎 めじろ台店（めじろ台・二郎系・2026-09-11）— `tags: ["非乳化","太麺"]`。系統「二郎系」・エリア「めじろ台」は初登場（`location-map.ts` に「めじろ台エリア」を新規追加、京王線） | 3.7 |
 
