@@ -1,6 +1,6 @@
 # らーめん食べ歩きログ — 現状ブリーフ（他の AI に渡す用）
 
-最終更新: 2026-09-20（GA4 アクセス解析の本番設定完了。PR 作成中）
+最終更新: 2026-09-20（記事の全文検索ページ `/search/` を追加。PR 作成中）
 
 このファイルは、プロジェクトの現状を **別の AI（Gemini など）に共有して次の指示（プロンプト）を考えてもらう**ためのまとめです。
 実装は Claude Code が行い、変更のたびにこのファイルも更新します。
@@ -35,6 +35,7 @@
 | 見た目 | 暖色パレット（暖簾の深い赤のヘッダー、鶏油のオレンジ、琥珀の星、オフホワイト背景、ダークグレー文字）。**ダークモード**（OS 設定に従い、ヘッダーのボタンで切り替え・保存） |
 | 写真 | `npm run photo -- <写真> <スラッグ>` で取り込み（iPhone の HEIC 可、縮小・EXIF/GPS 削除）。写真が無い記事には Unsplash のイメージ画像を「イメージ」ラベル付きで表示 |
 | アフィリエイト・広告カード | `AffiliateCard.astro`。MDX 記事の本文中に置ける、収益化用の商品紹介カード（`url` / `imageUrl` / `title` / `description` / `buttonText` を props で渡す）。カード全体が 1 つのリンクで、hover でカード全体がわずかに浮き上がり、CTA ボタン部分はさらに大きく浮き上がる（`group-hover:-translate-y-1`）。画像左上に景品表示法対策の「PR」ラベル、リンクには `rel="sponsored"` を付与（Google 推奨のアフィリエイトリンクの書き方） |
+| 全文検索 | `/search/`。店名・記事タイトル・系統・場所・タグ・特徴タグ・注文・説明文・本文（Markdown 生ソースから記号を除いたプレーンテキスト）を対象にしたキーワード検索。`AreaSearchBox` と同じ方式で、全記事の `PostListItem` をあらかじめ非表示で埋め込み、マッチした記事だけ表示する（API 呼び出し無し）。`?q=キーワード` で直接結果を開ける。ヘッダーに検索アイコン、フッターに「検索」リンク |
 | その他 | RSS（`/rss.xml`）、sitemap、OGP / Twitter カード、レスポンシブ（375px 確認済み） |
 
 ## 3. いまの記事
@@ -51,7 +52,8 @@
 - **色はテーマトークンで指定**（`bg-surface` / `text-ink` / `border-line` / `text-brand-fg` / バッジ用 `bg-chip-brand` など、`src/styles/global.css`）。ライト／ダークはトークンの値が切り替わる仕組みなので、`dark:` を個別に書かない
 - サブパス配信（`/ramen-blog/`）なので、サイト内リンクは `withBase()` を通す
 - 記事データの取得は `src/lib/posts.ts` の `getPublishedPosts()` に統一
-- 主なコンポーネント: `PostListItem`（一覧の 1 行）/ `StarRating`（星）/ `PostFilters`（絞り込み）/ `TermPosts`・`TermCard`（系統／エリア／タグ別ページ）/ `AreaSearchBox`（エリアの近接駅・沿線検索）/ `PhotoGallery`（記事本文の複数写真・Lightbox）/ `AffiliateCard`（記事本文のアフィリエイト・広告カード）/ `BlogCard`（記事本文の内部リンクカード）/ `Breadcrumbs`（パンくず＋ JSON-LD）/ `RelatedPosts`（関連記事）/ `PickupPosts`（殿堂入りピックアップ）/ `ContributionCalendar`（ラーメン草カレンダー）/ `ShareButtons`（SNS シェア＆ URL コピー）/ `Comments`（Giscus コメント欄）/ `CalorieMeter`（免罪符メーター）/ `FloatingCTA`（スマホ用フローティング CTA）/ `GoogleAnalytics`（GA4 計測タグ）/ `TableOfContents` / `PostNav` / `ThemeToggle`。ページ: `map.astro`（ラーメンマップ）/ `ranking.astro`（マイベスト・ランキング）/ `dashboard.astro`（出費ダッシュボード）/ `og/[slug].png.ts`（動的 OGP 画像）
+- 主なコンポーネント: `PostListItem`（一覧の 1 行）/ `StarRating`（星）/ `PostFilters`（絞り込み）/ `TermPosts`・`TermCard`（系統／エリア／タグ別ページ）/ `AreaSearchBox`（エリアの近接駅・沿線検索）/ `PhotoGallery`（記事本文の複数写真・Lightbox）/ `AffiliateCard`（記事本文のアフィリエイト・広告カード）/ `BlogCard`（記事本文の内部リンクカード）/ `Breadcrumbs`（パンくず＋ JSON-LD）/ `RelatedPosts`（関連記事）/ `PickupPosts`（殿堂入りピックアップ）/ `ContributionCalendar`（ラーメン草カレンダー）/ `ShareButtons`（SNS シェア＆ URL コピー）/ `Comments`（Giscus コメント欄）/ `CalorieMeter`（免罪符メーター）/ `FloatingCTA`（スマホ用フローティング CTA）/ `GoogleAnalytics`（GA4 計測タグ）/ `TableOfContents` / `PostNav` / `ThemeToggle`。ページ: `map.astro`（ラーメンマップ）/ `ranking.astro`（マイベスト・ランキング）/ `dashboard.astro`（出費ダッシュボード）/ `search.astro`（全文検索）/ `og/[slug].png.ts`（動的 OGP 画像）
+- 記事本文（Markdown/MDX 生ソース）からプレーンテキストを取り出す `stripMarkdown()`（`src/lib/markdown.ts`）は、読了時間の計算（`reading-time.ts`）と全文検索（`search.astro`）の両方で共有している
 - `AffiliateCard` は `PhotoGallery` と同じく MDX 記事の本文中でしか使えない（`.md` ではなく `.mdx` にして `import AffiliateCard from '../../components/AffiliateCard.astro'` → `<AffiliateCard url="..." imageUrl="..." title="..." description="..." buttonText="..." />` を本文中に置く）。現時点ではどの記事にも実際には使っていない（サンプル記事の熊田家は 2026-09-19 に削除済みのため、レイアウト確認は一時的なテスト記事で行い、確認後に削除した）
 - 地図のピン座標は `location-map.ts` の `AREA_GROUPS` 各エントリの `lat`/`lng`（エリアの代表座標）。`getCoordinates(location)` で引く。辞書に無い location は座標が無いため地図には出ない（ビルドは失敗しない）
 - 動的 OGP 画像は satori（HTML/CSS 風オブジェクト → SVG）+ `@resvg/resvg-js`（SVG → PNG）+ `@fontsource/noto-sans-jp`（日本語フォント、`node_modules` から直接 `fs.readFile`）をビルド時に使う。★ 記号はフォントに字形が無いので `StarRating.astro` と同じ SVG パスで描画し、絵文字は使わない（Noto Sans JP に絵文字グリフが無く tofu 文字化けするため）
@@ -72,7 +74,6 @@
 
 現時点で「予定していたものはすべて完了」。以下は候補（未着手・未決定）:
 
-- 記事の全文検索（店名・本文などのキーワード。エリア〔駅〕・沿線検索は実装済み）
 - 最寄駅の複数指定、営業時間の曜日別対応など、店舗情報のさらなる拡充（地図リンク・営業時間・最寄り駅は実装済み）
 - 独自ドメイン
 - `AffiliateCard` / `BlogCard` はまだどの記事にも実際には使っていない（コンポーネントとしては完成済み）。実際の提携先が決まったら記事を `.mdx` にして組み込む

@@ -50,6 +50,7 @@ const tagsHref = withBase('/tags/');
 const mapHref = withBase('/map/');
 const rankingHref = withBase('/ranking/');
 const dashboardHref = withBase('/dashboard/');
+const searchHref = withBase('/search/');
 const aboutHref = withBase('/about/');
 
 const navLinkClass =
@@ -134,6 +135,16 @@ const navLinkClass =
 					<a href={rankingHref} class={navLinkClass}>ランキング</a>
 					<a href={dashboardHref} class={navLinkClass}>出費ダッシュボード</a>
 					<a href={aboutHref} class={navLinkClass}>About</a>
+					<a href={searchHref} class={navLinkClass} title="記事を検索">
+						<span class="sr-only">記事を検索</span>
+						<svg class="size-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+							<path
+								fill-rule="evenodd"
+								d="M8.5 3a5.5 5.5 0 1 0 3.38 9.84l3.64 3.65a.75.75 0 1 0 1.06-1.06l-3.65-3.64A5.5 5.5 0 0 0 8.5 3ZM4.5 8.5a4 4 0 1 1 8 0 4 4 0 0 1-8 0Z"
+								clip-rule="evenodd"
+							></path>
+						</svg>
+					</a>
 					<a href={rssHref} class={navLinkClass} title="RSS フィード">
 						<span class="sr-only">RSS フィード</span>
 						<svg class="size-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -167,6 +178,7 @@ const navLinkClass =
 					<a href={rankingHref} class="hover:text-brand-fg">ランキング</a>
 					<a href={dashboardHref} class="hover:text-brand-fg">出費ダッシュボード</a>
 					<a href={aboutHref} class="hover:text-brand-fg">About</a>
+					<a href={searchHref} class="hover:text-brand-fg">検索</a>
 					<a href={rssHref} class="hover:text-brand-fg">RSS</a>
 				</nav>
 			</div>

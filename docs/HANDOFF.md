@@ -1,6 +1,6 @@
 # 作業引き継ぎメモ
 
-最終更新: 2026-09-20（Claude Code セッションからの引き継ぎ、GA4 アクセス解析の本番設定完了）
+最終更新: 2026-09-20（Claude Code セッションからの引き継ぎ、記事の全文検索ページ `/search/` を追加）
 
 ## プロジェクト概要
 
@@ -96,6 +96,14 @@ Astro 7.3 + Tailwind CSS 4 + MDX。記事は Content Collections（`src/content/
   - 動作確認用に一時テスト記事（`scratch-blogcard-test.mdx`）で `BlogCard`（存在する slug 2 件・存在しない slug 1 件）の表示を確認し、確認後に削除した（実記事には組み込んでいない）
   - 色はすべて既存のテーマトークン・固定色のみ使用（`dark:` 不使用）。リンクは `withBase()` 経由。記事取得は `getPublishedPosts()` に統一。ページ数・ルーティングは変わらず（18 ページ）
   - 4 機能ともローカルで動作確認済み。スキップした機能はなし
+- [x] 記事の全文検索（2026-09-20）
+  - `src/pages/search.astro`（`/search/`）: `AreaSearchBox.astro` と同じ方式で、全記事の `PostListItem` をあらかじめ非表示（`hidden`）で埋め込み、キーワードにマッチした記事だけ表示する Vanilla JS のインクリメンタルサーチ。API 呼び出しやビルド時の JSON 生成は無し
+  - 検索対象は店名・記事タイトル・系統・場所・タグ・特徴タグ・注文・説明文と、本文の Markdown 生ソースから見出し記号などを除いたプレーンテキスト。`?q=キーワード` の URL クエリで直接検索結果を開ける（他ページから検索結果へリンクする用途を想定）
+  - `src/lib/markdown.ts` を新設し、`reading-time.ts` にあった Markdown 記号除去ロジック（`stripMarkdown()`）を切り出して共有。`reading-time.ts` はこれを使うようリファクタリング（動作は変えていない）
+  - `BaseLayout.astro` のヘッダーに検索アイコン（RSS アイコンと同じ扱い）、フッターに「検索」テキストリンクを追加
+  - 開発中、`astro dev` の再起動直後に一時的に `504 Outdated Optimize Dep` エラーが出たが、数秒待って再読み込みすると解消した（Vite の依存最適化キャッシュの再構築待ちで、コード側の問題ではない）
+  - 「小麦感」（本文にのみ登場する語）や「燻製」（タグに登場する語）で検索して正しい記事がヒットすること、0 件時の表示、`?q=` での直接検索、モバイル幅・ライト/ダークモードを確認済み
+  - 色はすべて既存のテーマトークンのみ使用（`dark:` 不使用）。リンクは `withBase()` 経由。記事取得は `getPublishedPosts()` に統一。ページ数は 18→19
 - [x] **公開済み（2026-09-18）**: https://enoenomirai-beep.github.io/ramen-blog/
   - リポジトリ: https://github.com/enoenomirai-beep/ramen-blog（`main`、Pages の Source = GitHub Actions）
   - 本番で確認済み: トップ / 記事 3 ページ / `rss.xml` / `sitemap-index.xml` / favicon / OGP・canonical の URL / 画像の読み込み。コンソールエラーなし
