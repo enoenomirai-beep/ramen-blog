@@ -1,6 +1,6 @@
 # 作業引き継ぎメモ
 
-最終更新: 2026-09-21（Claude Code セッションからの引き継ぎ、3 本目の実記事「ラーメン二郎 めじろ台店」を追加）
+最終更新: 2026-09-21（Claude Code セッションからの引き継ぎ、4 本目の実記事「王道家直系 ラーメンがく」を追加）
 
 ## プロジェクト概要
 
@@ -117,6 +117,7 @@ Astro 7.3 + Tailwind CSS 4 + MDX。記事は Content Collections（`src/content/
   - 実際の店舗の営業時間・最寄り駅は記事に無い情報を創作しないという方針上、実記事には組み込まず、一時テスト記事（`scratch-shopinfo-test.mdx`）で複数駅（3 駅）・曜日別営業時間（平日/土日）の表示を確認し、確認後に削除した。実際に使うときは記事のフロントマターに `nearest_station: ["◯◯駅", "△△駅"]` や `business_hours: [{ days: ["月","火","水","木","金"], hours: "..." }, { days: ["土","日"], hours: "..." }]` のように書く
   - 色・リンク・記事取得の変更なし。ページ数・ルーティングは変わらず（19 ページ）
 - [x] **3 本目の実記事**（2026-09-21）: `jiro-mejirodai.md`（ラーメン二郎 めじろ台店・二郎系・めじろ台・2026-09-11 訪問・★3.7）。ユーザーのメモ（HEIC写真1枚 + テキストメモ）から作成。系統「二郎系」・エリア「めじろ台」ともに初登場のため、`location-map.ts` の `AREA_GROUPS` に「めじろ台エリア」（東京都・京王線）を新規追加。`tags: ["非乳化","太麺"]`。写真は `npm run photo` で取り込み（`src/assets/posts/jiro-mejirodai.jpg`）。`免罪符メーター`は既存の `nutrition.ts` の「二郎系」エントリ（約1300kcal）をそのまま使用。営業時間・最寄り駅・地図URLは、ユーザーのメモに無い情報を創作しないという方針上、設定していない。`npx astro check` 0 エラー、`npm run build` 24 ページ成功（記事 3・系統 2・エリア 3・タグ 7）
+- [x] **4 本目の実記事**（2026-09-21）: `ramen-gaku.mdx`（王道家直系 ラーメンがく・家系・研究学園・2026-09-21 訪問・★4.6）。ユーザーのメモ（HEIC 写真2枚＋テキストメモ）から作成。エリア「研究学園」が初登場のため、`location-map.ts` の `AREA_GROUPS` に「研究学園エリア」（茨城県・つくばエクスプレス）を新規追加。写真は2枚とも `npm run photo` で取り込み、1枚目を記事の `image`、2枚目を本文中の `PhotoGallery`（このコンポーネントの初の実使用）で表示。本文末尾に「アクセス」（研究学園駅から徒歩30分、車の方が便利）の Markdown 表を追加（`nearest_station` フィールドではなく本文の表で表現。単に最寄り駅名だけでなく「徒歩30分」「車が便利」という文脈込みの情報だったため）。`tags: ["自家製麺","燻製チャーシュー"]`。`npx astro check` 0 エラー、`npm run build` 26 ページ成功（記事 4・系統 2・エリア 4・タグ 7）
 - [x] **公開済み（2026-09-18）**: https://enoenomirai-beep.github.io/ramen-blog/
   - リポジトリ: https://github.com/enoenomirai-beep/ramen-blog（`main`、Pages の Source = GitHub Actions）
   - 本番で確認済み: トップ / 記事 3 ページ / `rss.xml` / `sitemap-index.xml` / favicon / OGP・canonical の URL / 画像の読み込み。コンソールエラーなし

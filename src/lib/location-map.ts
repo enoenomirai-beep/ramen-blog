@@ -193,6 +193,12 @@ export const AREA_GROUPS: Record<string, AreaGroup> = {
 		lat: 35.6367,
 		lng: 139.3538,
 	},
+	研究学園エリア: {
+		prefecture: '茨城県',
+		stations: [{ name: '研究学園', lines: ['つくばエクスプレス'] }],
+		lat: 36.0203,
+		lng: 140.1147,
+	},
 };
 
 export interface LocationInfo {
