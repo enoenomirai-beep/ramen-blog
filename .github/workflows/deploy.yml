@@ -24,6 +24,10 @@ jobs:
         with:
           # package.json の engines と合わせる
           node-version: 24
+        env:
+          # GA4 の測定 ID（リポジトリの Settings > Secrets and variables > Actions > Variables で設定）。
+          # 未設定なら GoogleAnalytics.astro がプレースホルダー扱いにして計測タグを出力しない
+          PUBLIC_GA_MEASUREMENT_ID: ${{ vars.PUBLIC_GA_MEASUREMENT_ID }}
 
   deploy:
     needs: build
