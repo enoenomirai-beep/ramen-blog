@@ -2,9 +2,10 @@
 /**
  * ラーメンマップ。全記事の店舗を Leaflet（CDN・UMD 版）で地図上にピン留めする。
  *
- * ピンの位置は location-map.ts の「エリアグループの代表座標（駅の目安）」で、
- * 店舗の正確な位置ではない。同じエリアの記事が重ならないよう、記事ごとに
- * 少しだけ位置をずらしている。
+ * フロントマターに `lat` / `lng`（店舗の正確な座標）があればそれをそのまま使い、
+ * 無い記事は location-map.ts の「エリアグループの代表座標（駅の目安）」にフォールバックする。
+ * フォールバックの場合のみ、同じエリアの記事が重ならないよう記事ごとに少しだけ位置をずらす
+ * （正確な座標がある場合はずらさない）。
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { withBase } from '../consts';
@@ -34,17 +35,18 @@ interface Pin {
 }
 
 const pins: Pin[] = posts.flatMap((post) => {
-	const coords = getCoordinates(post.data.location);
+	const hasExactCoords = typeof post.data.lat === 'number' && typeof post.data.lng === 'number';
+	const coords = hasExactCoords ? { lat: post.data.lat!, lng: post.data.lng! } : getCoordinates(post.data.location);
 	if (!coords) return [];
-	// 徒歩圏内グループが同じ記事は同じ座標になるので、±0.003 度（目安 300m 弱）ほどずらす
+	// 正確な座標が無い記事は、徒歩圏内グループが同じだと座標が重なるので ±0.003 度（目安 300m 弱）ほどずらす
 	return [
 		{
 			shopName: post.data.shop_name,
 			style: post.data.style,
 			location: post.data.location,
 			rating: post.data.rating,
-			lat: coords.lat + jitterUnit(`${post.id}-lat`) * 0.006,
-			lng: coords.lng + jitterUnit(`${post.id}-lng`) * 0.006,
+			lat: hasExactCoords ? coords.lat : coords.lat + jitterUnit(`${post.id}-lat`) * 0.006,
+			lng: hasExactCoords ? coords.lng : coords.lng + jitterUnit(`${post.id}-lng`) * 0.006,
 			href: withBase(`/posts/${post.id}/`),
 		},
 	];
@@ -53,7 +55,7 @@ const pins: Pin[] = posts.flatMap((post) => {
 const homeHref = withBase('/');
 ---
 
-<BaseLayout title="ラーメンマップ" description="訪れたラーメン店をエリアの目安の位置で地図上に一覧できます。">
+<BaseLayout title="ラーメンマップ" description="訪れたラーメン店を地図上に一覧できます。">
 	<nav aria-label="パンくずリスト" class="mb-5 text-xs text-ink-muted sm:text-sm">
 		<a href={homeHref} class="hover:text-brand-fg">記事一覧</a>
 		<span aria-hidden="true" class="mx-2 text-ink-faint">/</span>
@@ -64,7 +66,7 @@ const homeHref = withBase('/');
 		<p class="mb-1 text-xs font-bold tracking-widest text-brand-fg uppercase">Map</p>
 		<h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">ラーメンマップ</h1>
 		<p class="mt-2 max-w-2xl text-sm leading-relaxed text-ink-muted sm:text-base">
-			訪れたお店をエリアの目安の位置にピン留めしています（駅の周辺の目安で、正確な店舗位置ではありません）。ピンをタップすると記事に飛べます。
+			訪れたお店をピン留めしています。店舗の正確な座標が分かっている記事はその位置に、分かっていない記事はエリア（最寄り駅）の目安の位置に表示しています。ピンをタップすると記事に飛べます。
 		</p>
 	</section>
 
