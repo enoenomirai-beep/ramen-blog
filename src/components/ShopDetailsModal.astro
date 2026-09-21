@@ -1,0 +1,118 @@
+---
+/**
+ * 店舗詳細（営業時間・定休日・訪問時に注文したメニュー）をモーダルで表示するボタン。
+ * データは src/data/shops.ts から。分かっていない項目（営業時間・定休日など）は行自体を出さない。
+ * オーバーレイの開閉は PhotoGallery.astro の Lightbox と同じ Vanilla JS のパターン。
+ */
+import type { ShopInfo } from '../data/shops';
+
+interface Props {
+	shop: ShopInfo;
+}
+
+const { shop } = Astro.props;
+const hasDetails = !!shop.businessHours || !!shop.regularHoliday || (shop.orderedMenu?.length ?? 0) > 0;
+---
+
+<div data-shop-details>
+	<button
+		type="button"
+		data-shop-details-open
+		class="inline-flex items-center gap-1 rounded-full border border-line-strong px-2.5 py-1 text-xs font-semibold text-brand-fg hover:border-brand-400 hover:bg-surface-sunken"
+	>
+		ℹ️ 店舗詳細・メニュー
+	</button>
+
+	<div
+		data-shop-details-overlay
+		hidden
+		class="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4"
+		role="dialog"
+		aria-modal="true"
+		aria-label={`${shop.shopName}の店舗詳細`}
+	>
+		<div class="max-h-[85vh] w-full max-w-sm overflow-y-auto rounded-xl border border-line bg-surface-raised p-5 shadow-lg">
+			<div class="mb-3 flex items-start justify-between gap-3">
+				<h3 class="text-lg font-bold text-ink">{shop.shopName}</h3>
+				<button
+					type="button"
+					data-shop-details-close
+					aria-label="閉じる"
+					class="shrink-0 rounded-full p-1 text-ink-muted hover:bg-surface-sunken hover:text-ink"
+				>
+					<svg class="size-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+						<path d="M4.3 4.3a1 1 0 0 1 1.4 0L10 8.6l4.3-4.3a1 1 0 1 1 1.4 1.4L11.4 10l4.3 4.3a1 1 0 0 1-1.4 1.4L10 11.4l-4.3 4.3a1 1 0 0 1-1.4-1.4L8.6 10 4.3 5.7a1 1 0 0 1 0-1.4Z" />
+					</svg>
+				</button>
+			</div>
+
+			{
+				!hasDetails && (
+					<p class="text-sm text-ink-muted">まだ詳細情報はありません。</p>
+				)
+			}
+
+			{
+				shop.businessHours && (
+					<p class="mb-1.5 flex gap-2 text-sm text-ink">
+						<span class="w-14 shrink-0 text-xs font-bold text-ink-faint">営業時間</span>
+						<span>{shop.businessHours}</span>
+					</p>
+				)
+			}
+			{
+				shop.regularHoliday && (
+					<p class="mb-1.5 flex gap-2 text-sm text-ink">
+						<span class="w-14 shrink-0 text-xs font-bold text-ink-faint">定休日</span>
+						<span>{shop.regularHoliday}</span>
+					</p>
+				)
+			}
+
+			{
+				shop.orderedMenu && shop.orderedMenu.length > 0 && (
+					<div class="mt-3 border-t border-line pt-3">
+						<p class="mb-2 text-xs font-bold text-ink-faint">訪問時に注文したメニュー（お店の全メニューではありません）</p>
+						<ul class="flex flex-col gap-1">
+							{shop.orderedMenu.map((item) => (
+								<li class="flex items-baseline justify-between gap-3 text-sm text-ink">
+									<span>{item.name}</span>
+									<span class="shrink-0 font-medium">¥{item.price.toLocaleString('ja-JP')}</span>
+								</li>
+							))}
+						</ul>
+					</div>
+				)
+			}
+		</div>
+	</div>
+</div>
+
+<script>
+	document.querySelectorAll<HTMLElement>('[data-shop-details]').forEach((root) => {
+		const openButton = root.querySelector<HTMLButtonElement>('[data-shop-details-open]');
+		const overlay = root.querySelector<HTMLElement>('[data-shop-details-overlay]');
+		const closeButton = root.querySelector<HTMLButtonElement>('[data-shop-details-close]');
+		if (!openButton || !overlay) return;
+
+		function open() {
+			overlay!.hidden = false;
+			document.body.style.overflow = 'hidden';
+			closeButton?.focus();
+		}
+		function close() {
+			overlay!.hidden = true;
+			document.body.style.overflow = '';
+		}
+
+		openButton.addEventListener('click', open);
+		closeButton?.addEventListener('click', close);
+		overlay.addEventListener('click', (e) => {
+			if (e.target === overlay) close();
+		});
+		document.addEventListener('keydown', (e) => {
+			if (overlay!.hidden) return;
+			if (e.key === 'Escape') close();
+		});
+	});
+</script>
