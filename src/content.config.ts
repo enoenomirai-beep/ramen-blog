@@ -46,6 +46,10 @@ const posts = defineCollection({
 			tags: z.array(z.string()).default([]),
 			/** GoogleマップなどのURL（記事ページの「場所」に「地図を見る」リンクを表示） */
 			map_url: z.url().optional(),
+			/** 店舗の正確な緯度。指定するとラーメンマップでエリアの目安座標ではなくこの座標にピン留めする */
+			lat: z.number().optional(),
+			/** 店舗の正確な経度。lat とセットで指定する */
+			lng: z.number().optional(),
 			/**
 			 * 営業時間。単純な文字列（例: "11:00〜15:00 / 17:00〜21:00"）のほか、
 			 * 曜日によって時間が違う場合は `{ days: ["月","火",...], hours: "..." }` の配列で指定できる

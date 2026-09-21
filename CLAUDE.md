@@ -37,6 +37,7 @@ Node.js は `C:\Program Files\nodejs`。ツール用シェルの PATH に入っ�
 - 開発サーバーの URL は `http://localhost:4321/ramen-blog/`（ルート `/` は 404 になる）
 - `main` への push で `.github/workflows/deploy.yml`（withastro/action）が自動デプロイ
 - サンプル画像は `node scripts/make-placeholders.mjs` で再生成できる。実際の写真は `npm run photo -- <写真> <スラッグ>`（`scripts/import-photo.mjs`）で取り込む（縮小・EXIF/GPS 削除、HEIC は `heic-decode` で展開）。元の写真をそのまま `src/assets/posts/` に置かない
+- ラーメンマップ（`/map/`）のピンは、記事のフロントマターに `lat` / `lng`（店舗の正確な緯度経度）があればその座標を使い、無ければ `location-map.ts` のエリア代表座標（駅の目安）にフォールバックする。**ユーザーから新規記事の作成依頼（メモ）を受け取った際は、ウェブ検索等で該当店舗の正確な緯度 (`lat`) と経度 (`lng`) を調べ、フロントマターに記載すること。**確度の高い座標が見つからない場合（ツールの制約で調べられない場合を含む）は、正確な数値を推測で埋めずに `lat` / `lng` を省略し、ユーザーにその旨を伝える（省略時はエリア代表座標にフォールバックされ、ビルドは失敗しない）
 
 ## Documentation
 
