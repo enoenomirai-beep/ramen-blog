@@ -10,7 +10,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "photo": "node scripts/import-photo.mjs"
+    "photo": "node scripts/import-photo.mjs",
+    "exif": "node scripts/extract-exif.mjs"
   },
   "dependencies": {
     "@astrojs/markdown-satteri": "^0.4.1",
@@ -30,6 +31,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "exifr": "^7.1.3",
     "heic-decode": "^2.1.0",
     "typescript": "^6.0.3"
   }

@@ -233,6 +233,11 @@ npm run photo -- <写真ファイル> <記事のスラッグ>
 iPhone の HEIC もそのまま渡せます（JPEG / PNG / WebP / HEIC 対応）。
 
 そのあと、フロントマターに `image`（記事ファイルからの相対パス）と `image_alt`（写真の説明）を書きます。
+
+`npm run photo` は EXIF を消してしまうので、`date` や `lat` / `lng` を写真の撮影日時・GPS 座標から埋めたい場合は、
+先に元の写真（EXIF が残っている状態）に対して `npm run exif -- <写真ファイル>` を実行します（`scripts/extract-exif.mjs`）。
+`.tmp/latest-exif.json` に撮影日時と GPS 座標が出力されます（`shop_name` などの店舗情報は EXIF からはわからないので、
+別途フロントマターに書いてください）。
 推奨は 3:2 前後の横向きですが、縦写真でも中央でトリミングして表示されます。
 
 画像は Astro の `<Image>` でビルド時に WebP へ変換・リサイズされ、一覧カードと記事ページの両方に表示されます。

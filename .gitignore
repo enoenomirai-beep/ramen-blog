@@ -4,6 +4,8 @@ dist/
 dev-dist/
 # generated types
 .astro/
+# scripts/extract-exif.mjs の出力（写真ごとに変わる一時データ）
+.tmp/
 # local dev-server config for Claude desktop (machine-specific)
 .claude/launch.json
 # personal Claude Code permission overrides (machine-specific, never shared)
