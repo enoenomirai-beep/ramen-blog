@@ -6,6 +6,8 @@ dev-dist/
 .astro/
 # local dev-server config for Claude desktop (machine-specific)
 .claude/launch.json
+# personal Claude Code permission overrides (machine-specific, never shared)
+.claude/settings.local.json
 
 # dependencies
 node_modules/
