@@ -37,9 +37,11 @@ Astro + Tailwind CSS で作ったラーメン食べ歩きレビュー専用の�
 ## 機能
 
 - **記事一覧・絞り込み**：系統タグ・場所・評価（★n 以上）で絞り込み、新しい順／古い順／評価順で並び替え。条件は URL クエリに同期されるので、絞り込んだ状態のままリンクを共有できます。「今日の一杯ガチャ」ボタン、殿堂入りピックアップ、ラーメン草カレンダー（GitHub Contributions 風）も表示
-- **記事ページ**：店名を主役にしたヘッダー、星評価（0.1 刻み）、読了時間の目安、店舗情報の表（地図リンク・営業時間・最寄り駅）、動的 OGP 画像、Review 構造化データ（JSON-LD）、目次、複数写真ギャラリー（Lightbox）、系統別の概算カロリー・PFC を表示する「免罪符メーター」、SNS シェア、関連記事、前後記事ナビ、Giscus コメント欄
+- **記事ページ**：店名を主役にしたヘッダー、星評価（0.1 刻み）、読了時間の目安、店舗情報の表（地図リンク・営業時間・最寄り駅）、店舗詳細モーダル（営業時間・定休日・訪問時に注文したメニュー）、Googleマップ経路検索ボタン（`lat`/`lng` がある記事のみ）、動的 OGP 画像、Review 構造化データ（JSON-LD）、目次、複数写真ギャラリー（Lightbox）、系統別の概算カロリー・PFC を表示する「免罪符メーター」、SNS シェア、関連記事、前後記事ナビ、Giscus コメント欄
 - **分類ページ**：系統別・エリア別・タグ別（`/styles/` `/locations/` `/tags/`）。エリア別ページは近接駅・鉄道路線名でも検索できるインクリメンタルサーチ付き
 - **全文検索**（`/search/`）：店名・本文・系統・場所・タグなどのキーワードで検索
+- **コマンドパレット**（`Ctrl+K` / `Cmd+K`）：どのページからでも開ける検索モーダル。店名・系統・場所・タグにインクリメンタルサーチしてジャンプ。`/dark` `/light` でテーマ切り替えのイースターエッグ付き
+- **ギャラリー**（`/gallery/`）：全記事の一杯の写真だけを Masonry 風にタイル表示。ホバーで店名・評価が浮かび上がる
 - **ラーメンマップ**（`/map/`）：Leaflet で全店舗をピン留め。現在地からの距離順検索も可能
 - **マイベスト・ランキング**（`/ranking/`）：評価降順のランキング
 - **出費ダッシュボード**（`/dashboard/`）：会計額の集計・月別推移グラフ
@@ -105,6 +107,7 @@ Variables に `PUBLIC_GA_MEASUREMENT_ID`（`G-XXXXXXXXXX` 形式）を追加し�
 │   │   ├── Breadcrumbs.astro       # パンくず + BreadcrumbList JSON-LD
 │   │   ├── CalorieMeter.astro      # 免罪符メーター（系統別カロリー・PFC）
 │   │   ├── Comments.astro          # Giscus コメント欄
+│   │   ├── CommandPalette.astro    # Ctrl+K コマンドパレット
 │   │   ├── ContributionCalendar.astro # ラーメン草カレンダー
 │   │   ├── FloatingCTA.astro       # スマホ用フローティング CTA
 │   │   ├── GoogleAnalytics.astro   # GA4 計測タグ
@@ -115,6 +118,7 @@ Variables に `PUBLIC_GA_MEASUREMENT_ID`（`G-XXXXXXXXXX` 形式）を追加し�
 │   │   ├── PostNav.astro           # 記事ページの前後記事ナビ
 │   │   ├── RelatedPosts.astro      # 関連記事
 │   │   ├── ShareButtons.astro      # SNS シェア + URL コピー
+│   │   ├── ShopDetailsModal.astro  # 店舗詳細モーダル（データは src/data/shops.ts）
 │   │   ├── StarRating.astro        # 星評価（0.1 刻み）
 │   │   ├── TableOfContents.astro   # 記事本文の目次
 │   │   ├── TermCard.astro          # 系統／エリア／タグ別一覧のカード
@@ -122,6 +126,8 @@ Variables に `PUBLIC_GA_MEASUREMENT_ID`（`G-XXXXXXXXXX` 形式）を追加し�
 │   │   └── ThemeToggle.astro       # ライト／ダーク切り替えボタン
 │   ├── content/
 │   │   └── posts/              # ★ 記事（.md / .mdx）を置く場所
+│   ├── data/
+│   │   └── shops.ts            # 店舗の基本情報（営業時間・定休日・注文したメニュー）
 │   ├── layouts/
 │   │   └── BaseLayout.astro    # 共通レイアウト（ヘッダー／フッター／OGP／PWA／GA4）
 │   ├── lib/
@@ -135,6 +141,8 @@ Variables に `PUBLIC_GA_MEASUREMENT_ID`（`G-XXXXXXXXXX` 形式）を追加し�
 │   │   ├── index.astro         # トップページ（記事一覧 + 絞り込み + ガチャ）
 │   │   ├── posts/[id].astro    # 記事詳細ページ
 │   │   ├── search.astro        # 全文検索
+│   │   ├── search.json.ts      # コマンドパレット用の軽量な記事インデックス API
+│   │   ├── gallery.astro       # 画像だけのギャラリー
 │   │   ├── map.astro           # ラーメンマップ
 │   │   ├── ranking.astro       # マイベスト・ランキング
 │   │   ├── dashboard.astro     # 出費ダッシュボード

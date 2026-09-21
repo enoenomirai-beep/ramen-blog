@@ -53,6 +53,8 @@ const {
 	nearest_station,
 	visits,
 	features,
+	lat,
+	lng,
 } = post.data;
 const { Content, headings } = await render(post);
 const readingMinutes = estimateReadingMinutes(post.body ?? '');
@@ -73,6 +75,9 @@ if (menu) meta.push({ label: '注文', value: menu });
 if (price !== undefined) meta.push({ label: '価格', value: `¥${price.toLocaleString('ja-JP')}` });
 
 const shopInfo = getShopInfo(post.id);
+// 記事に正確な緯度経度があれば、現在地からの Google マップ経路検索リンクを作る（外部 URL なので withBase() は通さない）
+const directionsHref =
+	lat !== undefined && lng !== undefined ? `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}` : undefined;
 
 const homeHref = withBase('/');
 const styleHref = withBase(stylePath(style));
@@ -238,6 +243,20 @@ const structuredData = {
 						))
 					}
 				</dl>
+				{
+					directionsHref && (
+						<div class="border-t border-line px-4 py-3">
+							<a
+								href={directionsHref}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="inline-flex items-center gap-1.5 rounded-full bg-chip-brand px-3 py-1.5 text-sm font-semibold text-chip-brand-fg hover:bg-brand-600 hover:text-white"
+							>
+								📍 現在地からの経路を見る
+							</a>
+						</div>
+					)
+				}
 			</section>
 			<CalorieMeter style={style} />
 		</header>
