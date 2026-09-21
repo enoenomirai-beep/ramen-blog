@@ -7,6 +7,7 @@ import CalorieMeter from '../../components/CalorieMeter.astro';
 import Comments from '../../components/Comments.astro';
 import RelatedPosts from '../../components/RelatedPosts.astro';
 import ShareButtons from '../../components/ShareButtons.astro';
+import ShopDetailsModal from '../../components/ShopDetailsModal.astro';
 import StarRating from '../../components/StarRating.astro';
 import PostNav from '../../components/PostNav.astro';
 import TableOfContents from '../../components/TableOfContents.astro';
@@ -15,6 +16,7 @@ import { PLACEHOLDER_ALT, placeholderImage } from '../../lib/placeholder';
 import { getPublishedPosts, locationPath, stylePath, tagPath, type Post } from '../../lib/posts';
 import { estimateReadingMinutes } from '../../lib/reading-time';
 import { formatBusinessHours } from '../../lib/business-hours';
+import { getShopInfo } from '../../data/shops';
 
 export async function getStaticPaths() {
 	// 新しい順（一覧と同じ）。前後ナビ用に隣の記事も props で渡す
@@ -69,6 +71,8 @@ if (business_hours) meta.push({ label: '営業時間', value: formatBusinessHour
 meta.push({ label: '訪問日', value: formatDate(date) });
 if (menu) meta.push({ label: '注文', value: menu });
 if (price !== undefined) meta.push({ label: '価格', value: `¥${price.toLocaleString('ja-JP')}` });
+
+const shopInfo = getShopInfo(post.id);
 
 const homeHref = withBase('/');
 const styleHref = withBase(stylePath(style));
@@ -208,7 +212,10 @@ const structuredData = {
 
 			<!-- 店舗情報 -->
 			<section class="mt-6 overflow-hidden rounded-xl border border-line bg-surface-raised shadow-sm" aria-labelledby="shop-info">
-				<h2 id="shop-info" class="border-b border-line bg-surface-sunken px-4 py-2 text-sm font-bold text-ink">店舗情報</h2>
+				<div class="flex items-center justify-between gap-3 border-b border-line bg-surface-sunken px-4 py-2">
+					<h2 id="shop-info" class="text-sm font-bold text-ink">店舗情報</h2>
+					{shopInfo && <ShopDetailsModal shop={shopInfo} />}
+				</div>
 				<dl class="grid grid-cols-1 text-sm sm:grid-cols-2">
 					{
 						meta.map(({ label, value, href, mapHref }) => (

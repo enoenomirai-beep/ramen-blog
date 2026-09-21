@@ -1,6 +1,6 @@
 # らーめん食べ歩きログ — 現状ブリーフ（他の AI に渡す用）
 
-最終更新: 2026-09-22（写真の EXIF から撮影日時・GPS 座標を読み取る `scripts/extract-exif.mjs` を追加。記事の `date`/`lat`/`lng` の下書きに使える。店名などはEXIFから推測せずユーザーのメモから得る方針）
+最終更新: 2026-09-22（店舗の基本情報を一元管理する `src/data/shops.ts` と、記事ページに「ℹ️ 店舗詳細・メニュー」ボタン（`ShopDetailsModal.astro`）を追加。営業時間・定休日は未確認のため空、注文したメニューは本文からそのまま集約）
 
 このファイルは、プロジェクトの現状を **別の AI（Gemini など）に共有して次の指示（プロンプト）を考えてもらう**ためのまとめです。
 実装は Claude Code が行い、変更のたびにこのファイルも更新します。
@@ -36,6 +36,7 @@
 | 写真 | `npm run photo -- <写真> <スラッグ>` で取り込み（iPhone の HEIC 可、縮小・EXIF/GPS 削除）。写真が無い記事には Unsplash のイメージ画像を「イメージ」ラベル付きで表示。`npm run photo` で EXIF が消える前に `npm run exif -- <写真>`（`scripts/extract-exif.mjs`）を実行すると、撮影日時・GPS 座標を `.tmp/latest-exif.json` に読み取れる（`date`/`lat`/`lng` の下書きに使える。店名・系統などは EXIF からは分からないのでユーザーのメモから得る） |
 | アフィリエイト・広告カード | `AffiliateCard.astro`。MDX 記事の本文中に置ける、収益化用の商品紹介カード（`url` / `imageUrl` / `title` / `description` / `buttonText` を props で渡す）。カード全体が 1 つのリンクで、hover でカード全体がわずかに浮き上がり、CTA ボタン部分はさらに大きく浮き上がる（`group-hover:-translate-y-1`）。画像左上に景品表示法対策の「PR」ラベル、リンクには `rel="sponsored"` を付与（Google 推奨のアフィリエイトリンクの書き方） |
 | 全文検索 | `/search/`。店名・記事タイトル・系統・場所・タグ・特徴タグ・注文・説明文・本文（Markdown 生ソースから記号を除いたプレーンテキスト）を対象にしたキーワード検索。`AreaSearchBox` と同じ方式で、全記事の `PostListItem` をあらかじめ非表示で埋め込み、マッチした記事だけ表示する（API 呼び出し無し）。`?q=キーワード` で直接結果を開ける。ヘッダーに検索アイコン、フッターに「検索」リンク |
+| 店舗詳細モーダル | `src/data/shops.ts`（記事の id → 店舗情報の辞書）で営業時間・定休日・訪問時に注文したメニューを一元管理。記事ページの「店舗情報」見出し横に「ℹ️ 店舗詳細・メニュー」ボタン（`ShopDetailsModal.astro`。データが無い記事にはボタンを出さない）。`businessHours`/`regularHoliday` は未確認のため現状すべて空、`orderedMenu` は本文の「注文したもの」の品と価格をそのまま集約したもの（お店の全メニューではない） |
 | その他 | RSS（`/rss.xml`）、sitemap、OGP / Twitter カード、レスポンシブ（375px 確認済み） |
 
 ## 3. いまの記事
@@ -55,7 +56,7 @@
 - **色はテーマトークンで指定**（`bg-surface` / `text-ink` / `border-line` / `text-brand-fg` / バッジ用 `bg-chip-brand` など、`src/styles/global.css`）。ライト／ダークはトークンの値が切り替わる仕組みなので、`dark:` を個別に書かない
 - サブパス配信（`/ramen-blog/`）なので、サイト内リンクは `withBase()` を通す
 - 記事データの取得は `src/lib/posts.ts` の `getPublishedPosts()` に統一
-- 主なコンポーネント: `PostListItem`（一覧の 1 行）/ `StarRating`（星）/ `PostFilters`（絞り込み）/ `TermPosts`・`TermCard`（系統／エリア／タグ別ページ）/ `AreaSearchBox`（エリアの近接駅・沿線検索）/ `PhotoGallery`（記事本文の複数写真・Lightbox）/ `AffiliateCard`（記事本文のアフィリエイト・広告カード）/ `BlogCard`（記事本文の内部リンクカード）/ `Breadcrumbs`（パンくず＋ JSON-LD）/ `RelatedPosts`（関連記事）/ `PickupPosts`（殿堂入りピックアップ）/ `ContributionCalendar`（ラーメン草カレンダー）/ `ShareButtons`（SNS シェア＆ URL コピー）/ `Comments`（Giscus コメント欄）/ `CalorieMeter`（免罪符メーター）/ `FloatingCTA`（スマホ用フローティング CTA）/ `GoogleAnalytics`（GA4 計測タグ）/ `TableOfContents` / `PostNav` / `ThemeToggle`。ページ: `map.astro`（ラーメンマップ）/ `ranking.astro`（マイベスト・ランキング）/ `dashboard.astro`（出費ダッシュボード）/ `search.astro`（全文検索）/ `og/[slug].png.ts`（動的 OGP 画像）
+- 主なコンポーネント: `PostListItem`（一覧の 1 行）/ `StarRating`（星）/ `PostFilters`（絞り込み）/ `TermPosts`・`TermCard`（系統／エリア／タグ別ページ）/ `AreaSearchBox`（エリアの近接駅・沿線検索）/ `PhotoGallery`（記事本文の複数写真・Lightbox）/ `AffiliateCard`（記事本文のアフィリエイト・広告カード）/ `BlogCard`（記事本文の内部リンクカード）/ `Breadcrumbs`（パンくず＋ JSON-LD）/ `RelatedPosts`（関連記事）/ `PickupPosts`（殿堂入りピックアップ）/ `ContributionCalendar`（ラーメン草カレンダー）/ `ShareButtons`（SNS シェア＆ URL コピー）/ `Comments`（Giscus コメント欄）/ `CalorieMeter`（免罪符メーター）/ `FloatingCTA`（スマホ用フローティング CTA）/ `GoogleAnalytics`（GA4 計測タグ）/ `ShopDetailsModal`（店舗詳細モーダル。データは `src/data/shops.ts`）/ `TableOfContents` / `PostNav` / `ThemeToggle`。ページ: `map.astro`（ラーメンマップ）/ `ranking.astro`（マイベスト・ランキング）/ `dashboard.astro`（出費ダッシュボード）/ `search.astro`（全文検索）/ `og/[slug].png.ts`（動的 OGP 画像）
 - 記事本文（Markdown/MDX 生ソース）からプレーンテキストを取り出す `stripMarkdown()`（`src/lib/markdown.ts`）は、読了時間の計算（`reading-time.ts`）と全文検索（`search.astro`）の両方で共有している
 - `AffiliateCard` / `BlogCard` は `PhotoGallery` と同じく MDX 記事の本文中でしか使えない（`.md` ではなく `.mdx` にして `import ... from '../../components/AffiliateCard.astro'` のように置く）。2026-09-20 に実記事（`iekei-tokyo-suehirocho.mdx` / `bushoya-gaiden-akihabara.mdx`）へ組み込み済み。`AffiliateCard` の `url` は `https://example.com/affiliate` のダミー値のままなので、実際のアフィリエイトプログラムに登録したら差し替える必要がある
 - 地図のピン座標は `location-map.ts` の `AREA_GROUPS` 各エントリの `lat`/`lng`（エリアの代表座標）。`getCoordinates(location)` で引く。辞書に無い location は座標が無いため地図には出ない（ビルドは失敗しない）
