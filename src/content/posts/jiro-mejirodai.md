@@ -4,6 +4,8 @@ date: 2026-09-11
 shop_name: "ラーメン二郎 めじろ台店"
 style: "二郎系"
 location: "めじろ台"
+lat: 35.6389634
+lng: 139.3122139
 rating: 3.7
 image: ../../assets/posts/jiro-mejirodai.jpg
 image_alt: "ラーメン二郎めじろ台店の小ラーメン。白い丼にもやしとキャベツが山盛りにされ、上にアブラ（背脂）、脇に厚切りチャーシューが 2 切れ、濃い醤油だれのスープ"
