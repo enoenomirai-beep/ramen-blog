@@ -52,6 +52,7 @@ const galleryHref = withBase('/gallery/');
 const mapHref = withBase('/map/');
 const rankingHref = withBase('/ranking/');
 const dashboardHref = withBase('/dashboard/');
+const favoritesHref = withBase('/favorites/');
 const searchHref = withBase('/search/');
 const aboutHref = withBase('/about/');
 
@@ -63,6 +64,19 @@ const navLinkClass =
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<!--
+			CSP。GitHub Pages はカスタム HTTP レスポンスヘッダーを設定できないので meta タグで代用している
+			（そのため frame-ancestors など、meta タグでは効かない一部のディレクティブは書いていない）。
+			テーマ切り替え・Service Worker 登録・コマンドパレット・GA4 の設定用インラインスクリプトが
+			あるため script-src / style-src に 'unsafe-inline' を含めている（すべて固定の自前コードで、
+			外部からの注入は許していない）。外部ドメインは実際に読み込んでいるものだけを許可: unpkg.com
+			（Leaflet）、googletagmanager.com（GA4）、giscus.app（コメント欄）、images.unsplash.com
+			（写真が無い記事のイメージ画像）、tile.openstreetmap.org（地図タイル）
+		-->
+		<meta
+			http-equiv="Content-Security-Policy"
+			content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://www.googletagmanager.com https://giscus.app; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: https://images.unsplash.com https://*.tile.openstreetmap.org; connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com; frame-src https://giscus.app; object-src 'none'; base-uri 'self'; form-action 'self';"
+		/>
 		<script is:inline>
 			// 描画前にテーマを決めてちらつきを防ぐ。保存された選択が無ければ OS の設定に従う
 			(() => {
@@ -137,6 +151,7 @@ const navLinkClass =
 					<a href={mapHref} class={navLinkClass}>マップ</a>
 					<a href={rankingHref} class={navLinkClass}>ランキング</a>
 					<a href={dashboardHref} class={navLinkClass}>出費ダッシュボード</a>
+					<a href={favoritesHref} class={navLinkClass}>行きたい</a>
 					<a href={aboutHref} class={navLinkClass}>About</a>
 					<a href={searchHref} class={navLinkClass} title="記事を検索">
 						<span class="sr-only">記事を検索</span>
@@ -189,6 +204,7 @@ const navLinkClass =
 					<a href={mapHref} class="hover:text-brand-fg">マップ</a>
 					<a href={rankingHref} class="hover:text-brand-fg">ランキング</a>
 					<a href={dashboardHref} class="hover:text-brand-fg">出費ダッシュボード</a>
+					<a href={favoritesHref} class="hover:text-brand-fg">行きたい</a>
 					<a href={aboutHref} class="hover:text-brand-fg">About</a>
 					<a href={searchHref} class="hover:text-brand-fg">検索</a>
 					<a href={rssHref} class="hover:text-brand-fg">RSS</a>

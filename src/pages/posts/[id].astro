@@ -6,6 +6,7 @@ import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import CalorieMeter from '../../components/CalorieMeter.astro';
 import Comments from '../../components/Comments.astro';
 import RelatedPosts from '../../components/RelatedPosts.astro';
+import FavoriteButton from '../../components/FavoriteButton.astro';
 import ShareButtons from '../../components/ShareButtons.astro';
 import ShopDetailsModal from '../../components/ShopDetailsModal.astro';
 import StarRating from '../../components/StarRating.astro';
@@ -267,7 +268,8 @@ const structuredData = {
 			<Content />
 		</div>
 
-		<section class="mt-8 border-t border-line pt-6">
+		<section class="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-6">
+			<FavoriteButton postId={post.id} />
 			<ShareButtons title={shop_name} path={`/posts/${post.id}/`} />
 		</section>
 

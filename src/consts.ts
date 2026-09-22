@@ -3,6 +3,9 @@ export const SITE_TITLE = 'らーめん食べ歩きログ';
 export const SITE_DESCRIPTION =
 	'関東近郊を中心に食べ歩いたラーメンのレビューを、系統・場所・評価つきで記録するブログです。';
 
+/** トップページ・ページネーションの 1 ページあたりの記事数 */
+export const PAGE_SIZE = 12;
+
 /**
  * サイト内リンクに `base`（astro.config.mjs）を付ける。
  * GitHub Pages のプロジェクトサイトのようにサブパス配信するときに必要。

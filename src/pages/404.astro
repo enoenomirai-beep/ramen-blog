@@ -1,0 +1,36 @@
+---
+/**
+ * カスタム 404 ページ。GitHub Pages はビルド結果の 404.html を自動でエラーページとして使う。
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { withBase } from '../consts';
+
+const homeHref = withBase('/');
+const searchHref = withBase('/search/');
+---
+
+<BaseLayout title="ページが見つかりません" description="お探しのページは見つかりませんでした。">
+	<div class="flex flex-col items-center gap-4 py-16 text-center">
+		<p class="text-6xl" aria-hidden="true">
+			🍜
+		</p>
+		<h1 class="text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">ページが見つかりませんでした</h1>
+		<p class="max-w-md text-sm leading-relaxed text-ink-muted sm:text-base">
+			お探しのページは移動または削除されたか、URL が間違っている可能性があります。
+		</p>
+		<div class="mt-2 flex flex-wrap items-center justify-center gap-3">
+			<a
+				href={homeHref}
+				class="inline-flex items-center gap-2 rounded-full bg-brand-600 px-6 py-3 text-sm font-extrabold text-white shadow transition hover:-translate-y-0.5 hover:bg-brand-700"
+			>
+				🍜 トップへ戻る
+			</a>
+			<a
+				href={searchHref}
+				class="inline-flex items-center gap-2 rounded-full border border-line-strong bg-surface-raised px-6 py-3 text-sm font-semibold text-ink transition hover:border-brand-400 hover:text-brand-fg"
+			>
+				🔍 記事を検索する
+			</a>
+		</div>
+	</div>
+</BaseLayout>

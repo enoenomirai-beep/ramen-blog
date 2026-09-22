@@ -1,0 +1,25 @@
+name: CI
+
+# PR ごとに型チェック・ビルドを検証する（デプロイは deploy.yml が main への push で担当）
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout your repository using git
+        uses: actions/checkout@v7
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          # package.json の engines と合わせる
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Type check
+        run: npx astro check
+      - name: Build
+        run: npm run build

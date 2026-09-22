@@ -1,0 +1,96 @@
+---
+/**
+ * 「行きたい」に追加した記事の一覧。LocalStorage にだけ保存されるので、
+ * この端末のブラウザでしか見られない（他の端末・他の人とは共有されない）。
+ * 表示に使うデータは /search.json（軽量な記事インデックス）を fetch して組み立てる。
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { withBase } from '../consts';
+
+const homeHref = withBase('/');
+const searchJsonHref = withBase('/search.json');
+---
+
+<BaseLayout title="行きたいお店" description="「行きたい」に追加したお店の一覧です（この端末のブラウザにだけ保存されます）。">
+	<nav aria-label="パンくずリスト" class="mb-5 text-xs text-ink-muted sm:text-sm">
+		<a href={homeHref} class="hover:text-brand-fg">記事一覧</a>
+		<span aria-hidden="true" class="mx-2 text-ink-faint">/</span>
+		<span class="font-medium text-ink">行きたいお店</span>
+	</nav>
+
+	<section class="mb-6 sm:mb-8">
+		<p class="mb-1 text-xs font-bold tracking-widest text-brand-fg uppercase">Favorites</p>
+		<h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">行きたいお店</h1>
+		<p class="mt-2 max-w-2xl text-sm leading-relaxed text-ink-muted sm:text-base">
+			記事ページの「🤍 行きたい」ボタンで追加したお店の一覧です。この端末のブラウザにだけ保存されるので、他の端末や他の人とは共有されません。
+		</p>
+	</section>
+
+	<ol data-favorites-list class="flex flex-col gap-3"></ol>
+
+	<p
+		data-favorites-empty
+		hidden
+		class="rounded-xl border border-dashed border-line-strong bg-surface-raised px-6 py-12 text-center text-sm text-ink-muted"
+	>
+		まだ「行きたい」に追加したお店はありません。
+	</p>
+</BaseLayout>
+
+<script is:inline define:vars={{ searchJsonHref }}>
+	const listEl = document.querySelector('[data-favorites-list]');
+	const emptyEl = document.querySelector('[data-favorites-empty]');
+	if (listEl && emptyEl) {
+		let favoriteIds = [];
+		try {
+			favoriteIds = JSON.parse(localStorage.getItem('ramen-blog:favorites') ?? '[]');
+		} catch {
+			favoriteIds = [];
+		}
+
+		if (favoriteIds.length === 0) {
+			emptyEl.hidden = false;
+		} else {
+			fetch(searchJsonHref)
+				.then((res) => res.json())
+				.then((items) => {
+					const byId = new Map(items.map((item) => [item.id, item]));
+					const favorites = favoriteIds.map((id) => byId.get(id)).filter((item) => item !== undefined);
+
+					if (favorites.length === 0) {
+						emptyEl.hidden = false;
+						return;
+					}
+
+					for (const item of favorites) {
+						const li = document.createElement('li');
+						const a = document.createElement('a');
+						a.href = item.href;
+						a.className =
+							'flex items-center justify-between gap-3 rounded-xl border border-line bg-surface-raised px-4 py-3 shadow-sm transition hover:border-brand-300 hover:shadow-md';
+
+						const left = document.createElement('span');
+						left.className = 'flex min-w-0 flex-col';
+						const name = document.createElement('span');
+						name.className = 'truncate font-bold text-ink';
+						name.textContent = item.shopName;
+						const meta = document.createElement('span');
+						meta.className = 'truncate text-xs text-ink-muted';
+						meta.textContent = `${item.style} ・ ${item.location}`;
+						left.append(name, meta);
+
+						const rating = document.createElement('span');
+						rating.className = 'shrink-0 text-sm font-semibold text-brand-fg';
+						rating.textContent = `★${item.rating.toFixed(1)}`;
+
+						a.append(left, rating);
+						li.appendChild(a);
+						listEl.appendChild(li);
+					}
+				})
+				.catch(() => {
+					emptyEl.hidden = false;
+				});
+		}
+	}
+</script>
