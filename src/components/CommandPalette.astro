@@ -1,0 +1,215 @@
+---
+/**
+ * Ctrl+K（Mac は Cmd+K）で起動する、ラーメン検索用のコマンドパレット（Spotlight 風）。
+ *
+ * BaseLayout に常時マウントし、サイトのどのページからでも開ける。/search.json（軽量な記事インデックス）を
+ * 開いたときに一度だけ fetch してメモリにキャッシュし、店名・タイトル・系統・場所・タグにインクリメンタルサーチする。
+ * `/dark` `/light` と入力して Enter すると、ThemeToggle.astro と同じ方法でテーマを切り替えるイースターエッグ付き。
+ * オーバーレイの開閉は PhotoGallery.astro の Lightbox と同じ Vanilla JS パターン。
+ */
+import { withBase } from '../consts';
+
+const searchJsonHref = withBase('/search.json');
+---
+
+<div data-command-palette>
+	<div
+		data-command-palette-overlay
+		hidden
+		class="fixed inset-0 z-50 flex items-start justify-center bg-black/55 p-4 pt-[12vh]"
+		role="dialog"
+		aria-modal="true"
+		aria-label="コマンドパレット"
+	>
+		<div class="w-full max-w-lg overflow-hidden rounded-xl border border-line bg-surface-raised shadow-lg">
+			<div class="flex items-center gap-2 border-b border-line px-4 py-3">
+				<svg class="size-4 shrink-0 text-ink-faint" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+					<path
+						fill-rule="evenodd"
+						d="M8.5 3a5.5 5.5 0 1 0 3.38 9.84l3.64 3.65a.75.75 0 1 0 1.06-1.06l-3.65-3.64A5.5 5.5 0 0 0 8.5 3ZM4.5 8.5a4 4 0 1 1 8 0 4 4 0 0 1-8 0Z"
+						clip-rule="evenodd"></path>
+				</svg>
+				<input
+					type="text"
+					inputmode="search"
+					autocomplete="off"
+					data-command-palette-input
+					placeholder="店名・系統・エリアで検索、または /dark /light …"
+					class="w-full border-0 bg-transparent text-sm text-ink outline-none placeholder:text-ink-faint"
+				/>
+				<kbd class="hidden shrink-0 rounded border border-line-strong px-1.5 py-0.5 text-[10px] font-semibold text-ink-faint sm:inline">
+					Esc
+				</kbd>
+			</div>
+			<ul data-command-palette-results class="max-h-80 overflow-y-auto py-1"></ul>
+			<p data-command-palette-empty hidden class="px-4 py-6 text-center text-sm text-ink-muted">
+				見つかりませんでした。
+			</p>
+		</div>
+	</div>
+</div>
+
+<script is:inline define:vars={{ searchJsonHref }}>
+	document.querySelectorAll('[data-command-palette]').forEach((root) => {
+		const overlay = root.querySelector('[data-command-palette-overlay]');
+		const input = root.querySelector('[data-command-palette-input]');
+		const resultsEl = root.querySelector('[data-command-palette-results]');
+		const emptyEl = root.querySelector('[data-command-palette-empty]');
+		const trigger = document.querySelector('[data-command-palette-trigger]');
+		if (!overlay || !input || !resultsEl || !emptyEl) return;
+
+		let items = null;
+		let loadPromise = null;
+		let activeIndex = -1;
+
+		function loadItems() {
+			if (!loadPromise) {
+				loadPromise = fetch(searchJsonHref)
+					.then((res) => res.json())
+					.then((data) => {
+						items = data;
+						return data;
+					})
+					.catch(() => {
+						items = [];
+						return items;
+					});
+			}
+			return loadPromise;
+		}
+
+		function open() {
+			overlay.hidden = false;
+			document.body.style.overflow = 'hidden';
+			input.value = '';
+			input.focus();
+			render([]);
+			loadItems();
+		}
+		function close() {
+			overlay.hidden = true;
+			document.body.style.overflow = '';
+		}
+
+		function setTheme(theme) {
+			document.documentElement.dataset.theme = theme;
+			try {
+				localStorage.setItem('theme', theme);
+			} catch {
+				// プライベートモードなどで保存できなくても、このページ内の切り替えは効かせる
+			}
+		}
+
+		function render(matches) {
+			activeIndex = matches.length > 0 ? 0 : -1;
+			resultsEl.innerHTML = '';
+			emptyEl.hidden = matches.length > 0 || input.value.trim() === '';
+			matches.forEach((item, i) => {
+				const li = document.createElement('li');
+				const a = document.createElement('a');
+				a.href = item.href;
+				a.dataset.index = String(i);
+				a.className =
+					'flex items-center justify-between gap-3 px-4 py-2.5 text-sm hover:bg-surface-sunken data-[active]:bg-surface-sunken';
+				if (i === activeIndex) a.dataset.active = '';
+
+				const left = document.createElement('span');
+				left.className = 'flex min-w-0 flex-col';
+				const name = document.createElement('span');
+				name.className = 'truncate font-bold text-ink';
+				name.textContent = item.shopName;
+				const meta = document.createElement('span');
+				meta.className = 'truncate text-xs text-ink-muted';
+				meta.textContent = `${item.style} ・ ${item.location}`;
+				left.append(name, meta);
+
+				const rating = document.createElement('span');
+				rating.className = 'shrink-0 text-xs font-semibold text-brand-fg';
+				rating.textContent = `★${item.rating.toFixed(1)}`;
+
+				a.append(left, rating);
+				li.appendChild(a);
+				resultsEl.appendChild(li);
+			});
+		}
+
+		function highlight(index) {
+			const links = Array.from(resultsEl.querySelectorAll('a'));
+			if (links.length === 0) return;
+			activeIndex = (index + links.length) % links.length;
+			links.forEach((link, i) => {
+				if (i === activeIndex) link.setAttribute('data-active', '');
+				else link.removeAttribute('data-active');
+			});
+			links[activeIndex]?.scrollIntoView({ block: 'nearest' });
+		}
+
+		async function search(query) {
+			const q = query.trim().toLowerCase();
+
+			// イースターエッグ: /dark /light でテーマ切り替え
+			if (q === '/dark' || q === '/light') {
+				emptyEl.hidden = true;
+				resultsEl.innerHTML = '';
+				const li = document.createElement('li');
+				li.className = 'px-4 py-2.5 text-sm text-ink-muted';
+				li.textContent = q === '/dark' ? 'Enter でダークモードに切り替え' : 'Enter でライトモードに切り替え';
+				resultsEl.appendChild(li);
+				return;
+			}
+
+			if (q === '') {
+				render([]);
+				return;
+			}
+
+			const data = await loadItems();
+			const matches = data.filter((item) => {
+				const haystack = [item.shopName, item.title, item.style, item.location, ...item.tags].join(' ').toLowerCase();
+				return haystack.includes(q);
+			});
+			render(matches.slice(0, 8));
+		}
+
+		input.addEventListener('input', () => search(input.value));
+
+		input.addEventListener('keydown', (e) => {
+			const q = input.value.trim().toLowerCase();
+			if (e.key === 'Enter') {
+				if (q === '/dark' || q === '/light') {
+					setTheme(q === '/dark' ? 'dark' : 'light');
+					close();
+					return;
+				}
+				const active = resultsEl.querySelector('a[data-active]');
+				if (active) window.location.href = active.getAttribute('href') ?? '#';
+				return;
+			}
+			if (e.key === 'ArrowDown') {
+				e.preventDefault();
+				highlight(activeIndex + 1);
+			}
+			if (e.key === 'ArrowUp') {
+				e.preventDefault();
+				highlight(activeIndex - 1);
+			}
+		});
+
+		overlay.addEventListener('click', (e) => {
+			if (e.target === overlay) close();
+		});
+
+		trigger?.addEventListener('click', open);
+
+		document.addEventListener('keydown', (e) => {
+			const isOpenShortcut = (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k';
+			if (isOpenShortcut) {
+				e.preventDefault();
+				if (overlay.hidden) open();
+				else close();
+				return;
+			}
+			if (!overlay.hidden && e.key === 'Escape') close();
+		});
+	});
+</script>

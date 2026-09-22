@@ -3,6 +3,7 @@ import '../styles/global.css';
 import type { ImageMetadata } from 'astro';
 import { getImage } from 'astro:assets';
 import ogDefault from '../assets/og-default.jpg';
+import CommandPalette from '../components/CommandPalette.astro';
 import FloatingCTA from '../components/FloatingCTA.astro';
 import GoogleAnalytics from '../components/GoogleAnalytics.astro';
 import ThemeToggle from '../components/ThemeToggle.astro';
@@ -47,6 +48,7 @@ const rssHref = withBase('/rss.xml');
 const stylesHref = withBase('/styles/');
 const locationsHref = withBase('/locations/');
 const tagsHref = withBase('/tags/');
+const galleryHref = withBase('/gallery/');
 const mapHref = withBase('/map/');
 const rankingHref = withBase('/ranking/');
 const dashboardHref = withBase('/dashboard/');
@@ -131,6 +133,7 @@ const navLinkClass =
 					<a href={stylesHref} class={navLinkClass}>系統別</a>
 					<a href={locationsHref} class={navLinkClass}>エリア別</a>
 					<a href={tagsHref} class={navLinkClass}>タグ</a>
+					<a href={galleryHref} class={navLinkClass}>ギャラリー</a>
 					<a href={mapHref} class={navLinkClass}>マップ</a>
 					<a href={rankingHref} class={navLinkClass}>ランキング</a>
 					<a href={dashboardHref} class={navLinkClass}>出費ダッシュボード</a>
@@ -153,6 +156,14 @@ const navLinkClass =
 							></path>
 						</svg>
 					</a>
+					<button
+						type="button"
+						data-command-palette-trigger
+						title="コマンドパレットを開く（Ctrl+K）"
+						class={`${navLinkClass} hidden items-center gap-1 sm:inline-flex`}
+					>
+						<kbd class="rounded border border-header-ink/30 px-1 text-[10px] font-bold">⌘K</kbd>
+					</button>
 				</nav>
 				<span class="order-2 flex sm:order-3">
 					<ThemeToggle />
@@ -174,6 +185,7 @@ const navLinkClass =
 					<a href={stylesHref} class="hover:text-brand-fg">系統別</a>
 					<a href={locationsHref} class="hover:text-brand-fg">エリア別</a>
 					<a href={tagsHref} class="hover:text-brand-fg">タグ</a>
+					<a href={galleryHref} class="hover:text-brand-fg">ギャラリー</a>
 					<a href={mapHref} class="hover:text-brand-fg">マップ</a>
 					<a href={rankingHref} class="hover:text-brand-fg">ランキング</a>
 					<a href={dashboardHref} class="hover:text-brand-fg">出費ダッシュボード</a>
@@ -185,6 +197,7 @@ const navLinkClass =
 		</footer>
 
 		<FloatingCTA />
+		<CommandPalette />
 
 	<script is:inline define:vars={{ swUrl }}>
 		// オフラインでもキャッシュ済みのページを表示できるように Service Worker を登録する

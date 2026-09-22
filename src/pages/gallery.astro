@@ -1,0 +1,81 @@
+---
+/**
+ * 画像だけのギャラリービュー。
+ *
+ * 全記事の一杯の写真を CSS の多段組み（columns）でタイル状に並べる。
+ * 画像を自然な縦横比のまま並べるので、段組みの中で高さが揃わずマソンリー風になる。
+ * ホバー（スマホはタップで直接遷移）すると半透明のオーバーレイで店名・評価が浮かび上がる。
+ */
+import { Image } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import StarRating from '../components/StarRating.astro';
+import { withBase } from '../consts';
+import { PLACEHOLDER_ALT, placeholderImage } from '../lib/placeholder';
+import { getPublishedPosts } from '../lib/posts';
+
+const posts = await getPublishedPosts();
+const homeHref = withBase('/');
+---
+
+<BaseLayout title="ギャラリー" description="訪れたお店の一杯の写真を、画像だけのタイル状に一覧できます。">
+	<nav aria-label="パンくずリスト" class="mb-5 text-xs text-ink-muted sm:text-sm">
+		<a href={homeHref} class="hover:text-brand-fg">記事一覧</a>
+		<span aria-hidden="true" class="mx-2 text-ink-faint">/</span>
+		<span class="font-medium text-ink">ギャラリー</span>
+	</nav>
+
+	<section class="mb-6 sm:mb-8">
+		<p class="mb-1 text-xs font-bold tracking-widest text-brand-fg uppercase">Gallery</p>
+		<h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">ギャラリー</h1>
+		<p class="mt-2 max-w-2xl text-sm leading-relaxed text-ink-muted sm:text-base">
+			訪れたお店の一杯の写真を並べています。タップすると記事に飛べます。
+		</p>
+	</section>
+
+	{
+		posts.length > 0 ? (
+			<div class="columns-2 gap-3 sm:columns-3 md:columns-4">
+				{posts.map((post) => {
+					const { shop_name, rating, image, image_alt } = post.data;
+					const href = withBase(`/posts/${post.id}/`);
+					return (
+						<a
+							href={href}
+							class="group relative mb-3 block overflow-hidden rounded-lg bg-surface-sunken break-inside-avoid"
+							aria-label={`${shop_name}（★${rating.toFixed(1)}）の記事へ`}
+						>
+							{image ? (
+								<Image
+									src={image}
+									alt={image_alt ?? ''}
+									widths={[300, 600]}
+									sizes="(min-width: 768px) 25vw, (min-width: 640px) 33vw, 50vw"
+									loading="lazy"
+									class="block h-auto w-full transition duration-300 group-hover:scale-[1.03]"
+								/>
+							) : (
+								<img
+									src={placeholderImage(post.id, 600, 800)}
+									alt={PLACEHOLDER_ALT}
+									width="600"
+									height="800"
+									loading="lazy"
+									decoding="async"
+									class="block h-auto w-full transition duration-300 group-hover:scale-[1.03]"
+								/>
+							)}
+							<div class="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/75 via-black/10 to-transparent p-3 opacity-0 transition group-hover:opacity-100">
+								<p class="line-clamp-1 text-sm font-bold text-white">{shop_name}</p>
+								<StarRating rating={rating} size="sm" />
+							</div>
+						</a>
+					);
+				})}
+			</div>
+		) : (
+			<p class="rounded-xl border border-dashed border-line-strong bg-surface-raised px-6 py-12 text-center text-sm text-ink-muted">
+				表示できる記事がまだありません。
+			</p>
+		)
+	}
+</BaseLayout>
