@@ -59,6 +59,21 @@ export const SHOPS: Record<string, ShopInfo> = {
 			{ name: 'ライス（食べ放題）', price: 100 },
 		],
 	},
+	'kidouya-suidobashi': {
+		shopName: '輝道家 水道橋',
+		orderedMenu: [
+			{ name: '学生ラーメン（油多め）', price: 900 },
+			{ name: '高級海苔5枚', price: 150 },
+			{ name: 'チャーシュー1枚追加', price: 100 },
+		],
+	},
+	'kidouya-suidobashi-umakara': {
+		shopName: '輝道家 水道橋',
+		orderedMenu: [
+			{ name: '旨辛ラーメン（全部普通）', price: 1200 },
+			{ name: '高級海苔5枚', price: 150 },
+		],
+	},
 };
 
 /** 記事の id（スラッグ）から店舗情報を取得する。無ければ undefined */
