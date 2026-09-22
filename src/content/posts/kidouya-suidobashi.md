@@ -4,6 +4,8 @@ date: 2026-09-02
 shop_name: "輝道家 水道橋"
 style: "家系"
 location: "水道橋"
+lat: 35.7018960
+lng: 139.7522652
 rating: 4.5
 image: ../../assets/posts/kidouya-suidobashi.jpg
 image_alt: "輝道家水道橋の学生ラーメン（油多め）。茶色い豚骨醤油スープに大判のチャーシュー、ほうれん草、扇状に立てた高級海苔5枚"
