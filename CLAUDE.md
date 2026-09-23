@@ -32,9 +32,9 @@ Node.js は `C:\Program Files\nodejs`。ツール用シェルの PATH に入っ�
 - 評価 `rating` は 1〜5 の 0.1 刻み。表示は `StarRating.astro`（端数ぶん星を部分的に塗る）。一覧の 1 行は `PostListItem.astro`
 - 記事の取得は `src/lib/posts.ts` の `getPublishedPosts()`（draft 除外・新しい順）を使う。`getCollection` を直接呼ばない。系統／エリア／タグ別の URL は `stylePath()` / `locationPath()` / `tagPath()`、グループ化は `groupByStyle()` / `groupByLocation()` / `groupByTag()`。分類ページの本体は `TermPosts.astro`、一覧カードは `TermCard.astro` を使い回す（新しい分類を足すときも同じ）
 - 一覧の絞り込み・並び替えは `src/components/PostFilters.astro` のクライアントスクリプト。カード側は `index.astro` の `<li data-post ...>` の data 属性を読む
-- 公開先は GitHub Pages（`https://enoenomirai-beep.github.io/ramen-blog/`）。`astro.config.mjs` の `site` + `base: '/ramen-blog'` から絶対 URL（RSS / sitemap / OGP / canonical）を生成
-- サブパス配信なので、サイト内リンク（`/`, `/posts/...`, `/rss.xml`, favicon）は必ず `src/consts.ts` の `withBase()` を通す。`href="/..."` を直書きしない
-- 開発サーバーの URL は `http://localhost:4321/ramen-blog/`（ルート `/` は 404 になる）
+- 公開先は独自ドメイン（`https://eno-ramen.com/`。ホスティングは GitHub Pages、`public/CNAME` でカスタムドメインを指定）。`astro.config.mjs` の `site: 'https://eno-ramen.com'` から絶対 URL（RSS / sitemap / OGP / canonical）を生成。`base` は指定していない（既定値の `/`。2026-09-23 に GitHub Pages のプロジェクトサイト用サブパス `/ramen-blog` から移行）
+- サブパス配信ではないが、サイト内リンク（`/`, `/posts/...`, `/rss.xml`, favicon）は引き続き `src/consts.ts` の `withBase()` を通す（`base` が `/` でも正しく動く。`href="/..."` の直書きはしない）
+- 開発サーバーの URL は `http://localhost:4321/`
 - `main` への push で `.github/workflows/deploy.yml`（withastro/action）が自動デプロイ
 - サンプル画像は `node scripts/make-placeholders.mjs` で再生成できる。実際の写真は `npm run photo -- <写真> <スラッグ>`（`scripts/import-photo.mjs`）で取り込む（縮小・EXIF/GPS 削除、HEIC は `heic-decode` で展開）。元の写真をそのまま `src/assets/posts/` に置かない
 - 新規記事を作るとき、ユーザーから元の写真ファイル（`npm run photo` に通す前、EXIF がまだ残っているもの）が渡されたら、先に `npm run exif -- <写真ファイル>`（`scripts/extract-exif.mjs`。`exifr` で EXIF を読む）を実行し、`.tmp/latest-exif.json`（gitignore 済み）の `capturedAt`（撮影日時）を記事の `date` に、`gps.lat` / `gps.lng`（あれば）を `lat` / `lng` に使ってよい。これは写真そのものに埋め込まれた実際のメタデータであり、創作ではない。ただし **`shop_name` / `style` / `location` は GPS 座標や検索結果から推測して埋めない**。これらは必ずユーザーのメモ（店名・系統・場所の記載、または返信での確認）から得る。GPS だけで近隣のラーメン店を検索して「たぶんこの店」と決め打ちすることは、実在店舗のレビューを取り違えるリスクがあるため禁止（迷う場合はユーザーに店名を確認する）
@@ -48,6 +48,8 @@ Node.js は `C:\Program Files\nodejs`。ツール用シェルの PATH に入っ�
 - カスタム 404 ページは `src/pages/404.astro`。GitHub Pages は `dist/404.html` を自動でエラーページとして使うので、追加設定は不要
 - CSP は `BaseLayout.astro` の `<head>` に `<meta http-equiv="Content-Security-Policy">` として設定している（GitHub Pages はカスタム HTTP レスポンスヘッダーを返せないため、meta タグでの設定が唯一の手段。`frame-ancestors` など meta タグでは効かないディレクティブは書いていない）。テーマ切り替え・Service Worker 登録・コマンドパレット・GA4 設定用の固定インラインスクリプトがあるため `script-src`/`style-src` に `'unsafe-inline'` を含む。外部ドメインは実際に読み込んでいるものだけ許可（`unpkg.com` = Leaflet、`googletagmanager.com` = GA4、`giscus.app` = コメント欄、`images.unsplash.com` = イメージ画像、`tile.openstreetmap.org` = 地図タイル）。新しい外部リソースを追加するときはこのポリシーも更新すること
 - `.github/workflows/ci.yml` は PR ごとに `astro check` → `build` を検証する（デプロイはしない。デプロイは `deploy.yml` が `main` への push で担当）。`.github/dependabot.yml` は npm と GitHub Actions の依存を週次でチェック
+- 出費ダッシュボード（`/dashboard/`）の「系統別・エリア別の割合」円グラフは `CategoryDonutChart.astro`（CSS の `conic-gradient` のみ・JS/SVG 不要）。色は `bg-surface` 等の暖色テーマトークンとは別枠の、識別用に固定順で用意した6色（`global.css` の `--chart-series-1`〜`6` / `bg-chart-series-1`〜`6`。ブランドの暖色だけでは色同士の区別がつきにくいため）。件数の多い順に割り当て、7件目以降は「その他」にまとめる。色だけに頼らず、必ず凡例にラベル・件数・割合をテキストで併記する。「ラーメンエンゲル係数」（当月のラーメン出費 ÷ `MONTHLY_FOOD_BUDGET`、`src/consts.ts`）は 30%以上・50%以上でメッセージとプログレスバーの色が変わる
+- 独自ドメイン化（`eno-ramen.com`）は 2026-09-23 に完了。`astro.config.mjs` の `site`、`public/CNAME`、`public/manifest.webmanifest` / `public/sw.js` 内のパス（`/ramen-blog/` → `/`）をまとめて変更済み。GitHub 側のリポジトリ設定（Settings → Pages → Custom domain、DNS の CNAME レコード設定）はコードの外側の作業なのでユーザー側で対応が必要（詳細は `docs/HANDOFF.md`）
 
 ## Documentation
 

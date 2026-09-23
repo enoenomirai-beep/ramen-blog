@@ -2,12 +2,12 @@
 //
 // public/ 配下の静的ファイルなので Astro のビルド処理（withBase() など）を通らない。
 // そのため base（astro.config.mjs）のパスをそのまま文字列で持っている。base を変える場合は
-// このファイルの BASE も合わせて変更すること。
+// このファイルの BASE も合わせて変更すること（独自ドメイン配信の現在は base が '/' なので空文字）。
 //
 // 方針: 表示済みのページ・アセットをキャッシュに溜めていき（stale-while-revalidate に近い
 // キャッシュ優先＋バックグラウンド更新）、オフライン時やネットワーク不調時はキャッシュから
 // 返す。キャッシュに無い遷移先はトップページで代替する。
-const BASE = '/ramen-blog';
+const BASE = '';
 const CACHE_NAME = 'ramen-blog-cache-v1';
 const OFFLINE_FALLBACK = `${BASE}/`;
 const PRECACHE_URLS = [`${BASE}/`, `${BASE}/favicon.svg`, `${BASE}/manifest.webmanifest`];

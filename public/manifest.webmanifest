@@ -3,14 +3,14 @@
 	"short_name": "らーめんログ",
 	"description": "ラーメン食べ歩きレビューを記録するブログ。ホーム画面に追加してアプリのように使えます。",
 	"lang": "ja",
-	"start_url": "/ramen-blog/",
-	"scope": "/ramen-blog/",
+	"start_url": "/",
+	"scope": "/",
 	"display": "standalone",
 	"background_color": "#fbf7f1",
 	"theme_color": "#a52d14",
 	"icons": [
-		{ "src": "/ramen-blog/pwa/icon-192.png", "sizes": "192x192", "type": "image/png" },
-		{ "src": "/ramen-blog/pwa/icon-512.png", "sizes": "512x512", "type": "image/png" },
-		{ "src": "/ramen-blog/pwa/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+		{ "src": "/pwa/icon-192.png", "sizes": "192x192", "type": "image/png" },
+		{ "src": "/pwa/icon-512.png", "sizes": "512x512", "type": "image/png" },
+		{ "src": "/pwa/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
 	]
 }

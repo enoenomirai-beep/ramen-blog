@@ -1,6 +1,6 @@
 # らーめん食べ歩きログ — 現状ブリーフ（他の AI に渡す用）
 
-最終更新: 2026-09-22（ページネーション・お気に入り（行きたい）・カスタム404・CSP・CI/Dependabotを追加。SEO/OGP・画像最適化・RSS・関連記事・PWAは依頼されたが既に実装済みのためスキップ。36ページに増加）
+最終更新: 2026-09-23（出費ダッシュボードに系統別・エリア別の円グラフと「ラーメンエンゲル係数」を追加。独自ドメイン `eno-ramen.com` へ移行（`site`/`CNAME`/PWAファイルのパスを変更、`base` は既定値の `/` に）。ページ数は変わらず36ページ）
 
 このファイルは、プロジェクトの現状を **別の AI（Gemini など）に共有して次の指示（プロンプト）を考えてもらう**ためのまとめです。
 実装は Claude Code が行い、変更のたびにこのファイルも更新します。
@@ -9,8 +9,8 @@
 ## 1. 何のプロジェクトか
 
 - ラーメン食べ歩きレビュー専用の静的ブログ「らーめん食べ歩きログ」
-- 公開 URL: https://enoenomirai-beep.github.io/ramen-blog/
-- リポジトリ: https://github.com/enoenomirai-beep/ramen-blog（公開）
+- 公開 URL: https://eno-ramen.com/（独自ドメイン。ホスティングは GitHub Pages、`public/CNAME` でカスタムドメイン指定。2026-09-23 に旧 URL `https://enoenomirai-beep.github.io/ramen-blog/` から移行）
+- リポジトリ: https://github.com/enoenomirai-beep/ramen-blog（公開。リポジトリ名・URL は変更なし）
 - 技術: Astro 7（静的出力）+ Tailwind CSS 4 + MDX。GitHub Pages に GitHub Actions で自動デプロイ（`main` に push → 1〜2 分で公開）
 
 ## 2. 実装済みの機能
@@ -18,7 +18,7 @@
 | 領域 | 内容 |
 |---|---|
 | 記事 | Markdown（`src/content/posts/*.md`）。フロントマター: `title` / `date` / `shop_name` / `style`（系統）/ `location` / `rating`（1〜5、0.1 刻み）/ `image` / `image_alt` / `description` / `menu` / `price` / `tags` / `map_url` / `business_hours` / `nearest_station` / `pickup` / `visits`（訪問回数、既定 1）/ `features`（特徴タグの配列）/ `draft` |
-| ラーメン出費ダッシュボード | `/dashboard/`。全記事の `price`（会計額。未記入は 1 杯の目安額 ¥800 でフォールバック）を集計し、「今年の投資総額」「平均単価」「総投資額」の 3 枚のカードと、月別の出費合計を**棒グラフ＋表**で表示。ヘッダー・フッターに「出費ダッシュボード」ナビを追加 |
+| ラーメン出費ダッシュボード | `/dashboard/`。全記事の `price`（会計額。未記入は 1 杯の目安額 ¥800 でフォールバック）を集計し、「今年の投資総額」「平均単価」「総投資額」の 3 枚のカードと、月別の出費合計を**棒グラフ＋表**で表示。**「ラーメンエンゲル係数」**（当月のラーメン出費 ÷ 月間の目標食費 `MONTHLY_FOOD_BUDGET`＝¥50,000、`src/consts.ts`）を大きな数値＋プログレスバーで表示し、30%以上・50%以上でユーモアのある警告メッセージとバーの色が変わる。**系統別・エリア別の割合**を軽量な円グラフ（`CategoryDonutChart.astro`。CSS の `conic-gradient` のみ、JS/SVG 不要）で表示。色は識別用に固定順で用意した6色（`global.css` の `--chart-series-1`〜`6`。ブランドの暖色だけだと色の区別がつきにくいための別枠）を件数の多い順に割り当て、色だけに頼らず凡例に系統名・件数・割合をテキストで併記する（7件目以降は「その他」にまとめる）。ヘッダー・フッターに「出費ダッシュボード」ナビを追加 |
 | PWA 化 | ホーム画面に追加してアプリのように使える。手書きの `public/manifest.webmanifest`（アプリ名「らーめんログ」、テーマカラーはヘッダーと同じ深い赤）と `public/sw.js`（Service Worker。キャッシュ優先＋裏でネットワーク更新、オフラインでキャッシュに無いページはトップページで代替）を `BaseLayout.astro` から読み込む。アイコンは `scripts/make-pwa-icons.mjs` で `public/pwa/` に生成（🍜 絵文字をブランドカラーの背景に乗せた PNG） |
 | 沿線検索 | `location-map.ts` の各駅に鉄道路線名（`lines`）を追加（山手線・つくばエクスプレスなど）。エリア別ページの `AreaSearchBox`（インクリメンタルサーチ）が路線名にも部分一致するようになり、「山手線」で検索すると山手線が通るすべての駅の記事がヒットする |
 | 免罪符メーター | 記事詳細ページの店舗情報の下に、系統（`style`）に応じた概算カロリー・PFC（タンパク質・脂質・炭水化物）バランスをプログレスバーで表示し、「これを消費するにはスクワット◯時間／ランニング◯km」というユーモアのある運動換算を添える（`CalorieMeter.astro` + `src/lib/nutrition.ts` のハードコードされた目安値） |
@@ -64,9 +64,9 @@
 ## 4. 設計上の決まりごと（プロンプトを書くときに知っておくと良いこと）
 
 - **色はテーマトークンで指定**（`bg-surface` / `text-ink` / `border-line` / `text-brand-fg` / バッジ用 `bg-chip-brand` など、`src/styles/global.css`）。ライト／ダークはトークンの値が切り替わる仕組みなので、`dark:` を個別に書かない
-- サブパス配信（`/ramen-blog/`）なので、サイト内リンクは `withBase()` を通す
+- 独自ドメイン配信（`base` は既定値の `/`）だが、サイト内リンクは引き続き `withBase()` を通す（サブパス配信に戻しても追随できるようにするため）
 - 記事データの取得は `src/lib/posts.ts` の `getPublishedPosts()` に統一
-- 主なコンポーネント: `PostListItem`（一覧の 1 行）/ `StarRating`（星）/ `PostFilters`（絞り込み）/ `TermPosts`・`TermCard`（系統／エリア／タグ別ページ）/ `AreaSearchBox`（エリアの近接駅・沿線検索）/ `PhotoGallery`（記事本文の複数写真・Lightbox）/ `AffiliateCard`（記事本文のアフィリエイト・広告カード）/ `BlogCard`（記事本文の内部リンクカード）/ `Breadcrumbs`（パンくず＋ JSON-LD）/ `RelatedPosts`（関連記事）/ `PickupPosts`（殿堂入りピックアップ）/ `ContributionCalendar`（ラーメン草カレンダー）/ `ShareButtons`（SNS シェア＆ URL コピー）/ `Comments`（Giscus コメント欄）/ `CalorieMeter`（免罪符メーター）/ `FloatingCTA`（スマホ用フローティング CTA）/ `GoogleAnalytics`（GA4 計測タグ）/ `ShopDetailsModal`（店舗詳細モーダル。データは `src/data/shops.ts`）/ `CommandPalette`（Ctrl+K コマンドパレット）/ `FavoriteButton`（「行きたい」ボタン）/ `Pagination`（記事一覧のページ送り）/ `TableOfContents` / `PostNav` / `ThemeToggle`。ページ: `map.astro`（ラーメンマップ）/ `ranking.astro`（マイベスト・ランキング）/ `dashboard.astro`（出費ダッシュボード）/ `search.astro`（全文検索）/ `gallery.astro`（画像ギャラリー）/ `favorites.astro`（行きたい一覧）/ `404.astro`（カスタム404）/ `page/[page].astro`（記事一覧2ページ目以降）/ `search.json.ts`（コマンドパレット用の軽量な記事インデックス API）/ `og/[slug].png.ts`（動的 OGP 画像）
+- 主なコンポーネント: `PostListItem`（一覧の 1 行）/ `StarRating`（星）/ `PostFilters`（絞り込み）/ `TermPosts`・`TermCard`（系統／エリア／タグ別ページ）/ `AreaSearchBox`（エリアの近接駅・沿線検索）/ `PhotoGallery`（記事本文の複数写真・Lightbox）/ `AffiliateCard`（記事本文のアフィリエイト・広告カード）/ `BlogCard`（記事本文の内部リンクカード）/ `Breadcrumbs`（パンくず＋ JSON-LD）/ `RelatedPosts`（関連記事）/ `PickupPosts`（殿堂入りピックアップ）/ `ContributionCalendar`（ラーメン草カレンダー）/ `ShareButtons`（SNS シェア＆ URL コピー）/ `Comments`（Giscus コメント欄）/ `CalorieMeter`（免罪符メーター）/ `FloatingCTA`（スマホ用フローティング CTA）/ `GoogleAnalytics`（GA4 計測タグ）/ `ShopDetailsModal`（店舗詳細モーダル。データは `src/data/shops.ts`）/ `CommandPalette`（Ctrl+K コマンドパレット）/ `FavoriteButton`（「行きたい」ボタン）/ `Pagination`（記事一覧のページ送り）/ `CategoryDonutChart`（出費ダッシュボードの系統別・エリア別 円グラフ）/ `TableOfContents` / `PostNav` / `ThemeToggle`。ページ: `map.astro`（ラーメンマップ）/ `ranking.astro`（マイベスト・ランキング）/ `dashboard.astro`（出費ダッシュボード）/ `search.astro`（全文検索）/ `gallery.astro`（画像ギャラリー）/ `favorites.astro`（行きたい一覧）/ `404.astro`（カスタム404）/ `page/[page].astro`（記事一覧2ページ目以降）/ `search.json.ts`（コマンドパレット用の軽量な記事インデックス API）/ `og/[slug].png.ts`（動的 OGP 画像）
 - 記事本文（Markdown/MDX 生ソース）からプレーンテキストを取り出す `stripMarkdown()`（`src/lib/markdown.ts`）は、読了時間の計算（`reading-time.ts`）と全文検索（`search.astro`）の両方で共有している
 - `AffiliateCard` / `BlogCard` は `PhotoGallery` と同じく MDX 記事の本文中でしか使えない（`.md` ではなく `.mdx` にして `import ... from '../../components/AffiliateCard.astro'` のように置く）。2026-09-20 に実記事（`iekei-tokyo-suehirocho.mdx` / `bushoya-gaiden-akihabara.mdx`）へ組み込み済み。`AffiliateCard` の `url` は `https://example.com/affiliate` のダミー値のままなので、実際のアフィリエイトプログラムに登録したら差し替える必要がある
 - 地図のピン座標は `location-map.ts` の `AREA_GROUPS` 各エントリの `lat`/`lng`（エリアの代表座標）。`getCoordinates(location)` で引く。辞書に無い location は座標が無いため地図には出ない（ビルドは失敗しない）
@@ -86,9 +86,7 @@
 
 ## 6. まだやっていないこと・アイデア
 
-現時点で「予定していたものはすべて完了」。以下は候補（未着手・未決定）:
-
-- 独自ドメイン
+- **独自ドメイン化は完了**（2026-09-23）：`eno-ramen.com` に移行済み（`astro.config.mjs` の `site`、`public/CNAME`、`public/manifest.webmanifest`/`sw.js` のパスを変更）。**残っているのはコードの外側の作業**（ユーザー側で対応）：GitHub の Settings → Pages → Custom domain に `eno-ramen.com` を設定し、ドメインの DNS 側で GitHub Pages を指す `CNAME`/`A` レコードを設定し、「Enforce HTTPS」を有効化する
 - PWA の `@vite-pwa/astro` 導入は見送り（2026-09-20）: 最新版（1.2.0）でも peer dependency が `astro@^1〜5` までで、この場の Astro 7.3 とは合わない。`--legacy-peer-deps` で強制インストールしてビルド自体は通ったが、`manifest.webmanifest` への `<link rel="manifest">` や Service Worker 登録スクリプトが生成 HTML に一切挿入されず（Astro 7 の静的ビルドパイプラインとの相性問題と判断）、PWA としては機能しなかったため撤去。代わりに `public/manifest.webmanifest` と `public/sw.js` を手書きし、`BaseLayout.astro` からリンク・登録している（キャッシュ優先＋バックグラウンド更新の簡易 Service Worker）。将来 `@vite-pwa/astro` が Astro 7 に対応したら乗り換えを検討してもよい
 
 ## 7. Claude への指示の書き方のコツ

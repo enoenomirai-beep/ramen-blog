@@ -3,7 +3,7 @@
 Astro + Tailwind CSS で作ったラーメン食べ歩きレビュー専用の静的ブログです。
 記事は Astro の Content Collections で管理し、Markdown / MDX で書けます。
 
-**公開中**: https://enoenomirai-beep.github.io/ramen-blog/
+**公開中**: https://eno-ramen.com/
 
 ## 技術的なハイライト
 
@@ -44,7 +44,7 @@ Astro + Tailwind CSS で作ったラーメン食べ歩きレビュー専用の�
 - **ギャラリー**（`/gallery/`）：全記事の一杯の写真だけを Masonry 風にタイル表示。ホバーで店名・評価が浮かび上がる
 - **ラーメンマップ**（`/map/`）：Leaflet で全店舗をピン留め。現在地からの距離順検索も可能
 - **マイベスト・ランキング**（`/ranking/`）：評価降順のランキング
-- **出費ダッシュボード**（`/dashboard/`）：会計額の集計・月別推移グラフ
+- **出費ダッシュボード**（`/dashboard/`）：会計額の集計・月別推移グラフ、系統別・エリア別の割合（円グラフ）、当月のラーメン出費が目標食費に占める割合を示す「ラーメンエンゲル係数」
 - **PWA 対応**：ホーム画面に追加してアプリのように使える（オフラインキャッシュ対応の Service Worker）
 - **カスタム 404 ページ / CSP**：`src/pages/404.astro` と、`<meta http-equiv>` による Content-Security-Policy（GitHub Pages はカスタム HTTP ヘッダーを設定できないため）
 - **CI / Dependabot**：PR ごとに型チェック・ビルドを検証する GitHub Actions（`.github/workflows/ci.yml`）と、依存パッケージの週次自動更新（`.github/dependabot.yml`）
@@ -55,26 +55,31 @@ Astro + Tailwind CSS で作ったラーメン食べ歩きレビュー専用の�
 ## 公開（GitHub Pages）
 
 `main` ブランチに push すると GitHub Actions（[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)）が
-ビルドして GitHub Pages に公開します。公開 URL は `https://enoenomirai-beep.github.io/ramen-blog/` です。
+ビルドして GitHub Pages に公開します。公開 URL は独自ドメインの `https://eno-ramen.com/` です
+（ホスティング自体は GitHub Pages で、`public/CNAME` にドメイン名を書くことでカスタムドメイン配信にしています）。
 
 初回だけ、GitHub のリポジトリ設定 **Settings → Pages → Build and deployment → Source** を
-**GitHub Actions** にしてください。
+**GitHub Actions** にしてください。また、独自ドメインを使うには GitHub 側の
+**Settings → Pages → Custom domain** に同じドメイン名を設定し、DNS 側でそのドメインから
+GitHub Pages を指す `CNAME` レコード（サブドメインの場合）または `A` レコード（ルートドメインの場合）を
+設定する必要があります（これはコードの外側、ドメインの管理会社・DNS 側の作業です）。
 
-公開 URL は `astro.config.mjs` の `site` と `base` で決まります。
+公開 URL は `astro.config.mjs` の `site`（と、サブパス配信にする場合は `base`）で決まります。
 RSS・sitemap・canonical・OGP の絶対 URL はすべてこの値から生成されるので、
-リポジトリ名やアカウントを変えたらここも変更してください。
+ドメインやリポジトリ名を変えたらここも変更してください。
 
 ```js
-site: 'https://<ユーザー名>.github.io',
-base: '/<リポジトリ名>',
+site: 'https://eno-ramen.com',
+// サブパス配信にする場合だけ base を指定する（独自ドメインの現在は指定していない = 既定値の '/'）
+// base: '/<リポジトリ名>',
 ```
 
-サブパス（`base`）で配信しているため、サイト内リンクを書くときは
-`src/consts.ts` の `withBase('/posts/foo/')` を通してください（`/ramen-blog/posts/foo/` になります）。
-開発サーバーでも同じく `http://localhost:4321/ramen-blog/` で開きます。
+`base` が既定値の `/`（サブパス無し）のため、サイト内リンクは実質そのまま返りますが、
+`src/consts.ts` の `withBase('/posts/foo/')` を通す方針は変わりません（`base` を指定する構成に戻しても追随できます）。
+開発サーバーも `http://localhost:4321/` で開きます。
 
 `public/manifest.webmanifest` と `public/sw.js` は Astro の処理を通らない手書きの静的ファイルなので、
-`base` を変える場合はこの 2 ファイル内の `/ramen-blog` も直接書き換える必要があります。
+`base` を変える場合はこの 2 ファイル内のパス（現在は `/`）も直接書き換える必要があります。
 
 GA4 アクセス解析を有効にする場合は、GitHub リポジトリの Settings → Secrets and variables → Actions →
 Variables に `PUBLIC_GA_MEASUREMENT_ID`（`G-XXXXXXXXXX` 形式）を追加してください（未設定の間は計測タグを出力しません）。
@@ -84,7 +89,7 @@ Variables に `PUBLIC_GA_MEASUREMENT_ID`（`G-XXXXXXXXXX` 形式）を追加し�
 | コマンド | 内容 |
 | :--- | :--- |
 | `npm install` | 依存パッケージをインストール |
-| `npm run dev` | 開発サーバーを起動（`http://localhost:4321/ramen-blog/`） |
+| `npm run dev` | 開発サーバーを起動（`http://localhost:4321/`） |
 | `npm run build` | 本番用ビルドを `./dist/` に出力 |
 | `npm run preview` | ビルド結果をローカルでプレビュー |
 | `npx astro check` | 型チェック |
@@ -95,6 +100,7 @@ Variables に `PUBLIC_GA_MEASUREMENT_ID`（`G-XXXXXXXXXX` 形式）を追加し�
 ```text
 /
 ├── public/
+│   ├── CNAME                   # 独自ドメイン（eno-ramen.com）。GitHub Pages のカスタムドメイン設定用
 │   ├── manifest.webmanifest    # PWA マニフェスト（手書き。base を直接文字列で持つ）
 │   ├── sw.js                   # Service Worker（手書き。base を直接文字列で持つ）
 │   └── pwa/                    # PWA アイコン（scripts/make-pwa-icons.mjs で生成）
@@ -108,6 +114,7 @@ Variables に `PUBLIC_GA_MEASUREMENT_ID`（`G-XXXXXXXXXX` 形式）を追加し�
 │   │   ├── BlogCard.astro          # MDX 用内部リンクカード
 │   │   ├── Breadcrumbs.astro       # パンくず + BreadcrumbList JSON-LD
 │   │   ├── CalorieMeter.astro      # 免罪符メーター（系統別カロリー・PFC）
+│   │   ├── CategoryDonutChart.astro # 出費ダッシュボードの円グラフ（系統別・エリア別）
 │   │   ├── Comments.astro          # Giscus コメント欄
 │   │   ├── CommandPalette.astro    # Ctrl+K コマンドパレット
 │   │   ├── ContributionCalendar.astro # ラーメン草カレンダー

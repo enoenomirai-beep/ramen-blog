@@ -5,10 +5,15 @@
  * 記事の `price`（会計額）を集計して、「今年の投資総額」「平均単価」「月別の出費推移」を出す。
  * `price` が無い記事は、ラーメン1杯の目安額（800円）としてフォールバックする
  * （0円だと平均・グラフが実態より低く出てしまうため）。
+ *
+ * 加えて、系統別・エリア別の内訳を円グラフ（CategoryDonutChart）で、当月のラーメン出費が
+ * 月間の目標食費（MONTHLY_FOOD_BUDGET、src/consts.ts）の何％を占めるかを「ラーメンエンゲル係数」
+ * として表示する。
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { withBase } from '../consts';
-import { getPublishedPosts, type Post } from '../lib/posts';
+import CategoryDonutChart from '../components/CategoryDonutChart.astro';
+import { MONTHLY_FOOD_BUDGET, withBase } from '../consts';
+import { getPublishedPosts, groupByLocation, groupByStyle, type Post } from '../lib/posts';
 
 const DEFAULT_PRICE = 800;
 function priceOf(post: Post): number {
@@ -23,6 +28,27 @@ const totalThisYear = thisYearPosts.reduce((sum, post) => sum + priceOf(post), 0
 
 const totalAll = posts.reduce((sum, post) => sum + priceOf(post), 0);
 const avgPrice = posts.length > 0 ? Math.round(totalAll / posts.length) : 0;
+
+// 系統別・エリア別の内訳（全期間）
+const styleItems = [...groupByStyle(posts)].map(([label, list]) => ({ label, count: list.length }));
+const locationItems = [...groupByLocation(posts)].map(([label, list]) => ({ label, count: list.length }));
+
+// ラーメンエンゲル係数：今月のラーメン出費が、月間の目標食費のうち何％を占めるか
+const now = new Date();
+const thisMonthPosts = posts.filter(
+	(post) => post.data.date.getFullYear() === now.getFullYear() && post.data.date.getMonth() === now.getMonth(),
+);
+const totalThisMonth = thisMonthPosts.reduce((sum, post) => sum + priceOf(post), 0);
+const engelRatio = (totalThisMonth / MONTHLY_FOOD_BUDGET) * 100;
+const engelRatioLabel = (Math.round(engelRatio * 10) / 10).toLocaleString('ja-JP');
+const engelBarWidth = Math.min(engelRatio, 100);
+const engelBarClass = engelRatio >= 50 ? 'bg-brand-800' : engelRatio >= 30 ? 'bg-accent-500' : 'bg-brand-500';
+const engelMessage =
+	engelRatio >= 50
+		? '🚨 ラーメンエンゲル係数が危険域です。そろそろ自炊しましょう…'
+		: engelRatio >= 30
+			? '⚠️ 食費のかなりの部分がラーメンに…そろそろ自炊も検討してみては？'
+			: null;
 
 // 月別（YYYY-MM）の出費合計・件数。日付の古い順
 interface MonthlyStat {
@@ -49,7 +75,7 @@ const homeHref = withBase('/');
 
 <BaseLayout
 	title="ラーメン出費ダッシュボード"
-	description="ラーメンに使ったお金を集計する家計簿ダッシュボード。今年の投資総額・平均単価・月別の出費推移。"
+	description="ラーメンに使ったお金を集計する家計簿ダッシュボード。今年の投資総額・平均単価・月別の出費推移・系統別/エリア別の割合・ラーメンエンゲル係数。"
 >
 	<nav aria-label="パンくずリスト" class="mb-5 text-xs text-ink-muted sm:text-sm">
 		<a href={homeHref} class="hover:text-brand-fg">記事一覧</a>
@@ -97,6 +123,32 @@ const homeHref = withBase('/');
 						<p class="mt-1 text-xs text-ink-faint">記事{posts.length}件</p>
 					</div>
 				</div>
+
+				<section
+					class="mb-6 rounded-xl border border-line bg-surface-raised p-4 shadow-sm sm:mb-8 sm:p-5"
+					aria-labelledby="engel-heading"
+				>
+					<h2 id="engel-heading" class="text-sm font-bold text-ink">
+						🍜 ラーメンエンゲル係数（{now.getFullYear()}年{now.getMonth() + 1}月）
+					</h2>
+					<p class="mt-1 text-xs text-ink-faint">
+						月間の目標食費（¥{MONTHLY_FOOD_BUDGET.toLocaleString('ja-JP')}）のうち、今月のラーメン出費（¥
+						{totalThisMonth.toLocaleString('ja-JP')}）が占める割合
+					</p>
+					<p class="mt-3 text-3xl font-extrabold tracking-tight text-brand-fg sm:text-4xl">{engelRatioLabel}%</p>
+					<div class="mt-3 h-3 w-full overflow-hidden rounded-full bg-surface-sunken" role="presentation">
+						<div class={`h-full rounded-full ${engelBarClass}`} style={`width: ${engelBarWidth}%`} />
+					</div>
+					{engelMessage && <p class="mt-3 text-sm font-bold text-ink">{engelMessage}</p>}
+				</section>
+
+				<section class="mb-6 rounded-xl border border-line bg-surface-raised p-4 shadow-sm sm:mb-8 sm:p-5">
+					<h2 class="text-sm font-bold text-ink">系統別・エリア別の割合（全期間）</h2>
+					<div class="mt-5 grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8">
+						<CategoryDonutChart title="系統別" items={styleItems} />
+						<CategoryDonutChart title="エリア別" items={locationItems} />
+					</div>
+				</section>
 
 				<section class="rounded-xl border border-line bg-surface-raised p-4 shadow-sm sm:p-5" aria-labelledby="monthly-heading">
 					<h2 id="monthly-heading" class="text-sm font-bold text-ink">月別の出費推移</h2>

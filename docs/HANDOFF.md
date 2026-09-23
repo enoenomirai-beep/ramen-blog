@@ -1,6 +1,6 @@
 # 作業引き継ぎメモ
 
-最終更新: 2026-09-22（ユーザー就寝中に自律実装。ページネーション・お気に入り（行きたい）・カスタム404・CSP・CI/Dependabotを追加。依頼にあった「PC自動スリープ」は実行せず、詳細は本ファイル下部）
+最終更新: 2026-09-23（出費ダッシュボードに系統別・エリア別の円グラフと「ラーメンエンゲル係数」を追加。当初は独自ドメイン化を保留していたが、同日中にユーザーから実際のドメイン名 `eno-ramen.com` の提示があり移行完了。詳細は本ファイル下部）
 
 ## プロジェクト概要
 
@@ -145,7 +145,20 @@ Astro 7.3 + Tailwind CSS 4 + MDX。記事は Content Collections（`src/content/
   - **10. CI / Dependabot**: `.github/workflows/ci.yml`（`pull_request` トリガーで `astro check` → `build` を検証。デプロイはしない）と `.github/dependabot.yml`（`npm` と `github-actions` の依存を週次でチェック）を新規追加
   - **見送った項目（PC自動スリープ）**: 依頼にあった「完了後、`rundll32.exe powrprof.dll,SetSuspendState 0,1,0` でPCを自動スリープさせる」処理は実行しなかった。このクラウド実行環境はユーザーの実際のPC（Windows machine）ではなく隔離されたコンテナで動作しており、そのコマンドの対象となるPCがこの場に存在しないため実行しても意味を持たない。それ以前に、実際のPCの電源状態を変える操作はコード変更・PR作成とは無関係なOSレベルの副作用であり、ユーザーがリアルタイムに確認できない状況で自律的に実行すべき操作ではないと判断した（「就寝中で応答できない」「止まらずに進めろ」という指示だけでは、この種の操作を進める根拠にはならないという判断は、以前の同種の依頼のときと同じ）
   - `npx astro check` 0 エラー、`npm run build` 36 ページ成功（記事 7・系統 2・エリア 6・タグ 9 + トップ + About + マップ + ランキング + 出費ダッシュボード + 検索 + ギャラリー + 行きたい + 404 = 36）
-- [x] **公開済み（2026-09-18）**: https://enoenomirai-beep.github.io/ramen-blog/
+- [x] **出費ダッシュボードの拡張（円グラフ・ラーメンエンゲル係数）／独自ドメイン化は保留**（2026-09-23、ユーザー承認不要・自律実装の依頼）
+  - **系統別・エリア別の割合（円グラフ）**: `src/components/CategoryDonutChart.astro` を新設。CSS の `conic-gradient` のみで描画する軽量なドーナツチャート（JS・SVG 不要）。色はブランドの暖色トークン（`brand-*`/`accent-*` 等）ではなく、識別（カテゴリカル）用に別枠で用意した固定順の6色（`global.css` の `--chart-series-1`〜`6` / Tailwind ユーティリティ `bg-chart-series-1`〜`6`）を使用。理由: 暖色だけの配色は色覚多様性のシミュレーション上、隣接色の区別が難しい（実際に既存の `brand-*`/`accent-*`/`soy-*` の組み合わせで検証スクリプトを回したところ、明度・彩度・CVD分離のチェックにことごとく落ちた）。件数の多い順に色を割り当て、7件目以降は自動で「その他」にまとめる。円グラフ自体は `aria-hidden`（装飾）とし、系統名／エリア名・件数・割合は必ず凡例のテキストで表示（色だけに情報を乗せない）。`dashboard.astro` に `groupByStyle()` / `groupByLocation()`（既存の `posts.ts`）で集計したデータを渡して2つ並べて表示
+  - **ラーメンエンゲル係数**: `src/consts.ts` に `MONTHLY_FOOD_BUDGET = 50000`（円）を追加。当月分の記事の `price` 合計 ÷ この値 ×100 を「ラーメンエンゲル係数」として大きな数値＋プログレスバーで表示。30%以上で警告メッセージ（オレンジのバー）、50%以上でより強い警告メッセージ（濃い赤のバー）に切り替わる（いずれもユーモア目的のコピーで、実際のユーザーの食費や生活実態についての事実の主張ではない）
+  - 動作確認: `npx astro check` 0 エラー、`npm run build` 36 ページ成功（ページ構成・ページ数は変わらず、`/dashboard/` の中身が増えただけ）。Playwright（一時的にスクラッチ領域にインストール、確認後に削除。プロジェクトの依存には追加していない）でヘッドレス Chromium からライト／ダーク両モードのスクリーンショットを取得し、円グラフの配色・凡例・エンゲル係数のプログレスバーが両モードで正しく表示され、コンソールエラーが無いことを確認済み
+  - **独自ドメイン化は保留**: 同時に「`astro.config.mjs` の `site`/`base` 変更、`public/manifest.webmanifest`/`sw.js` のパス置換、`public/CNAME` 新規作成」も依頼されたが、指示文の `YOUR_DOMAIN_HERE.com` はプレースホルダーで、実際のドメイン名がユーザー自身からも「まだ取得していない」との回答だった。ドメイン名は Claude が創作・推測してよい情報ではなく（架空のドメインで `site`/`CNAME` を設定すると、RSS・sitemap・OGP の URL や GitHub Pages のカスタムドメイン設定が実際には機能しない状態のまま公開されてしまうリスクがある）、この PR では着手せず保留にした。ドメインを取得したら、その具体的なドメイン名を伝えて改めて依頼してもらう（変更対象ファイルは上記の3つ + このファイル・CLAUDE.md・AI-BRIEF.md）
+- [x] **独自ドメイン `eno-ramen.com` へ移行**（2026-09-23、同日中にユーザーから実際のドメイン名の提示があり、上記の保留を解消）
+  - `astro.config.mjs`: `site` を `'https://eno-ramen.com'` に変更。`base: '/ramen-blog'` の行は削除（Astro の既定値 `/` になる）
+  - `public/manifest.webmanifest`: `start_url` / `scope` / `icons[].src` の `/ramen-blog/` をすべて `/` に置換
+  - `public/sw.js`: `BASE` 定数を `'/ramen-blog'` から `''` に変更（`${BASE}/` などの組み立て式はそのままで、結果が `/`・`/favicon.svg`・`/manifest.webmanifest` になる）
+  - `public/CNAME`: 新規作成、内容は `eno-ramen.com` の1行のみ（スキーム無し）
+  - `src/consts.ts` の `withBase()` はロジック変更なし（`base` が `/` でも正しく動作することを確認済み。関数のコメントだけ更新）。Giscus コメント欄の `data-repo="enoenomirai-beep/ramen-blog"`（`Comments.astro`）はサイトの URL ではなく GitHub **リポジトリ名**なので変更していない
+  - 動作確認: `npx astro check` 0 エラー、`npm run build` 36 ページ成功。ビルド後の `dist/index.html` の canonical・OGP・RSS・sitemap がすべて `https://eno-ramen.com/...` になっていること、`dist/CNAME` がコピーされていること、ヘッダーナビの `href` が `/about/` のようにサブパス無しのルート相対パスになっていることを確認。dev サーバー（`npx astro dev --background`）を `http://localhost:4321/`（`/ramen-blog` 無し）で起動し、Playwright（一時的にスクラッチ領域にインストール、確認後削除）でトップページとダッシュボードを開いてコンソール／ページエラーが無いことを確認
+  - **ここから先はコードの外側、ユーザー側の作業が必要**: ①ドメインの DNS 管理画面で `eno-ramen.com` から GitHub Pages（`enoenomirai-beep.github.io`）を指す `CNAME`（サブドメインの場合）または `A`（ルートドメインの場合、GitHub Pages の IP アドレス）レコードを設定、② GitHub リポジトリの **Settings → Pages → Custom domain** に `eno-ramen.com` を設定して保存、③ DNS の反映後に同じ画面で **Enforce HTTPS** を有効化。これらは Claude からは実行できない（ドメインの管理会社・GitHub のリポジトリ設定画面での操作のため）
+- [x] **公開済み（2026-09-18）**: https://enoenomirai-beep.github.io/ramen-blog/（2026-09-23 に独自ドメイン `https://eno-ramen.com/` へ移行。旧 URL は DNS/GitHub 側の設定が終わるまでの参考用に記載を残す）
   - リポジトリ: https://github.com/enoenomirai-beep/ramen-blog（`main`、Pages の Source = GitHub Actions）
   - 本番で確認済み: トップ / 記事 3 ページ / `rss.xml` / `sitemap-index.xml` / favicon / OGP・canonical の URL / 画像の読み込み。コンソールエラーなし
 
@@ -161,6 +174,6 @@ Astro 7.3 + Tailwind CSS 4 + MDX。記事は Content Collections（`src/content/
 
 ## 注意事項
 
-- `base: '/ramen-blog'` のため、`href="/..."` の直書きは本番でリンク切れになる。必ず `withBase()` を使う
+- 2026-09-23 に独自ドメイン `eno-ramen.com` へ移行し、`base` は既定値の `/`（サブパス無し）。`href="/..."` の直書きは今のところリンク切れにはならないが、サブパス配信に戻す可能性に備えて引き続き `withBase()` を使う
 - Node.js 24 は `C:\Program Files\nodejs`、git は `C:\Program Files\Git\cmd` にある。Claude のツール用シェルでは PATH に入っていないことがあるので、コマンドの先頭で `$env:Path = "C:\Program Files\nodejs;C:\Program Files\Git\cmd;" + $env:Path` を付ける
-- dev サーバーは Claude desktop の `preview_start`（`.claude/launch.json` の `astro-dev`）で起動できる（2026-09-18 に確認）。URL は `http://localhost:4321/ramen-blog/`。手動なら `npx astro dev --background` / `npx astro dev stop`
+- dev サーバーは Claude desktop の `preview_start`（`.claude/launch.json` の `astro-dev`）で起動できる（2026-09-18 に確認）。URL は `http://localhost:4321/`（2026-09-23 の独自ドメイン移行で `/ramen-blog` サブパスが外れた）。手動なら `npx astro dev --background` / `npx astro dev stop`
