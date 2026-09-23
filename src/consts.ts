@@ -6,6 +6,9 @@ export const SITE_DESCRIPTION =
 /** トップページ・ページネーションの 1 ページあたりの記事数 */
 export const PAGE_SIZE = 12;
 
+/** ラーメンエンゲル係数の算出に使う、月間の目標食費（円）。出費ダッシュボードで使用 */
+export const MONTHLY_FOOD_BUDGET = 50000;
+
 /**
  * サイト内リンクに `base`（astro.config.mjs）を付ける。
  * GitHub Pages のプロジェクトサイトのようにサブパス配信するときに必要。

@@ -44,7 +44,7 @@ Astro + Tailwind CSS で作ったラーメン食べ歩きレビュー専用の�
 - **ギャラリー**（`/gallery/`）：全記事の一杯の写真だけを Masonry 風にタイル表示。ホバーで店名・評価が浮かび上がる
 - **ラーメンマップ**（`/map/`）：Leaflet で全店舗をピン留め。現在地からの距離順検索も可能
 - **マイベスト・ランキング**（`/ranking/`）：評価降順のランキング
-- **出費ダッシュボード**（`/dashboard/`）：会計額の集計・月別推移グラフ
+- **出費ダッシュボード**（`/dashboard/`）：会計額の集計・月別推移グラフ、系統別・エリア別の割合（円グラフ）、当月のラーメン出費が目標食費に占める割合を示す「ラーメンエンゲル係数」
 - **PWA 対応**：ホーム画面に追加してアプリのように使える（オフラインキャッシュ対応の Service Worker）
 - **カスタム 404 ページ / CSP**：`src/pages/404.astro` と、`<meta http-equiv>` による Content-Security-Policy（GitHub Pages はカスタム HTTP ヘッダーを設定できないため）
 - **CI / Dependabot**：PR ごとに型チェック・ビルドを検証する GitHub Actions（`.github/workflows/ci.yml`）と、依存パッケージの週次自動更新（`.github/dependabot.yml`）
@@ -108,6 +108,7 @@ Variables に `PUBLIC_GA_MEASUREMENT_ID`（`G-XXXXXXXXXX` 形式）を追加し�
 │   │   ├── BlogCard.astro          # MDX 用内部リンクカード
 │   │   ├── Breadcrumbs.astro       # パンくず + BreadcrumbList JSON-LD
 │   │   ├── CalorieMeter.astro      # 免罪符メーター（系統別カロリー・PFC）
+│   │   ├── CategoryDonutChart.astro # 出費ダッシュボードの円グラフ（系統別・エリア別）
 │   │   ├── Comments.astro          # Giscus コメント欄
 │   │   ├── CommandPalette.astro    # Ctrl+K コマンドパレット
 │   │   ├── ContributionCalendar.astro # ラーメン草カレンダー

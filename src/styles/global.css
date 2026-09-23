@@ -66,6 +66,18 @@
 	--chip-brand-fg: #a52d14;
 	--chip: #f3ece2;
 	--chip-fg: #5a4b41;
+	/*
+	 * ダッシュボードの円グラフ（系統別・エリア別の割合）用の分類（カテゴリカル）色。
+	 * ブランドの暖色（赤〜オレンジ〜茶）だけでは色同士の区別がつきにくい（色覚多様性のシミュレーションで
+	 * 隣接色のΔEが基準を満たさない）ため、識別用途だけはブランド色から離れた6色を固定順で使う。
+	 * 凡例には必ず色＋テキスト（系統名・件数・割合）を並べて表示し、色だけに頼らない
+	 */
+	--chart-series-1: #2a78d6;
+	--chart-series-2: #eb6834;
+	--chart-series-3: #1baf7a;
+	--chart-series-4: #eda100;
+	--chart-series-5: #e87ba4;
+	--chart-series-6: #008300;
 }
 [data-theme="dark"] {
 	/* select やスクロールバーなどブラウザ標準 UI もダークにする */
@@ -86,6 +98,13 @@
 	--chip-brand-fg: #ffb39c;
 	--chip: #2f2622;
 	--chip-fg: #d6c8bc;
+	/* ダッシュボードの円グラフ用。ダーク面（#171210）向けに明度を調整した同じ6色 */
+	--chart-series-1: #3987e5;
+	--chart-series-2: #d95926;
+	--chart-series-3: #199e70;
+	--chart-series-4: #c98500;
+	--chart-series-5: #d55181;
+	--chart-series-6: #008300;
 }
 @theme inline {
 	--color-surface: var(--surface);
@@ -103,6 +122,12 @@
 	--color-chip-brand-fg: var(--chip-brand-fg);
 	--color-chip: var(--chip);
 	--color-chip-fg: var(--chip-fg);
+	--color-chart-series-1: var(--chart-series-1);
+	--color-chart-series-2: var(--chart-series-2);
+	--color-chart-series-3: var(--chart-series-3);
+	--color-chart-series-4: var(--chart-series-4);
+	--color-chart-series-5: var(--chart-series-5);
+	--color-chart-series-6: var(--chart-series-6);
 }
 
 @layer base {

@@ -48,6 +48,8 @@ Node.js は `C:\Program Files\nodejs`。ツール用シェルの PATH に入っ�
 - カスタム 404 ページは `src/pages/404.astro`。GitHub Pages は `dist/404.html` を自動でエラーページとして使うので、追加設定は不要
 - CSP は `BaseLayout.astro` の `<head>` に `<meta http-equiv="Content-Security-Policy">` として設定している（GitHub Pages はカスタム HTTP レスポンスヘッダーを返せないため、meta タグでの設定が唯一の手段。`frame-ancestors` など meta タグでは効かないディレクティブは書いていない）。テーマ切り替え・Service Worker 登録・コマンドパレット・GA4 設定用の固定インラインスクリプトがあるため `script-src`/`style-src` に `'unsafe-inline'` を含む。外部ドメインは実際に読み込んでいるものだけ許可（`unpkg.com` = Leaflet、`googletagmanager.com` = GA4、`giscus.app` = コメント欄、`images.unsplash.com` = イメージ画像、`tile.openstreetmap.org` = 地図タイル）。新しい外部リソースを追加するときはこのポリシーも更新すること
 - `.github/workflows/ci.yml` は PR ごとに `astro check` → `build` を検証する（デプロイはしない。デプロイは `deploy.yml` が `main` への push で担当）。`.github/dependabot.yml` は npm と GitHub Actions の依存を週次でチェック
+- 出費ダッシュボード（`/dashboard/`）の「系統別・エリア別の割合」円グラフは `CategoryDonutChart.astro`（CSS の `conic-gradient` のみ・JS/SVG 不要）。色は `bg-surface` 等の暖色テーマトークンとは別枠の、識別用に固定順で用意した6色（`global.css` の `--chart-series-1`〜`6` / `bg-chart-series-1`〜`6`。ブランドの暖色だけでは色同士の区別がつきにくいため）。件数の多い順に割り当て、7件目以降は「その他」にまとめる。色だけに頼らず、必ず凡例にラベル・件数・割合をテキストで併記する。「ラーメンエンゲル係数」（当月のラーメン出費 ÷ `MONTHLY_FOOD_BUDGET`、`src/consts.ts`）は 30%以上・50%以上でメッセージとプログレスバーの色が変わる
+- 独自ドメイン化（`astro.config.mjs` の `site`/`base` 変更、`public/CNAME` 追加）は 2026-09-23 に依頼されたが、実際のドメイン名が未定のため保留。着手する際はユーザーに確定したドメイン名を確認してから `site`・`base`・`public/manifest.webmanifest`・`public/sw.js` 内のパス・`public/CNAME` をまとめて変更する（詳細は `docs/HANDOFF.md`）
 
 ## Documentation
 
