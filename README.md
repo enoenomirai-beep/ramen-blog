@@ -36,8 +36,8 @@ Astro + Tailwind CSS で作ったラーメン食べ歩きレビュー専用の�
 
 ## 機能
 
-- **記事一覧・絞り込み**：系統タグ・場所・評価（★n 以上）で絞り込み、新しい順／古い順／評価順で並び替え。条件は URL クエリに同期されるので、絞り込んだ状態のままリンクを共有できます。「今日の一杯ガチャ」ボタン、殿堂入りピックアップ、ラーメン草カレンダー（GitHub Contributions 風）も表示
-- **記事ページ**：店名を主役にしたヘッダー、星評価（0.1 刻み）、読了時間の目安、店舗情報の表（地図リンク・営業時間・最寄り駅）、店舗詳細モーダル（営業時間・定休日・訪問時に注文したメニュー）、Googleマップ経路検索ボタン（`lat`/`lng` がある記事のみ）、動的 OGP 画像、Review 構造化データ（JSON-LD）、目次、複数写真ギャラリー（Lightbox）、系統別の概算カロリー・PFC を表示する「免罪符メーター」、SNS シェア、関連記事、前後記事ナビ、Giscus コメント欄
+- **記事一覧・絞り込み**：系統タグ・場所・評価（★n 以上）で絞り込み、新しい順／古い順／評価順で並び替え。条件は URL クエリに同期されるので、絞り込んだ状態のままリンクを共有できます。12 件ごとのページネーション（`/page/2/` など）、「今日の一杯ガチャ」ボタン、殿堂入りピックアップ、ラーメン草カレンダー（GitHub Contributions 風）も表示
+- **記事ページ**：店名を主役にしたヘッダー、星評価（0.1 刻み）、読了時間の目安、店舗情報の表（地図リンク・営業時間・最寄り駅）、店舗詳細モーダル（営業時間・定休日・訪問時に注文したメニュー）、Googleマップ経路検索ボタン（`lat`/`lng` がある記事のみ）、「行きたい」ボタン（LocalStorage、`/favorites/` で一覧確認）、動的 OGP 画像、Review 構造化データ（JSON-LD）、目次、複数写真ギャラリー（Lightbox）、系統別の概算カロリー・PFC を表示する「免罪符メーター」、SNS シェア、関連記事、前後記事ナビ、Giscus コメント欄
 - **分類ページ**：系統別・エリア別・タグ別（`/styles/` `/locations/` `/tags/`）。エリア別ページは近接駅・鉄道路線名でも検索できるインクリメンタルサーチ付き
 - **全文検索**（`/search/`）：店名・本文・系統・場所・タグなどのキーワードで検索
 - **コマンドパレット**（`Ctrl+K` / `Cmd+K`）：どのページからでも開ける検索モーダル。店名・系統・場所・タグにインクリメンタルサーチしてジャンプ。`/dark` `/light` でテーマ切り替えのイースターエッグ付き
@@ -46,6 +46,8 @@ Astro + Tailwind CSS で作ったラーメン食べ歩きレビュー専用の�
 - **マイベスト・ランキング**（`/ranking/`）：評価降順のランキング
 - **出費ダッシュボード**（`/dashboard/`）：会計額の集計・月別推移グラフ
 - **PWA 対応**：ホーム画面に追加してアプリのように使える（オフラインキャッシュ対応の Service Worker）
+- **カスタム 404 ページ / CSP**：`src/pages/404.astro` と、`<meta http-equiv>` による Content-Security-Policy（GitHub Pages はカスタム HTTP ヘッダーを設定できないため）
+- **CI / Dependabot**：PR ごとに型チェック・ビルドを検証する GitHub Actions（`.github/workflows/ci.yml`）と、依存パッケージの週次自動更新（`.github/dependabot.yml`）
 - **ダークモード**：初回は OS の設定に従い、ヘッダー右端の月／太陽ボタンで切り替え（選択はブラウザに保存）。色は `src/styles/global.css` のテーマトークンで一元管理
 - **アフィリエイト・広告カード / 内部リンクカード**：MDX 記事内に埋め込める `AffiliateCard` / `BlogCard` コンポーネント（収益化・回遊率向上の土台）
 - RSS フィード、sitemap、OGP / Twitter カード、GA4 アクセス解析、スマホ用フローティング CTA
@@ -109,8 +111,10 @@ Variables に `PUBLIC_GA_MEASUREMENT_ID`（`G-XXXXXXXXXX` 形式）を追加し�
 │   │   ├── Comments.astro          # Giscus コメント欄
 │   │   ├── CommandPalette.astro    # Ctrl+K コマンドパレット
 │   │   ├── ContributionCalendar.astro # ラーメン草カレンダー
+│   │   ├── FavoriteButton.astro    # 「行きたい」ボタン（LocalStorage）
 │   │   ├── FloatingCTA.astro       # スマホ用フローティング CTA
 │   │   ├── GoogleAnalytics.astro   # GA4 計測タグ
+│   │   ├── Pagination.astro        # 記事一覧のページ送り
 │   │   ├── PhotoGallery.astro      # 記事本文の複数写真・Lightbox
 │   │   ├── PickupPosts.astro       # 殿堂入りピックアップ
 │   │   ├── PostFilters.astro       # 絞り込み・並び替え UI
@@ -141,8 +145,10 @@ Variables に `PUBLIC_GA_MEASUREMENT_ID`（`G-XXXXXXXXXX` 形式）を追加し�
 │   │   ├── index.astro         # トップページ（記事一覧 + 絞り込み + ガチャ）
 │   │   ├── posts/[id].astro    # 記事詳細ページ
 │   │   ├── search.astro        # 全文検索
-│   │   ├── search.json.ts      # コマンドパレット用の軽量な記事インデックス API
+│   │   ├── search.json.ts      # コマンドパレット・行きたい一覧用の軽量な記事インデックス API
 │   │   ├── gallery.astro       # 画像だけのギャラリー
+│   │   ├── favorites.astro     # 「行きたい」一覧（LocalStorage）
+│   │   ├── page/[page].astro   # 記事一覧 2 ページ目以降（/page/2/ など）
 │   │   ├── map.astro           # ラーメンマップ
 │   │   ├── ranking.astro       # マイベスト・ランキング
 │   │   ├── dashboard.astro     # 出費ダッシュボード
@@ -151,11 +157,15 @@ Variables に `PUBLIC_GA_MEASUREMENT_ID`（`G-XXXXXXXXXX` 形式）を追加し�
 │   │   ├── locations/          # エリア別（index / [location]）
 │   │   ├── tags/                # タグ別（index / [tag]）
 │   │   ├── og/[slug].png.ts    # 記事ごとの動的 OGP 画像
-│   │   └── rss.xml.ts          # RSS フィード
+│   │   ├── rss.xml.ts          # RSS フィード
+│   │   └── 404.astro           # カスタム 404 ページ
 │   ├── styles/global.css       # Tailwind の読み込み、配色トークン、本文の見出し装飾
 │   ├── consts.ts               # サイト名などの定数、withBase()（base 付きリンク）
 │   └── content.config.ts       # Content Collections のスキーマ定義
-├── .github/workflows/deploy.yml   # GitHub Pages への自動デプロイ（astro check → build → deploy）
+├── .github/
+│   ├── workflows/deploy.yml       # GitHub Pages への自動デプロイ（astro check → build → deploy）
+│   ├── workflows/ci.yml           # PR ごとの astro check → build 検証（デプロイはしない）
+│   └── dependabot.yml             # npm・GitHub Actions の依存を週次チェック
 ├── scripts/
 │   ├── import-photo.mjs           # 写真の取り込み（縮小・EXIF 削除、HEIC 対応）
 │   ├── make-placeholders.mjs      # OGP 用デフォルト画像の生成

@@ -1,0 +1,65 @@
+---
+/**
+ * 「行きたい」ボタン。LocalStorage（このブラウザだけ）に記事 id を保存する。
+ * 一覧は /favorites/ ページ（favorites.astro）で確認できる。
+ */
+interface Props {
+	postId: string;
+}
+
+const { postId } = Astro.props;
+---
+
+<button
+	type="button"
+	data-favorite-button
+	data-post-id={postId}
+	aria-pressed="false"
+	class="inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-surface-raised px-3.5 py-1.5 text-sm font-semibold text-ink transition hover:border-brand-400 hover:text-brand-fg aria-pressed:border-brand-600 aria-pressed:bg-chip-brand aria-pressed:text-chip-brand-fg"
+>
+	<span data-favorite-icon aria-hidden="true">🤍</span>
+	行きたい
+</button>
+
+<script>
+	const STORAGE_KEY = 'ramen-blog:favorites';
+
+	function getFavorites(): string[] {
+		try {
+			const raw = localStorage.getItem(STORAGE_KEY);
+			return raw ? JSON.parse(raw) : [];
+		} catch {
+			return [];
+		}
+	}
+
+	function setFavorites(ids: string[]) {
+		try {
+			localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+		} catch {
+			// プライベートモードなどで保存できない場合は諦める（このページ内の見た目は更新する）
+		}
+	}
+
+	document.querySelectorAll<HTMLButtonElement>('[data-favorite-button]').forEach((button) => {
+		const postId = button.dataset.postId;
+		const icon = button.querySelector<HTMLElement>('[data-favorite-icon]');
+		if (!postId || !icon) return;
+
+		function render() {
+			const isFavorite = getFavorites().includes(postId!);
+			button.setAttribute('aria-pressed', String(isFavorite));
+			icon!.textContent = isFavorite ? '❤️' : '🤍';
+		}
+		render();
+
+		button.addEventListener('click', () => {
+			const favorites = getFavorites();
+			const index = favorites.indexOf(postId!);
+			if (index >= 0) favorites.splice(index, 1);
+			else favorites.push(postId!);
+			setFavorites(favorites);
+			render();
+		});
+	});
+</script>

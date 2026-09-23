@@ -1,14 +1,17 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ContributionCalendar from '../components/ContributionCalendar.astro';
+import Pagination from '../components/Pagination.astro';
 import PickupPosts from '../components/PickupPosts.astro';
 import PostListItem from '../components/PostListItem.astro';
 import PostFilters from '../components/PostFilters.astro';
-import { SITE_DESCRIPTION, withBase } from '../consts';
+import { PAGE_SIZE, SITE_DESCRIPTION, withBase } from '../consts';
 import { getPublishedPosts } from '../lib/posts';
 
-// 下書きを除き、日付の新しい順
-const posts = await getPublishedPosts();
+// 下書きを除き、日付の新しい順（トップページは 1 ページ目、2 ページ目以降は /page/[page]/）
+const allPosts = await getPublishedPosts();
+const totalPages = Math.max(1, Math.ceil(allPosts.length / PAGE_SIZE));
+const posts = allPosts.slice(0, PAGE_SIZE);
 
 // 系統・場所ごとの記事数（出現順を保つため Map）
 function countBy(key: 'style' | 'location') {
@@ -22,8 +25,8 @@ function countBy(key: 'style' | 'location') {
 const styles = countBy('style');
 const locations = countBy('location');
 
-// 今日の一杯ガチャ用: 公開済み記事の URL 一覧（base 込み）
-const gachaUrls = posts.map((post) => withBase(`/posts/${post.id}/`));
+// 今日の一杯ガチャ用: 公開済み記事の URL 一覧（base 込み、ページ分割に関係なく全記事から選ぶ）
+const gachaUrls = allPosts.map((post) => withBase(`/posts/${post.id}/`));
 ---
 
 <BaseLayout>
@@ -87,6 +90,8 @@ const gachaUrls = posts.map((post) => withBase(`/posts/${post.id}/`));
 			条件に合う記事はありません。
 		</p>
 	</section>
+
+	<Pagination currentPage={1} totalPages={totalPages} />
 </BaseLayout>
 
 <script>

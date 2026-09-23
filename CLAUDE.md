@@ -18,7 +18,7 @@ Manage the background server with `astro dev stop`, `astro dev status`, and `ast
 Node.js は `C:\Program Files\nodejs`。ツール用シェルの PATH に入っていない場合はコマンド先頭で
 `$env:Path = "C:\Program Files\nodejs;" + $env:Path` を付ける。
 
-検証は `npx astro check`（型）→ `npm run build`（記事数 + トップ + About + マップ + ランキング + 出費ダッシュボード + 検索 + ギャラリー + 系統別／エリア別／タグ別（各「一覧 1 + 項目数」）ページと rss.xml / sitemap / search.json / manifest.webmanifest / sw.js が生成されること。`search.json` は API エンドポイントなのでページ数カウントには含まれない。2026-09-22 時点で記事 7・系統 2・エリア 6・タグ 9 + トップ + About + マップ + ランキング + 出費ダッシュボード + 検索 + ギャラリー = 34 ページ）。
+検証は `npx astro check`（型）→ `npm run build`（記事数 + トップ + About + マップ + ランキング + 出費ダッシュボード + 検索 + ギャラリー + 行きたい + 404 + 系統別／エリア別／タグ別（各「一覧 1 + 項目数」）ページと rss.xml / sitemap / search.json / manifest.webmanifest / sw.js が生成されること。`search.json` は API エンドポイントなのでページ数カウントには含まれない。トップページは記事 12 件ごとにページ分割（`src/pages/page/[page].astro`。2026-09-22 時点は 12 件以下なので 2 ページ目以降は生成されない）。2026-09-22 時点で記事 7・系統 2・エリア 6・タグ 9 + トップ + About + マップ + ランキング + 出費ダッシュボード + 検索 + ギャラリー + 行きたい + 404 = 36 ページ）。
 
 ## 構成と規約
 
@@ -43,6 +43,11 @@ Node.js は `C:\Program Files\nodejs`。ツール用シェルの PATH に入っ�
 - ギャラリー（`/gallery/`）は `getPublishedPosts()` の画像を CSS 多段組み（`columns-*` + `break-inside-avoid`）でタイル状に並べる。ヘッダー・フッターのナビに追加済み
 - 記事ページの「📍 現在地からの経路を見る」ボタンは、フロントマターに `lat`/`lng` がある記事にのみ表示する。`https://www.google.com/maps/dir/?api=1&destination={lat},{lng}` という外部 URL なので `withBase()` は通さない（サイト内リンクではないため）
 - コマンドパレット（`Ctrl+K` / `Cmd+K`、`CommandPalette.astro`。`BaseLayout.astro` に常時マウント）は `/search.json`（`search.json.ts`。店名・タイトル・系統・場所・タグ・評価・URL だけの軽量な記事一覧 API）を開いたときに一度だけ fetch してインクリメンタルサーチする。既存の全文検索（`/search/`、本文まで検索できる）とは役割が違うので使い分ける。入力欄に `/dark` `/light` と打って Enter するとテーマを切り替えるイースターエッグ付き（`ThemeToggle.astro` と同じ方法）
+- トップページは `PAGE_SIZE`（`src/consts.ts`、既定 12 件）ごとにページ分割。1 ページ目は `index.astro`（`/`）、2 ページ目以降は `src/pages/page/[page].astro`（`/page/2/` など）が `getStaticPaths()` で生成する。ガチャ・殿堂入りピックアップ・ラーメン草カレンダーは 1 ページ目だけ。`PostFilters` の `styles`/`locations`/`total` はそのページに実際に表示している記事だけを集計する（クライアント側の絞り込みスクリプトが DOM 上の `<li data-post>` しか見ないため、SSR 側の初期表示もそれに合わせる）。ページ送りは `Pagination.astro` を使い回す
+- 「行きたい」ボタン（`FavoriteButton.astro`。記事ページの本文下、`ShareButtons` の横）は記事 id を LocalStorage（キー `ramen-blog:favorites`）に保存するだけで、サーバーには送らない。一覧ページ `/favorites/`（`favorites.astro`）はビルド時には中身を決められないので、クライアント側で LocalStorage の id 一覧を読み、`/search.json` から表示用データを引いて組み立てる
+- カスタム 404 ページは `src/pages/404.astro`。GitHub Pages は `dist/404.html` を自動でエラーページとして使うので、追加設定は不要
+- CSP は `BaseLayout.astro` の `<head>` に `<meta http-equiv="Content-Security-Policy">` として設定している（GitHub Pages はカスタム HTTP レスポンスヘッダーを返せないため、meta タグでの設定が唯一の手段。`frame-ancestors` など meta タグでは効かないディレクティブは書いていない）。テーマ切り替え・Service Worker 登録・コマンドパレット・GA4 設定用の固定インラインスクリプトがあるため `script-src`/`style-src` に `'unsafe-inline'` を含む。外部ドメインは実際に読み込んでいるものだけ許可（`unpkg.com` = Leaflet、`googletagmanager.com` = GA4、`giscus.app` = コメント欄、`images.unsplash.com` = イメージ画像、`tile.openstreetmap.org` = 地図タイル）。新しい外部リソースを追加するときはこのポリシーも更新すること
+- `.github/workflows/ci.yml` は PR ごとに `astro check` → `build` を検証する（デプロイはしない。デプロイは `deploy.yml` が `main` への push で担当）。`.github/dependabot.yml` は npm と GitHub Actions の依存を週次でチェック
 
 ## Documentation
 

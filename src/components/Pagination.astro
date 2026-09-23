@@ -1,0 +1,51 @@
+---
+/**
+ * 記事一覧のページネーション（前後ページへのリンク）。
+ * 1 ページ目は `/`、2 ページ目以降は `/page/2/` のような URL（src/pages/page/[page].astro）。
+ */
+import { withBase } from '../consts';
+
+interface Props {
+	currentPage: number;
+	totalPages: number;
+}
+
+const { currentPage, totalPages } = Astro.props;
+
+function hrefForPage(page: number): string {
+	return withBase(page === 1 ? '/' : `/page/${page}/`);
+}
+
+const prevHref = currentPage > 1 ? hrefForPage(currentPage - 1) : undefined;
+const nextHref = currentPage < totalPages ? hrefForPage(currentPage + 1) : undefined;
+---
+
+{
+	totalPages > 1 && (
+		<nav aria-label="ページネーション" class="mt-6 flex items-center justify-between gap-3">
+			{prevHref ? (
+				<a
+					href={prevHref}
+					class="inline-flex items-center gap-1 rounded-full border border-line-strong bg-surface-raised px-4 py-2 text-sm font-semibold text-ink hover:border-brand-400 hover:text-brand-fg"
+				>
+					← 前のページ
+				</a>
+			) : (
+				<span />
+			)}
+			<span class="text-sm text-ink-muted">
+				{currentPage} / {totalPages} ページ
+			</span>
+			{nextHref ? (
+				<a
+					href={nextHref}
+					class="inline-flex items-center gap-1 rounded-full border border-line-strong bg-surface-raised px-4 py-2 text-sm font-semibold text-ink hover:border-brand-400 hover:text-brand-fg"
+				>
+					次のページ →
+				</a>
+			) : (
+				<span />
+			)}
+		</nav>
+	)
+}
