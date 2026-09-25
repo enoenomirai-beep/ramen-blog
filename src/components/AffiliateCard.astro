@@ -1,18 +1,23 @@
 ---
 /**
- * MDX 記事の本文中に置く、アフィリエイト・広告用の商品紹介カード。
+ * アフィリエイト・広告用の商品紹介カード。MDX 記事の本文中に手動で置く（imageUrl 込みで作り込む）
+ * ほか、記事のフロントマターの takumen_url / amazon_url から `posts/[id].astro` が自動生成して
+ * 記事末尾にも表示する（その場合は imageUrl を省略し、画像無しの1カラムレイアウトになる）。
  *
- * カード全体を 1 つのリンクにして CTA ボタンだけでなく画像・タイトルもクリックできるようにし、
- * ボタン部分はカード全体の hover と連動して浮き上がる（group-hover）。
+ * 生のバナー画像を貼るのではなく、サイトのデザインに馴染む「マイクロコピー付きボタン」（例:
+ * 「宅麺.comでこの味をお取り寄せ」）を主役にする設計。カード全体を 1 つのリンクにして CTA
+ * ボタンだけでなく画像・タイトルもクリックできるようにし、ボタン部分はカード全体の hover と
+ * 連動して浮き上がる（group-hover）。
  * `rel="sponsored"` を付けているのは、Google がアフィリエイトリンクに推奨するマークアップのため
  * （SEO 上、通常のリンクと区別してもらうことでペナルティを避ける）。
- * ステマ規制（景品表示法）対策として、画像の左上に小さく「PR」ラベルを表示する。
+ * ステマ規制（景品表示法）対策として「PR」ラベルを表示する（画像がある場合は画像の左上、
+ * 無い場合はテキスト側の見出しに）。
  */
 interface Props {
 	/** アフィリエイトリンク先の URL */
 	url: string;
-	/** 商品・サービスの画像 URL */
-	imageUrl: string;
+	/** 商品・サービスの画像 URL（省略可。無い場合は画像無しの1カラムレイアウトになる） */
+	imageUrl?: string;
 	/** 商品・サービス名 */
 	title: string;
 	/** 短い説明文 */
@@ -28,23 +33,37 @@ const { url, imageUrl, title, description, buttonText } = Astro.props;
 	href={url}
 	target="_blank"
 	rel="sponsored noopener noreferrer"
-	class="group my-8 grid overflow-hidden rounded-2xl border border-line-strong border-t-4 border-t-accent-500 bg-surface-raised shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg sm:grid-cols-[160px_1fr]"
+	class:list={[
+		'group my-8 grid overflow-hidden rounded-2xl border border-line-strong border-t-4 border-t-accent-500 bg-surface-raised shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg',
+		imageUrl && 'sm:grid-cols-[160px_1fr]',
+	]}
 >
-	<div class="relative aspect-16/10 overflow-hidden bg-surface-sunken sm:aspect-auto sm:h-full">
-		<img
-			src={imageUrl}
-			alt={title}
-			loading="lazy"
-			decoding="async"
-			class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-		/>
-		<span class="absolute top-2 left-2 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-white">
-			PR
-		</span>
-	</div>
+	{
+		imageUrl && (
+			<div class="relative aspect-16/10 overflow-hidden bg-surface-sunken sm:aspect-auto sm:h-full">
+				<img
+					src={imageUrl}
+					alt={title}
+					loading="lazy"
+					decoding="async"
+					class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+				/>
+				<span class="absolute top-2 left-2 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-white">
+					PR
+				</span>
+			</div>
+		)
+	}
 
 	<div class="flex flex-col gap-2 p-4 sm:p-5">
-		<p class="text-xs font-bold tracking-widest text-brand-fg uppercase">おすすめ</p>
+		<p class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-brand-fg uppercase">
+			{
+				!imageUrl && (
+					<span class="rounded bg-ink px-1.5 py-0.5 text-[10px] tracking-wide text-white normal-case">PR</span>
+				)
+			}
+			おすすめ
+		</p>
 		<p class="text-lg leading-snug font-extrabold text-ink sm:text-xl">{title}</p>
 		<p class="text-sm leading-relaxed text-ink-muted">{description}</p>
 		<span
