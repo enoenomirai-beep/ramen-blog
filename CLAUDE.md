@@ -53,6 +53,7 @@ Node.js は `C:\Program Files\nodejs`。ツール用シェルの PATH に入っ�
 - `.github/workflows/ci.yml` は PR ごとに `astro check` → `build` を検証する（デプロイはしない。デプロイは `deploy.yml` が `main` への push で担当）。`.github/dependabot.yml` は npm と GitHub Actions の依存を週次でチェック
 - 出費ダッシュボード（`/dashboard/`）の「系統別・エリア別の割合」円グラフは `CategoryDonutChart.astro`（CSS の `conic-gradient` のみ・JS/SVG 不要）。色は `bg-surface` 等の暖色テーマトークンとは別枠の、識別用に固定順で用意した6色（`global.css` の `--chart-series-1`〜`6` / `bg-chart-series-1`〜`6`。ブランドの暖色だけでは色同士の区別がつきにくいため）。件数の多い順に割り当て、7件目以降は「その他」にまとめる。色だけに頼らず、必ず凡例にラベル・件数・割合をテキストで併記する。「ラーメンエンゲル係数」（当月のラーメン出費 ÷ `MONTHLY_FOOD_BUDGET`、`src/consts.ts`）は 30%以上・50%以上でメッセージとプログレスバーの色が変わる
 - 独自ドメイン化（`eno-ramen.com`）は完了（コード側: 2026-09-23、DNS/GitHub側の設定含めて完全に完了: 2026-09-25）。`astro.config.mjs` の `site`、`public/CNAME`、`public/manifest.webmanifest` / `public/sw.js` 内のパス（`/ramen-blog/` → `/`）をまとめて変更済み。DNS（お名前.comのネームサーバーを`dnsv.jp`系に切替＋GitHub Pages向けA/CNAMEレコード設定）もユーザー側で設定済みで、GitHubのDNSチェック・Enforce HTTPSも通過済み。本番は `https://eno-ramen.com/`（詳細は `docs/HANDOFF.md`）
+- もしもアフィリエイトの「かんたんリンク」（管理画面が発行する `<div>...<script>...</script>` を含む HTML）は `MoshimoLink.astro`（`htmlContent` prop を `set:html` でそのままレンダリング）を MDX 記事の本文中で使う。`set:html` はエスケープしないため、渡すのは執筆者が把握している信頼できる HTML のみ（第三者入力をそのまま渡さない）。かんたんリンクは通常 `https://dn.msmstatic.com/site/cardlink/bundle.js` からスクリプトを読み込むため、**実際に記事へ埋め込むときは、貼り込む HTML の `<script src="...">` のドメインを確認して CSP（`BaseLayout.astro` の `script-src`。画像を読み込む場合は `img-src` も）に追加すること**（現時点ではまだどの記事でも使っていないため、「実際に読み込んでいるものだけ許可する」方針に合わせて CSP には未追加）。追加していないとブラウザのコンソールに CSP 違反が出てカードが表示されない
 
 ## Documentation
 

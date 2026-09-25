@@ -1,6 +1,6 @@
 # 作業引き継ぎメモ
 
-最終更新: 2026-09-26（収益化基盤を拡充。AffiliateCard のフロントマター自動表示・汎用広告プレースホルダー AdBanner を追加。独自ドメイン化は2026-09-25に完了済み。詳細は本ファイル下部）
+最終更新: 2026-09-26（もしもアフィリエイトの「かんたんリンク」用コンポーネント MoshimoLink を追加。同日にAffiliateCardのフロントマター自動表示・汎用広告プレースホルダー AdBanner も追加済み。独自ドメイン化は2026-09-25に完了済み。詳細は本ファイル下部）
 
 ## プロジェクト概要
 
@@ -165,6 +165,12 @@ Astro 7.3 + Tailwind CSS 4 + MDX。記事は Content Collections（`src/content/
   - **重要な不具合を発見して回避**: 記事一覧の広告を単純に `<li>` として記事の間に固定位置で挟んだところ、既存の `PostFilters.astro` の並び替えロジック（絞り込み・並び替えのたびに `[data-post]` を `appendChild` でリストの末尾に「その時点の末尾」へ移動する実装）と衝突することが分かった。`appendChild` は指定した要素だけを動かすため、動かされない広告 `<li>` は相対的に先頭へ取り残され、フィルターや並び替えを1回操作するだけで全ての広告が先頭に固まって表示されてしまう（実際に Playwright で再現・確認した）。`PostFilters.astro` 自体は変更せず（既存の絞り込み機能への影響を避けるため）、記事一覧の `<ol data-post-list>` を新設の `PostListWithAds.astro` に切り出し、広告要素に `MutationObserver` を張って「現在表示中（`hidden` でない）の記事の3件ごと」に毎回再配置し直す方式で解決した（既に正しい位置にある場合は要素を動かさないようガードし、再帰的なミューテーション通知が無限ループしないようにしている）
   - `index.astro` / `page/[page].astro` の記事一覧部分（`<ol data-post-list>` と空状態メッセージ）を `PostListWithAds.astro` に統一。両ページのマークアップの重複を減らす副次効果もあった
   - 動作確認: `npx astro check` 0 エラー、`npm run build` 36 ページ成功（ページ構成・ページ数は変わらず）。Playwright（一時的にスクラッチ領域にインストール、確認後削除）でトップページの広告配置、「家系」で絞り込んだ後の広告再配置、評価順で並び替えた後の広告再配置（いずれも先頭に固まらず3記事ごとを維持することを確認）、記事詳細ページの目次下・総評下・最下部の広告/アフィリエイトカード表示を確認した。自動アフィリエイトカードの表示確認は、実記事1本に一時的に `takumen_url`/`amazon_url`（ダミーURL）を追加してスクリーンショットで見た目を確認した後、`git checkout` でその変更を取り消しており、公開されたコードにダミー値は含まれていない
+- [x] **もしもアフィリエイト「かんたんリンク」用コンポーネント MoshimoLink**（2026-09-26）
+  - `src/components/MoshimoLink.astro` を新設。もしもアフィリエイトの管理画面が発行する `<div>...<script>...</script>` を含む HTML を `htmlContent` prop で受け取り、`set:html` でそのまま埋め込む。MDX 記事の本文中で `import` して使う（`AffiliateCard`/`BlogCard`/`PhotoGallery` と同じ制約）
+  - 「安全に」の意味をコンポーネントの先頭コメントで明記: `set:html` はエスケープしないので、渡すのは執筆者が把握している信頼できる HTML のみを想定（第三者のコメント投稿などをそのまま渡すのは別の話でXSS対策が必要）
+  - スタイルは Tailwind の `flex justify-center` でラップし、幅が広い場合は `overflow-x-auto` で横スクロールにフォールバック（スマホ・PCどちらでも中央揃え）。既存の `AffiliateCard`/`AdBanner` と同じ趣旨で「PR」ラベルを上に表示
+  - Web検索で調べた結果、もしもアフィリエイトのかんたんリンクは通常 `https://dn.msmstatic.com/site/cardlink/bundle.js` からスクリプトを読み込むことが分かった（複数の解説記事で確認。例: https://tsutchii.com/moshimo-kantanlink）。このサイトの CSP（`BaseLayout.astro`）は「実際に読み込んでいるドメインだけ許可する」方針のため、**まだどの記事でもこのコンポーネントを使っていない現時点では CSP に追加していない**。実際に記事へ埋め込むときは、貼り込む HTML の `<script src="...">` の実際のドメインを確認したうえで `script-src`（画像を読み込む場合は `img-src` も）に追加する必要がある（追加しないとブラウザのコンソールに CSP 違反が出てカードが表示されない）。この手順はコンポーネントのコメント・README・CLAUDE.md にも明記した
+  - 動作確認: `npx astro check` 0 エラー、`npm run build` 36 ページ成功（未使用の新規コンポーネントなのでページ数・既存ページの出力に変化なし）。実記事1本（武将家外伝）に一時的にダミーの `<div>` テストHTML（外部スクリプトは含まない、レイアウト確認用）で `MoshimoLink` を試験的に呼び出し、Playwright でスマホ幅（400px）・PC幅（1100px）両方のスクリーンショットを取得して中央揃え・PRラベル・横スクロール枠が正しく表示されることを確認後、`git checkout` で変更を取り消し済み（公開コードにテスト呼び出しは含まれていない）
 - [x] **公開済み（2026-09-18、2026-09-25 に独自ドメインへ移行完了）**: https://eno-ramen.com/（旧 URL: https://enoenomirai-beep.github.io/ramen-blog/）
   - リポジトリ: https://github.com/enoenomirai-beep/ramen-blog（`main`、Pages の Source = GitHub Actions）
   - 本番で確認済み: トップ / 記事 3 ページ / `rss.xml` / `sitemap-index.xml` / favicon / OGP・canonical の URL / 画像の読み込み（2026-09-18 時点、旧URLでの確認）。独自ドメイン移行後の最終確認はユーザーがブラウザで実施（コンソールエラー等の詳細確認はクラウド環境のネットワーク制限により Claude 側では未実施）
