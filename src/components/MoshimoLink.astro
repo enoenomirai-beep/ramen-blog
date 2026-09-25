@@ -1,0 +1,42 @@
+---
+/**
+ * もしもアフィリエイトの「かんたんリンク」（管理画面が発行する <div>...<script>...</script> を含む
+ * HTML）を記事内にそのまま貼り込むための専用コンポーネント。
+ *
+ * 「安全に」の意味について: Astro の `set:html` は渡した文字列をエスケープせずそのまま DOM に挿入する。
+ * ここでの用途は、記事の執筆者（あなた）がもしもアフィリエイトの管理画面から自分でコピーした、
+ * 内容を把握している信頼できる HTML をそのまま埋め込むことなので、Astro の正規の API を使い、
+ * 手動でのタグ加工・エスケープ崩れを起こさずに構文として正しく埋め込める、という意味で「安全」。
+ * コメント欄の投稿など第三者が入力した文字列をそのまま `htmlContent` に渡すのは想定していない
+ * （その場合は通常の XSS 対策＝サニタイズが必要になる。用途が違う）。
+ *
+ * <script> タグの扱いについて: このコンポーネントはビルド時（SSG）にレンダリングされるため、
+ * `htmlContent` の中の <script> はページの静的 HTML にそのまま出力され、ブラウザでページを開いたときに
+ * 通常のスクリプトとして実行される（`element.innerHTML = ...` のような実行時の DOM 操作とは違い、
+ * 初期 HTML に含まれる <script> は普通に動く）。
+ *
+ * CSP への影響（重要）: このサイトは `BaseLayout.astro` の <head> に Content-Security-Policy を
+ * 設定しており、`script-src` は実際に読み込んでいる外部ドメインだけを許可する方針。もしもアフィリエイトの
+ * かんたんリンクは通常 `https://dn.msmstatic.com/site/cardlink/bundle.js` からスクリプトを読み込むため、
+ * このコンポーネントを実際に記事へ埋め込むときは、貼り込む HTML の <script src="..."> のドメインを確認し、
+ * `BaseLayout.astro` の CSP の `script-src`（画像を読み込む場合は `img-src` も）にそのドメインを
+ * 追加する必要がある。追加していないと、ブラウザのコンソールに CSP 違反のエラーが出てカードが表示されない。
+ * まだ実際にこのコンポーネントを使う記事が無いため、現時点では CSP にドメインを追加していない
+ * （「実際に読み込んでいるものだけ許可する」という既存の方針に合わせるため）。
+ */
+interface Props {
+	/** もしもアフィリエイトの管理画面からコピーした、かんたんリンクの HTML そのもの */
+	htmlContent: string;
+	/** 呼び出し側で余白などを上書きしたいときの追加クラス */
+	class?: string;
+}
+
+const { htmlContent, class: className } = Astro.props;
+---
+
+<div class:list={['my-8', className]}>
+	<p class="mb-1.5 text-center text-[10px] font-bold tracking-widest text-ink-faint uppercase">PR</p>
+	<div class="flex w-full justify-center overflow-x-auto">
+		<div set:html={htmlContent} />
+	</div>
+</div>

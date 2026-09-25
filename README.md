@@ -123,6 +123,7 @@ Variables に `PUBLIC_GA_MEASUREMENT_ID`（`G-XXXXXXXXXX` 形式）を追加し�
 │   │   ├── FavoriteButton.astro    # 「行きたい」ボタン（LocalStorage）
 │   │   ├── FloatingCTA.astro       # スマホ用フローティング CTA
 │   │   ├── GoogleAnalytics.astro   # GA4 計測タグ
+│   │   ├── MoshimoLink.astro       # もしもアフィリエイトの「かんたんリンク」HTMLをMDXに埋め込む
 │   │   ├── Pagination.astro        # 記事一覧のページ送り
 │   │   ├── PhotoGallery.astro      # 記事本文の複数写真・Lightbox
 │   │   ├── PickupPosts.astro       # 殿堂入りピックアップ
@@ -214,8 +215,25 @@ draft: false              # true にすると一覧・ビルドから除外
 本文を Markdown で書きます。
 ```
 
-MDX（`.mdx`）ファイルにすると、本文中に `PhotoGallery` / `AffiliateCard` / `BlogCard` コンポーネントを
+MDX（`.mdx`）ファイルにすると、本文中に `PhotoGallery` / `AffiliateCard` / `BlogCard` / `MoshimoLink` コンポーネントを
 `import` して埋め込めます。
+
+#### もしもアフィリエイトの「かんたんリンク」を貼る（`MoshimoLink`）
+
+もしもアフィリエイトの管理画面で発行した「かんたんリンク」の HTML をそのまま `htmlContent` に渡します
+（バッククォートのテンプレートリテラルで渡すと、HTML 内の `"` をエスケープせずに書けます）。
+
+```mdx
+import MoshimoLink from '../../components/MoshimoLink.astro';
+
+<MoshimoLink htmlContent={`<div class="msmaflink" data-material="...">...</div><script>...</script>`} />
+```
+
+**実際にこのコンポーネントを使う前に**、貼り込む HTML の `<script src="...">` が読み込むドメイン
+（通常は `https://dn.msmstatic.com`）を確認し、`src/layouts/BaseLayout.astro` の CSP（`script-src`。
+商品画像を読み込む場合は `img-src` も）にそのドメインを追加してください。追加しないと、ブラウザの
+コンソールに CSP 違反のエラーが出てカードが表示されません（現時点ではまだどの記事でも使っていないため、
+CSP には追加していません）。
 
 ### フロントマターの必須項目
 
