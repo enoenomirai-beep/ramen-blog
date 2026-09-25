@@ -71,11 +71,13 @@ const navLinkClass =
 			あるため script-src / style-src に 'unsafe-inline' を含めている（すべて固定の自前コードで、
 			外部からの注入は許していない）。外部ドメインは実際に読み込んでいるものだけを許可: unpkg.com
 			（Leaflet）、googletagmanager.com（GA4）、giscus.app（コメント欄）、images.unsplash.com
-			（写真が無い記事のイメージ画像）、tile.openstreetmap.org（地図タイル）
+			（写真が無い記事のイメージ画像）、tile.openstreetmap.org（地図タイル）、dn.msmstatic.com
+			（もしもアフィリエイトの「かんたんリンク」ウィジェット本体のスクリプト。MoshimoLink.astro）、
+			thumbnail.image.rakuten.co.jp（かんたんリンクが表示する楽天市場の商品画像）
 		-->
 		<meta
 			http-equiv="Content-Security-Policy"
-			content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://www.googletagmanager.com https://giscus.app; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: https://images.unsplash.com https://*.tile.openstreetmap.org; connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com; frame-src https://giscus.app; object-src 'none'; base-uri 'self'; form-action 'self';"
+			content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://www.googletagmanager.com https://giscus.app https://dn.msmstatic.com; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: https://images.unsplash.com https://*.tile.openstreetmap.org https://thumbnail.image.rakuten.co.jp; connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com; frame-src https://giscus.app; object-src 'none'; base-uri 'self'; form-action 'self';"
 		/>
 		<script is:inline>
 			// 描画前にテーマを決めてちらつきを防ぐ。保存された選択が無ければ OS の設定に従う

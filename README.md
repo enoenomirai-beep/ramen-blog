@@ -229,11 +229,13 @@ import MoshimoLink from '../../components/MoshimoLink.astro';
 <MoshimoLink htmlContent={`<div class="msmaflink" data-material="...">...</div><script>...</script>`} />
 ```
 
-**実際にこのコンポーネントを使う前に**、貼り込む HTML の `<script src="...">` が読み込むドメイン
-（通常は `https://dn.msmstatic.com`）を確認し、`src/layouts/BaseLayout.astro` の CSP（`script-src`。
-商品画像を読み込む場合は `img-src` も）にそのドメインを追加してください。追加しないと、ブラウザの
-コンソールに CSP 違反のエラーが出てカードが表示されません（現時点ではまだどの記事でも使っていないため、
-CSP には追加していません）。
+**このコンポーネントを使う前に**、貼り込む HTML の `<script src="...">` が読み込むドメインを確認し、
+`src/layouts/BaseLayout.astro` の CSP（`script-src`。商品画像を読み込む場合は `img-src` も）に
+そのドメインを追加してください。追加しないと、ブラウザのコンソールに CSP 違反のエラーが出てカードが
+表示されません。現在は `https://dn.msmstatic.com`（かんたんリンク本体のスクリプト）と
+`https://thumbnail.image.rakuten.co.jp`（楽天市場の商品画像。武将家外伝の記事で使用中）を
+CSP に追加済みです。別のショップの商品を埋め込む場合、画像ドメインが違うことがあるので
+ブラウザのコンソールを確認しながら追加してください。
 
 ### フロントマターの必須項目
 

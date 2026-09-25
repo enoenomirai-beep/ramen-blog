@@ -1,6 +1,6 @@
 # 作業引き継ぎメモ
 
-最終更新: 2026-09-26（もしもアフィリエイトの「かんたんリンク」用コンポーネント MoshimoLink を追加。同日にAffiliateCardのフロントマター自動表示・汎用広告プレースホルダー AdBanner も追加済み。独自ドメイン化は2026-09-25に完了済み。詳細は本ファイル下部）
+最終更新: 2026-09-26（武将家外伝の記事に、もしもアフィリエイトの実際のかんたんリンク（楽天市場の商品3点）を組み込み、ダミーのAffiliateCardを置き換えた。CSPにdn.msmstatic.com/thumbnail.image.rakuten.co.jpを追加。同日にMoshimoLinkコンポーネント自体の新設・AffiliateCardのフロントマター自動表示・汎用広告プレースホルダーAdBannerも追加済み。独自ドメイン化は2026-09-25に完了済み。詳細は本ファイル下部）
 
 ## プロジェクト概要
 
@@ -171,6 +171,11 @@ Astro 7.3 + Tailwind CSS 4 + MDX。記事は Content Collections（`src/content/
   - スタイルは Tailwind の `flex justify-center` でラップし、幅が広い場合は `overflow-x-auto` で横スクロールにフォールバック（スマホ・PCどちらでも中央揃え）。既存の `AffiliateCard`/`AdBanner` と同じ趣旨で「PR」ラベルを上に表示
   - Web検索で調べた結果、もしもアフィリエイトのかんたんリンクは通常 `https://dn.msmstatic.com/site/cardlink/bundle.js` からスクリプトを読み込むことが分かった（複数の解説記事で確認。例: https://tsutchii.com/moshimo-kantanlink）。このサイトの CSP（`BaseLayout.astro`）は「実際に読み込んでいるドメインだけ許可する」方針のため、**まだどの記事でもこのコンポーネントを使っていない現時点では CSP に追加していない**。実際に記事へ埋め込むときは、貼り込む HTML の `<script src="...">` の実際のドメインを確認したうえで `script-src`（画像を読み込む場合は `img-src` も）に追加する必要がある（追加しないとブラウザのコンソールに CSP 違反が出てカードが表示されない）。この手順はコンポーネントのコメント・README・CLAUDE.md にも明記した
   - 動作確認: `npx astro check` 0 エラー、`npm run build` 36 ページ成功（未使用の新規コンポーネントなのでページ数・既存ページの出力に変化なし）。実記事1本（武将家外伝）に一時的にダミーの `<div>` テストHTML（外部スクリプトは含まない、レイアウト確認用）で `MoshimoLink` を試験的に呼び出し、Playwright でスマホ幅（400px）・PC幅（1100px）両方のスクリーンショットを取得して中央揃え・PRラベル・横スクロール枠が正しく表示されることを確認後、`git checkout` で変更を取り消し済み（公開コードにテスト呼び出しは含まれていない）
+- [x] **武将家外伝の記事に実際のもしもアフィリエイト「かんたんリンク」を組み込み**（2026-09-26、ユーザーから実際の発行済みHTMLコードを受け取って実施）
+  - `bushoya-gaiden-akihabara.mdx`: 冒頭の `import` から `AffiliateCard` を削除し `MoshimoLink` を追加。総評の下にあったダミーの `<AffiliateCard url="https://example.com/affiliate" .../>` を削除し、代わりにユーザーから渡された3件の「かんたんリンク」HTML（サントリー黒烏龍茶／横浜土産の家系ラーメン／王道家監修の冷凍ラーメン、いずれも楽天市場、実データ）を `<MoshimoLink htmlContent={`...`} />` の形でそのまま3つ埋め込んだ（1つの `htmlContent` にまとめず、商品ごとに別々の `MoshimoLink` 呼び出しにして、それぞれに「PR」表示と余白がつくようにした）
+  - もらったHTML中の `\/`（JSON/PHPのエスケープ済みスラッシュ）はそのままテンプレートリテラルに貼っている。JSのテンプレートリテラルは未知のエスケープシーケンスの `\` を単純に落とすため、ビルド後の実際の出力は `\/` → `/` に自動的に変換され、意味は変わらない（ビルド後のHTMLで確認済み。手動で書き換える必要はなかった）
+  - **CSPを更新**: 実際にこのコンポーネントを使う記事が出てきたため、`BaseLayout.astro` のCSPに `https://dn.msmstatic.com`（かんたんリンク本体の `bundle.js`。3つの `<script>` はいずれもこのURLを読み込む）を `script-src` に、`https://thumbnail.image.rakuten.co.jp`（3件のJSONペイロードの `"d"` フィールドに明記されている、楽天市場の商品画像のドメイン）を `img-src` に追加した
+  - 動作確認: `npx astro check` 0 エラー、`npm run build` 36 ページ成功。ビルド後のHTMLで `msmaflink(` が3回、`dn.msmstatic.com`/`thumbnail.image.rakuten.co.jp` が期待通りの回数出現し、`\/` の取り残しが無いこと、ダミーの `example.com/affiliate` が消えていることを確認。Playwright（一時的にスクラッチ領域にインストール、確認後削除）で記事ページを開き、CSP違反が**開発サーバー（`http://localhost`）でのみ**発生することを確認した——原因は、かんたんリンクの `<script src="//dn.msmstatic.com/...">` がプロトコル相対URLで、HTTPページ上では `http://dn.msmstatic.com/...` に解決されるため、CSPの `https://dn.msmstatic.com`（httpsのみ許可）に一致せずブロックされる、というローカル開発特有の現象。本番（`https://eno-ramen.com/`、Enforce HTTPS）では常にHTTPSでページが読み込まれるため `//dn.msmstatic.com` は `https://` に解決され、この問題は起きない（本番でこのCSPの動作を確認するには、実際に `https://eno-ramen.com/posts/bushoya-gaiden-akihabara/` を開いてブラウザのコンソールを見てもらう必要がある。このクラウド実行環境からは `eno-ramen.com`・`dn.msmstatic.com` のどちらにも直接アクセスできないため、bundle.js が実際に商品カードを描画した最終的な見た目はここでは確認できていない）
 - [x] **公開済み（2026-09-18、2026-09-25 に独自ドメインへ移行完了）**: https://eno-ramen.com/（旧 URL: https://enoenomirai-beep.github.io/ramen-blog/）
   - リポジトリ: https://github.com/enoenomirai-beep/ramen-blog（`main`、Pages の Source = GitHub Actions）
   - 本番で確認済み: トップ / 記事 3 ページ / `rss.xml` / `sitemap-index.xml` / favicon / OGP・canonical の URL / 画像の読み込み（2026-09-18 時点、旧URLでの確認）。独自ドメイン移行後の最終確認はユーザーがブラウザで実施（コンソールエラー等の詳細確認はクラウド環境のネットワーク制限により Claude 側では未実施）
