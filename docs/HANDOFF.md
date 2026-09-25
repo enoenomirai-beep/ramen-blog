@@ -1,6 +1,6 @@
 # 作業引き継ぎメモ
 
-最終更新: 2026-09-23（出費ダッシュボードに系統別・エリア別の円グラフと「ラーメンエンゲル係数」を追加。当初は独自ドメイン化を保留していたが、同日中にユーザーから実際のドメイン名 `eno-ramen.com` の提示があり移行完了。詳細は本ファイル下部）
+最終更新: 2026-09-25（独自ドメイン `eno-ramen.com` のDNS設定・GitHub側のCustom domain設定・Enforce HTTPSがすべて完了し、本番で稼働確認済み。出費ダッシュボードの円グラフ・ラーメンエンゲル係数の追加も含めて、独自ドメイン化に関する作業はすべて完了。詳細は本ファイル下部）
 
 ## プロジェクト概要
 
@@ -158,9 +158,10 @@ Astro 7.3 + Tailwind CSS 4 + MDX。記事は Content Collections（`src/content/
   - `src/consts.ts` の `withBase()` はロジック変更なし（`base` が `/` でも正しく動作することを確認済み。関数のコメントだけ更新）。Giscus コメント欄の `data-repo="enoenomirai-beep/ramen-blog"`（`Comments.astro`）はサイトの URL ではなく GitHub **リポジトリ名**なので変更していない
   - 動作確認: `npx astro check` 0 エラー、`npm run build` 36 ページ成功。ビルド後の `dist/index.html` の canonical・OGP・RSS・sitemap がすべて `https://eno-ramen.com/...` になっていること、`dist/CNAME` がコピーされていること、ヘッダーナビの `href` が `/about/` のようにサブパス無しのルート相対パスになっていることを確認。dev サーバー（`npx astro dev --background`）を `http://localhost:4321/`（`/ramen-blog` 無し）で起動し、Playwright（一時的にスクラッチ領域にインストール、確認後削除）でトップページとダッシュボードを開いてコンソール／ページエラーが無いことを確認
   - **ここから先はコードの外側、ユーザー側の作業が必要**: ①ドメインの DNS 管理画面で `eno-ramen.com` から GitHub Pages（`enoenomirai-beep.github.io`）を指す `CNAME`（サブドメインの場合）または `A`（ルートドメインの場合、GitHub Pages の IP アドレス）レコードを設定、② GitHub リポジトリの **Settings → Pages → Custom domain** に `eno-ramen.com` を設定して保存、③ DNS の反映後に同じ画面で **Enforce HTTPS** を有効化。これらは Claude からは実行できない（ドメインの管理会社・GitHub のリポジトリ設定画面での操作のため）
-- [x] **公開済み（2026-09-18）**: https://enoenomirai-beep.github.io/ramen-blog/（2026-09-23 に独自ドメイン `https://eno-ramen.com/` へ移行。旧 URL は DNS/GitHub 側の設定が終わるまでの参考用に記載を残す）
+- [x] **独自ドメインのDNS設定・GitHub側の検証が完了**（2026-09-24〜25）: 上記「ここから先」の作業をユーザーが対応。ドメインはお名前.com管理で、ネームサーバーが初期設定（`dns1.onamae.com`/`dns2.onamae.com`）のままだったため、いったんそちらの「DNSレコード設定」画面でA×4／wwwのCNAMEを設定しても反映されない状態だった（ネームサーバー自体が切り替わっていなかったため）。「ネームサーバーの選択」画面で **「お名前.comのネームサーバーを使う」**（`01.dnsv.jp`〜`04.dnsv.jp`）を選択・保存したところ反映。Claude 側でも `node:dns` で複数の外部リゾルバ（Google 8.8.8.8 / Cloudflare 1.1.1.1 / Quad9 9.9.9.9 / OpenDNS）を使って伝播状況を確認し、途中 Google のリゾルバだけ旧IP（`150.95.255.38`）を返す一時的な不整合があったが、最終的に全リゾルバで GitHub Pages の4つのIP（`185.199.108/109/110/111.153`）と `www` の CNAME（`enoenomirai-beep.github.io`）が一致することを確認。その後 GitHub の Settings → Pages のDNSチェックも通過し、ユーザーが Enforce HTTPS を有効化。本番は `https://eno-ramen.com/` で稼働中（Claude はこのクラウド環境から `eno-ramen.com` への直接アクセスがネットワーク制限でブロックされているため、実際の表示はユーザー自身のブラウザで確認してもらった）
+- [x] **公開済み（2026-09-18、2026-09-25 に独自ドメインへ移行完了）**: https://eno-ramen.com/（旧 URL: https://enoenomirai-beep.github.io/ramen-blog/）
   - リポジトリ: https://github.com/enoenomirai-beep/ramen-blog（`main`、Pages の Source = GitHub Actions）
-  - 本番で確認済み: トップ / 記事 3 ページ / `rss.xml` / `sitemap-index.xml` / favicon / OGP・canonical の URL / 画像の読み込み。コンソールエラーなし
+  - 本番で確認済み: トップ / 記事 3 ページ / `rss.xml` / `sitemap-index.xml` / favicon / OGP・canonical の URL / 画像の読み込み（2026-09-18 時点、旧URLでの確認）。独自ドメイン移行後の最終確認はユーザーがブラウザで実施（コンソールエラー等の詳細確認はクラウド環境のネットワーク制限により Claude 側では未実施）
 
 ## 運用
 

@@ -1,6 +1,6 @@
 # らーめん食べ歩きログ — 現状ブリーフ（他の AI に渡す用）
 
-最終更新: 2026-09-23（出費ダッシュボードに系統別・エリア別の円グラフと「ラーメンエンゲル係数」を追加。独自ドメイン `eno-ramen.com` へ移行（`site`/`CNAME`/PWAファイルのパスを変更、`base` は既定値の `/` に）。ページ数は変わらず36ページ）
+最終更新: 2026-09-25（独自ドメイン `eno-ramen.com` への移行が完全に完了。DNS（お名前.comのネームサーバーをdnsv.jpに切替＋GitHub Pages向けA/CNAMEレコード設定）が伝播し、GitHub側のDNSチェック・Enforce HTTPSもユーザーが有効化済み。出費ダッシュボードの円グラフ・ラーメンエンゲル係数はPR #46で実装済み。ページ数は変わらず36ページ）
 
 このファイルは、プロジェクトの現状を **別の AI（Gemini など）に共有して次の指示（プロンプト）を考えてもらう**ためのまとめです。
 実装は Claude Code が行い、変更のたびにこのファイルも更新します。
@@ -86,7 +86,7 @@
 
 ## 6. まだやっていないこと・アイデア
 
-- **独自ドメイン化は完了**（2026-09-23）：`eno-ramen.com` に移行済み（`astro.config.mjs` の `site`、`public/CNAME`、`public/manifest.webmanifest`/`sw.js` のパスを変更）。**残っているのはコードの外側の作業**（ユーザー側で対応）：GitHub の Settings → Pages → Custom domain に `eno-ramen.com` を設定し、ドメインの DNS 側で GitHub Pages を指す `CNAME`/`A` レコードを設定し、「Enforce HTTPS」を有効化する
+- **独自ドメイン化は完全に完了**（2026-09-25）：`eno-ramen.com` に移行済み（コード側は`astro.config.mjs`の`site`、`public/CNAME`、`public/manifest.webmanifest`/`sw.js`のパス変更）。DNS側（お名前.comのネームサーバーを`dnsv.jp`系に切替＋GitHub Pages向けA×4・wwwのCNAME設定）も反映済み、GitHubリポジトリのSettings→PagesのDNSチェックも通過し、Enforce HTTPSもユーザーが有効化済み。本番は`https://eno-ramen.com/`で稼働中
 - PWA の `@vite-pwa/astro` 導入は見送り（2026-09-20）: 最新版（1.2.0）でも peer dependency が `astro@^1〜5` までで、この場の Astro 7.3 とは合わない。`--legacy-peer-deps` で強制インストールしてビルド自体は通ったが、`manifest.webmanifest` への `<link rel="manifest">` や Service Worker 登録スクリプトが生成 HTML に一切挿入されず（Astro 7 の静的ビルドパイプラインとの相性問題と判断）、PWA としては機能しなかったため撤去。代わりに `public/manifest.webmanifest` と `public/sw.js` を手書きし、`BaseLayout.astro` からリンク・登録している（キャッシュ優先＋バックグラウンド更新の簡易 Service Worker）。将来 `@vite-pwa/astro` が Astro 7 に対応したら乗り換えを検討してもよい
 
 ## 7. Claude への指示の書き方のコツ
