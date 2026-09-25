@@ -1,0 +1,24 @@
+---
+/**
+ * Google AdSense（自動広告 / Auto ads）の読み込みタグ。
+ *
+ * AdSense の管理画面が発行したコードをそのまま設置している。GA4（GoogleAnalytics.astro）と違って
+ * 環境変数でのプレースホルダー判定はしていない——AdSense のクライアントID（ca-pub-...）はページの
+ * HTML に常に平文で出るもの（Googleがどのサイトの広告か識別するための公開情報）で、秘密の値ではないため。
+ *
+ * このスクリプトを設置すると、Google が自動で「最適な場所」に広告を挿入する（Auto ads）。
+ * そのため、記事一覧・記事詳細に用意している AdBanner.astro のプレースホルダー枠とは連動しない
+ * （Auto ads は自分でDOMを解析して独自に広告枠を挿入するので、AdBanner.astro の
+ * `<div class="ad-container">` の中に広告が入るとは限らない）。詳細は CLAUDE.md 参照。
+ *
+ * `BaseLayout.astro` の <head> に常時マウントしているので、全ページに自動的に設置される。
+ */
+const ADSENSE_CLIENT_ID = 'ca-pub-3582209220110647';
+---
+
+<script
+	is:inline
+	async
+	src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT_ID}`}
+	crossorigin="anonymous"
+/>

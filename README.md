@@ -50,7 +50,8 @@ Astro + Tailwind CSS で作ったラーメン食べ歩きレビュー専用の�
 - **CI / Dependabot**：PR ごとに型チェック・ビルドを検証する GitHub Actions（`.github/workflows/ci.yml`）と、依存パッケージの週次自動更新（`.github/dependabot.yml`）
 - **ダークモード**：初回は OS の設定に従い、ヘッダー右端の月／太陽ボタンで切り替え（選択はブラウザに保存）。色は `src/styles/global.css` のテーマトークンで一元管理
 - **アフィリエイト・広告カード / 内部リンクカード**：MDX 記事内に埋め込める `AffiliateCard` / `BlogCard` コンポーネント（収益化・回遊率向上の土台）。`takumen_url` / `amazon_url` をフロントマターに指定すると記事末尾に `AffiliateCard` を自動表示
-- **広告プレースホルダー**：`AdBanner`（`.ad-container` でラップ済みのダミー枠。将来 AdSense 等のタグに差し替える想定）を記事一覧（3記事ごと）・記事詳細の目次の下・記事の最下部に配置
+- **広告プレースホルダー**：`AdBanner`（`.ad-container` でラップ済みのダミー枠）を記事一覧（3記事ごと）・記事詳細の目次の下・記事の最下部に配置
+- **Google AdSense（Auto ads）**：`GoogleAdSense.astro`（2026-09-26 設定済み・稼働中）。Google が自動で広告枠を挿入する仕組みで、上記の `AdBanner` プレースホルダーとは連動しない
 - RSS フィード、sitemap、OGP / Twitter カード、GA4 アクセス解析、スマホ用フローティング CTA
 
 ## 公開（GitHub Pages）
@@ -122,6 +123,7 @@ Variables に `PUBLIC_GA_MEASUREMENT_ID`（`G-XXXXXXXXXX` 形式）を追加し�
 │   │   ├── ContributionCalendar.astro # ラーメン草カレンダー
 │   │   ├── FavoriteButton.astro    # 「行きたい」ボタン（LocalStorage）
 │   │   ├── FloatingCTA.astro       # スマホ用フローティング CTA
+│   │   ├── GoogleAdSense.astro     # Google AdSense（Auto ads）読み込みタグ
 │   │   ├── GoogleAnalytics.astro   # GA4 計測タグ
 │   │   ├── MoshimoLink.astro       # もしもアフィリエイトの「かんたんリンク」HTMLをMDXに埋め込む
 │   │   ├── Pagination.astro        # 記事一覧のページ送り

@@ -5,6 +5,7 @@ import { getImage } from 'astro:assets';
 import ogDefault from '../assets/og-default.jpg';
 import CommandPalette from '../components/CommandPalette.astro';
 import FloatingCTA from '../components/FloatingCTA.astro';
+import GoogleAdSense from '../components/GoogleAdSense.astro';
 import GoogleAnalytics from '../components/GoogleAnalytics.astro';
 import ThemeToggle from '../components/ThemeToggle.astro';
 import { SITE_DESCRIPTION, SITE_TITLE, withBase } from '../consts';
@@ -73,11 +74,19 @@ const navLinkClass =
 			（Leaflet）、googletagmanager.com（GA4）、giscus.app（コメント欄）、images.unsplash.com
 			（写真が無い記事のイメージ画像）、tile.openstreetmap.org（地図タイル）、dn.msmstatic.com
 			（もしもアフィリエイトの「かんたんリンク」ウィジェット本体のスクリプト。MoshimoLink.astro）、
-			thumbnail.image.rakuten.co.jp（かんたんリンクが表示する楽天市場の商品画像）
+			thumbnail.image.rakuten.co.jp（かんたんリンクが表示する楽天市場の商品画像）。
+			Google AdSense（GoogleAdSense.astro、Auto ads）は pagead2.googlesyndication.com から
+			ローダースクリプトを読み込み、広告の実際の描画は googleads.g.doubleclick.net /
+			tpc.googlesyndication.com などのiframe・画像・ビーコンで行われる（Google広告配信の一般的な
+			仕組みで、このサイト固有の設定ではない）。このため script-src / frame-src / img-src /
+			connect-src にもこれらのドメインを追加している。ただしこの一覧はAdSenseの公開ドキュメント等の
+			一般的な情報に基づくもので、このクラウド実行環境からは本番サイトも Google の広告配信ドメインにも
+			アクセスできず実機での動作確認はできていない。本番でブラウザのコンソールに
+			「Refused to load/frame ...」が出た場合は、そこに表示された実際のドメインをこのCSPに追加すること
 		-->
 		<meta
 			http-equiv="Content-Security-Policy"
-			content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://www.googletagmanager.com https://giscus.app https://dn.msmstatic.com; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: https://images.unsplash.com https://*.tile.openstreetmap.org https://thumbnail.image.rakuten.co.jp; connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com; frame-src https://giscus.app; object-src 'none'; base-uri 'self'; form-action 'self';"
+			content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://www.googletagmanager.com https://giscus.app https://dn.msmstatic.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://www.googletagservices.com https://fundingchoicesmessages.google.com; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: https://images.unsplash.com https://*.tile.openstreetmap.org https://thumbnail.image.rakuten.co.jp https://*.googlesyndication.com https://*.doubleclick.net; connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://*.googlesyndication.com https://*.doubleclick.net https://www.google.com; frame-src https://giscus.app https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://www.google.com https://fundingchoicesmessages.google.com; object-src 'none'; base-uri 'self'; form-action 'self';"
 		/>
 		<script is:inline>
 			// 描画前にテーマを決めてちらつきを防ぐ。保存された選択が無ければ OS の設定に従う
@@ -127,6 +136,7 @@ const navLinkClass =
 		{structuredData && <script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />}
 
 		<GoogleAnalytics />
+		<GoogleAdSense />
 	</head>
 	<body class="flex min-h-dvh flex-col bg-surface text-ink antialiased">
 		<!-- 暖簾のような深い赤のヘッダー。下端に鶏油色のライン -->
