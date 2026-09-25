@@ -46,6 +46,10 @@ const posts = defineCollection({
 			tags: z.array(z.string()).default([]),
 			/** GoogleマップなどのURL（記事ページの「場所」に「地図を見る」リンクを表示） */
 			map_url: z.url().optional(),
+			/** 宅麺.com などの通販・お取り寄せリンク。指定すると記事末尾に AffiliateCard を自動表示する */
+			takumen_url: z.url().optional(),
+			/** Amazon の商品・関連リンク。指定すると記事末尾に AffiliateCard を自動表示する */
+			amazon_url: z.url().optional(),
 			/** 店舗の正確な緯度。指定するとラーメンマップでエリアの目安座標ではなくこの座標にピン留めする */
 			lat: z.number().optional(),
 			/** 店舗の正確な経度。lat とセットで指定する */

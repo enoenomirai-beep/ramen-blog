@@ -5,7 +5,7 @@
  */
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Pagination from '../../components/Pagination.astro';
-import PostListItem from '../../components/PostListItem.astro';
+import PostListWithAds from '../../components/PostListWithAds.astro';
 import PostFilters from '../../components/PostFilters.astro';
 import { PAGE_SIZE } from '../../consts';
 import { getPublishedPosts } from '../../lib/posts';
@@ -59,29 +59,7 @@ const locations = countBy('location');
 	</section>
 
 	<section aria-label="記事一覧">
-		<ol class="flex flex-col gap-4" data-post-list>
-			{
-				posts.map((post) => (
-					<li
-						data-post
-						data-post-style={post.data.style}
-						data-post-location={post.data.location}
-						data-post-rating={post.data.rating}
-						data-post-date={post.data.date.toISOString()}
-					>
-						<PostListItem post={post} />
-					</li>
-				))
-			}
-		</ol>
-
-		<p
-			data-empty-state
-			hidden
-			class="rounded-xl border border-dashed border-line-strong bg-surface-raised px-6 py-12 text-center text-sm text-ink-muted"
-		>
-			条件に合う記事はありません。
-		</p>
+		<PostListWithAds posts={posts} />
 	</section>
 
 	<Pagination currentPage={currentPage} totalPages={totalPages} />

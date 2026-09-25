@@ -49,7 +49,8 @@ Astro + Tailwind CSS で作ったラーメン食べ歩きレビュー専用の�
 - **カスタム 404 ページ / CSP**：`src/pages/404.astro` と、`<meta http-equiv>` による Content-Security-Policy（GitHub Pages はカスタム HTTP ヘッダーを設定できないため）
 - **CI / Dependabot**：PR ごとに型チェック・ビルドを検証する GitHub Actions（`.github/workflows/ci.yml`）と、依存パッケージの週次自動更新（`.github/dependabot.yml`）
 - **ダークモード**：初回は OS の設定に従い、ヘッダー右端の月／太陽ボタンで切り替え（選択はブラウザに保存）。色は `src/styles/global.css` のテーマトークンで一元管理
-- **アフィリエイト・広告カード / 内部リンクカード**：MDX 記事内に埋め込める `AffiliateCard` / `BlogCard` コンポーネント（収益化・回遊率向上の土台）
+- **アフィリエイト・広告カード / 内部リンクカード**：MDX 記事内に埋め込める `AffiliateCard` / `BlogCard` コンポーネント（収益化・回遊率向上の土台）。`takumen_url` / `amazon_url` をフロントマターに指定すると記事末尾に `AffiliateCard` を自動表示
+- **広告プレースホルダー**：`AdBanner`（`.ad-container` でラップ済みのダミー枠。将来 AdSense 等のタグに差し替える想定）を記事一覧（3記事ごと）・記事詳細の目次の下・記事の最下部に配置
 - RSS フィード、sitemap、OGP / Twitter カード、GA4 アクセス解析、スマホ用フローティング CTA
 
 ## 公開（GitHub Pages）
@@ -109,7 +110,8 @@ Variables に `PUBLIC_GA_MEASUREMENT_ID`（`G-XXXXXXXXXX` 形式）を追加し�
 │   │   ├── og-default.jpg      # OGP のデフォルト画像
 │   │   └── posts/              # 記事の写真
 │   ├── components/
-│   │   ├── AffiliateCard.astro     # MDX 用アフィリエイト・広告カード
+│   │   ├── AdBanner.astro          # 広告プレースホルダー（.ad-container、将来AdSense等に差し替え）
+│   │   ├── AffiliateCard.astro     # アフィリエイト・広告カード（MDX手動埋め込み／takumen_url・amazon_urlから自動表示）
 │   │   ├── AreaSearchBox.astro     # エリアの近接駅・沿線検索
 │   │   ├── BlogCard.astro          # MDX 用内部リンクカード
 │   │   ├── Breadcrumbs.astro       # パンくず + BreadcrumbList JSON-LD
@@ -126,6 +128,7 @@ Variables に `PUBLIC_GA_MEASUREMENT_ID`（`G-XXXXXXXXXX` 形式）を追加し�
 │   │   ├── PickupPosts.astro       # 殿堂入りピックアップ
 │   │   ├── PostFilters.astro       # 絞り込み・並び替え UI
 │   │   ├── PostListItem.astro      # 記事一覧の 1 行
+│   │   ├── PostListWithAds.astro   # 記事一覧の <ol>（3記事ごとに AdBanner を挟む）
 │   │   ├── PostNav.astro           # 記事ページの前後記事ナビ
 │   │   ├── RelatedPosts.astro      # 関連記事
 │   │   ├── ShareButtons.astro      # SNS シェア + URL コピー
@@ -203,6 +206,8 @@ tags: ["豚骨醤油", "自家製麺"]
 pickup: false             # true にするとトップページ上部の殿堂入りピックアップに表示
 visits: 1                 # 2 以上にすると「🔥 訪問n回」バッジが出る
 features: []              # 特徴タグ（例: ["深夜営業", "通し営業"]）
+takumen_url: "https://takumen.com/..."   # 指定すると記事末尾に「宅麺.comでお取り寄せ」カードを自動表示
+amazon_url: "https://amazon.co.jp/..."   # 指定すると記事末尾に「Amazonで探す」カードを自動表示
 draft: false              # true にすると一覧・ビルドから除外
 ---
 
@@ -238,6 +243,11 @@ business_hours:                              # 曜日によって営業時間が
 ```
 
 連続した曜日（`["月","火","水","木","金"]` など）は「月〜金」のようにまとめて表示されます（[`src/lib/business-hours.ts`](src/lib/business-hours.ts)）。
+
+`takumen_url` / `amazon_url` を指定すると、記事末尾（総評の下）に `AffiliateCard` が自動で表示されます
+（実在するリンクが決まっている記事にだけ指定してください。ダミー値のまま公開しないよう注意）。
+本文中に手動で `AffiliateCard` を埋め込む場合（`.mdx` のみ）は画像付きの2カラムレイアウトになりますが、
+frontmatter からの自動表示は画像を持たないため、画像無しの1カラムレイアウトで表示されます。
 
 エリア別ページの近接駅検索・沿線検索・地図のピン座標を有効にするには、
 `location` に指定した場所を [`src/lib/location-map.ts`](src/lib/location-map.ts) の `AREA_GROUPS` にも登録してください

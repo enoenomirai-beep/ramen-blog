@@ -1,0 +1,22 @@
+---
+/**
+ * 汎用の広告プレースホルダー。将来 Google AdSense などのタグをそのまま `.ad-container` の中に
+ * 貼るだけで運用できるように、外側の `<div class="ad-container">` は広告タグの受け皿として残し、
+ * 今はグレーの「広告枠（スポンサーリンク）」というダミー表示にしている。
+ * 色はテーマトークンのみ使用（dark: は使わない。ダークモードはトークンの値が切り替わる仕組み）。
+ */
+interface Props {
+	/** 呼び出し側で余白などを上書きしたいときの追加クラス */
+	class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<div class:list={['ad-container', className]} aria-label="広告">
+	<div
+		class="flex min-h-24 w-full items-center justify-center rounded-xl border border-dashed border-line-strong bg-surface-sunken px-4 py-6 text-center"
+	>
+		<p class="text-xs font-bold tracking-wide text-ink-faint">広告枠（スポンサーリンク）</p>
+	</div>
+</div>

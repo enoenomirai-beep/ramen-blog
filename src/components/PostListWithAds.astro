@@ -1,0 +1,102 @@
+---
+/**
+ * トップページ・2ページ目以降で使う記事一覧の `<ol data-post-list>`。3記事ごとに広告枠
+ * （AdBanner）を挟む。index.astro / page/[page].astro の両方から使う共通部分を切り出したもの。
+ *
+ * 注意: `PostFilters.astro` のクライアントスクリプトは絞り込み・並び替えのたびに
+ * `[data-post-list]` 直下の `[data-post]` だけを対象に、DOM 上の要素を `appendChild` で
+ * 「その時点の末尾」に移動して並び替える。もし広告 `<li>` を記事の間に固定位置で挟んだままだと、
+ * `appendChild` で記事だけが末尾に移動し続ける結果、広告だけが先頭に固まってしまう
+ * （動かされない要素だけが相対的に先頭へ取り残される）。そのため広告の位置は固定せず、
+ * 下の `<script>` で「現在表示されている（絞り込みで隠されていない）記事の3件ごと」に
+ * 都度再配置し直す。
+ */
+import AdBanner from './AdBanner.astro';
+import PostListItem from './PostListItem.astro';
+import type { Post } from '../lib/posts';
+
+interface Props {
+	posts: Post[];
+}
+
+const { posts } = Astro.props;
+
+const AD_INTERVAL = 3;
+---
+
+<ol class="flex flex-col gap-4" data-post-list>
+	{
+		posts.map((post, i) => (
+			<>
+				<li
+					data-post
+					data-post-style={post.data.style}
+					data-post-location={post.data.location}
+					data-post-rating={post.data.rating}
+					data-post-date={post.data.date.toISOString()}
+				>
+					<PostListItem post={post} />
+				</li>
+				{(i + 1) % AD_INTERVAL === 0 && i !== posts.length - 1 && (
+					<li data-ad-slot>
+						<AdBanner />
+					</li>
+				)}
+			</>
+		))
+	}
+</ol>
+
+<p
+	data-empty-state
+	hidden
+	class="rounded-xl border border-dashed border-line-strong bg-surface-raised px-6 py-12 text-center text-sm text-ink-muted"
+>
+	条件に合う記事はありません。
+</p>
+
+<script>
+	document.querySelectorAll<HTMLOListElement>('[data-post-list]').forEach((list) => {
+		const ads = Array.from(list.querySelectorAll<HTMLElement>('[data-ad-slot]'));
+		if (ads.length === 0) return;
+
+		// 現在表示中（hidden でない）の記事を3件ごとに数え、その直後に広告を1つずつ差し込む。
+		// 記事数が広告の割り込み位置に足りない分は非表示にする（末尾に取り残された広告を出さない）
+		function reposition() {
+			const visiblePosts = Array.from(list.querySelectorAll<HTMLElement>('[data-post]')).filter(
+				(el) => !el.hidden,
+			);
+			let adIndex = 0;
+			for (let i = 3; i < visiblePosts.length && adIndex < ads.length; i += 3) {
+				const anchor = visiblePosts[i - 1];
+				const ad = ads[adIndex++];
+				if (ad.previousElementSibling !== anchor) list.insertBefore(ad, anchor.nextSibling);
+				if (ad.hidden) ad.hidden = false;
+			}
+			for (; adIndex < ads.length; adIndex++) {
+				if (!ads[adIndex].hidden) ads[adIndex].hidden = true;
+			}
+		}
+
+		// PostFilters の並び替え・絞り込みで list の中身が動くたびに再配置する。
+		// reposition() 自身も list を書き換えるため、変化が無くなるまで自然に収束するよう
+		// 「既に正しい位置ならスキップ」を上のガードで保証してある
+		let scheduled = false;
+		const schedule = () => {
+			if (scheduled) return;
+			scheduled = true;
+			queueMicrotask(() => {
+				scheduled = false;
+				reposition();
+			});
+		};
+
+		new MutationObserver(schedule).observe(list, {
+			childList: true,
+			attributes: true,
+			attributeFilter: ['hidden'],
+			subtree: true,
+		});
+		schedule();
+	});
+</script>

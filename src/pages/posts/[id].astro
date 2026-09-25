@@ -2,6 +2,8 @@
 import { Image } from 'astro:assets';
 import { render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import AdBanner from '../../components/AdBanner.astro';
+import AffiliateCard from '../../components/AffiliateCard.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import CalorieMeter from '../../components/CalorieMeter.astro';
 import Comments from '../../components/Comments.astro';
@@ -56,6 +58,8 @@ const {
 	features,
 	lat,
 	lng,
+	takumen_url,
+	amazon_url,
 } = post.data;
 const { Content, headings } = await render(post);
 const readingMinutes = estimateReadingMinutes(post.body ?? '');
@@ -79,6 +83,23 @@ const shopInfo = getShopInfo(post.id);
 // 記事に正確な緯度経度があれば、現在地からの Google マップ経路検索リンクを作る（外部 URL なので withBase() は通さない）
 const directionsHref =
 	lat !== undefined && lng !== undefined ? `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}` : undefined;
+
+// フロントマターに takumen_url / amazon_url があれば、記事末尾に AffiliateCard を自動表示する
+// （画像は無いので imageUrl は渡さない＝AffiliateCard 側で画像無しの1カラムレイアウトになる）
+const affiliateLinks = [
+	takumen_url && {
+		url: takumen_url,
+		title: '宅麺.comでお取り寄せ',
+		description: `「${shop_name}」が気に入ったら、通販でお取り寄せできるか探してみませんか？`,
+		buttonText: '宅麺.comでこの味をお取り寄せ',
+	},
+	amazon_url && {
+		url: amazon_url,
+		title: 'Amazonで探す',
+		description: `「${shop_name}」に近い味を自宅でも楽しみたい方は、Amazonで探してみてください。`,
+		buttonText: 'Amazonで関連商品を見る',
+	},
+].filter((link): link is { url: string; title: string; description: string; buttonText: string } => Boolean(link));
 
 const homeHref = withBase('/');
 const styleHref = withBase(stylePath(style));
@@ -264,9 +285,13 @@ const structuredData = {
 
 		<TableOfContents headings={headings} />
 
+		<AdBanner class="my-6" />
+
 		<div class="article-body prose max-w-none prose-headings:scroll-mt-6">
 			<Content />
 		</div>
+
+		{affiliateLinks.map((link) => <AffiliateCard {...link} />)}
 
 		<section class="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-6">
 			<FavoriteButton postId={post.id} />
@@ -283,5 +308,7 @@ const structuredData = {
 				← 記事一覧に戻る
 			</a>
 		</footer>
+
+		<AdBanner class="mt-10" />
 	</article>
 </BaseLayout>
