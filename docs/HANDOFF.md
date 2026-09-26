@@ -1,6 +1,6 @@
 # 作業引き継ぎメモ
 
-最終更新: 2026-09-26（武将家外伝の記事に、もしもアフィリエイトの実際のかんたんリンク（楽天市場の商品3点）を組み込み、ダミーのAffiliateCardを置き換えた。CSPにdn.msmstatic.com/thumbnail.image.rakuten.co.jpを追加。同日にMoshimoLinkコンポーネント自体の新設・AffiliateCardのフロントマター自動表示・汎用広告プレースホルダーAdBannerも追加済み。独自ドメイン化は2026-09-25に完了済み。詳細は本ファイル下部）
+最終更新: 2026-09-26（Google AdSense（Auto ads）をユーザーから受け取った実際の発行コードで設定・稼働開始。CSPにAdSense関連ドメインを追加。同日、武将家外伝の記事にもしもアフィリエイトの実際のかんたんリンクを組み込み、ダミーのAffiliateCardを置き換えた。独自ドメイン化は2026-09-25に完了済み。詳細は本ファイル下部）
 
 ## プロジェクト概要
 
@@ -176,6 +176,11 @@ Astro 7.3 + Tailwind CSS 4 + MDX。記事は Content Collections（`src/content/
   - もらったHTML中の `\/`（JSON/PHPのエスケープ済みスラッシュ）はそのままテンプレートリテラルに貼っている。JSのテンプレートリテラルは未知のエスケープシーケンスの `\` を単純に落とすため、ビルド後の実際の出力は `\/` → `/` に自動的に変換され、意味は変わらない（ビルド後のHTMLで確認済み。手動で書き換える必要はなかった）
   - **CSPを更新**: 実際にこのコンポーネントを使う記事が出てきたため、`BaseLayout.astro` のCSPに `https://dn.msmstatic.com`（かんたんリンク本体の `bundle.js`。3つの `<script>` はいずれもこのURLを読み込む）を `script-src` に、`https://thumbnail.image.rakuten.co.jp`（3件のJSONペイロードの `"d"` フィールドに明記されている、楽天市場の商品画像のドメイン）を `img-src` に追加した
   - 動作確認: `npx astro check` 0 エラー、`npm run build` 36 ページ成功。ビルド後のHTMLで `msmaflink(` が3回、`dn.msmstatic.com`/`thumbnail.image.rakuten.co.jp` が期待通りの回数出現し、`\/` の取り残しが無いこと、ダミーの `example.com/affiliate` が消えていることを確認。Playwright（一時的にスクラッチ領域にインストール、確認後削除）で記事ページを開き、CSP違反が**開発サーバー（`http://localhost`）でのみ**発生することを確認した——原因は、かんたんリンクの `<script src="//dn.msmstatic.com/...">` がプロトコル相対URLで、HTTPページ上では `http://dn.msmstatic.com/...` に解決されるため、CSPの `https://dn.msmstatic.com`（httpsのみ許可）に一致せずブロックされる、というローカル開発特有の現象。本番（`https://eno-ramen.com/`、Enforce HTTPS）では常にHTTPSでページが読み込まれるため `//dn.msmstatic.com` は `https://` に解決され、この問題は起きない（本番でこのCSPの動作を確認するには、実際に `https://eno-ramen.com/posts/bushoya-gaiden-akihabara/` を開いてブラウザのコンソールを見てもらう必要がある。このクラウド実行環境からは `eno-ramen.com`・`dn.msmstatic.com` のどちらにも直接アクセスできないため、bundle.js が実際に商品カードを描画した最終的な見た目はここでは確認できていない）
+- [x] **Google AdSense（Auto ads）を設定・稼働開始**（2026-09-26、ユーザーからAdSense管理画面が発行した実際のコードを受け取って実施）
+  - `src/components/GoogleAdSense.astro` を新設。ユーザーから渡された `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3582209220110647" crossorigin="anonymous">` をそのまま設置し、`BaseLayout.astro` の `<head>` に常時マウント（全ページに適用）。クライアントID（`ca-pub-...`）はページのHTMLに常に平文で出る公開情報（秘密の値ではない）なので、GA4（`GoogleAnalytics.astro`）のような環境変数でのプレースホルダー判定はせず直接埋め込んだ
+  - **CSPを更新**: `pagead2.googlesyndication.com`（ローダースクリプト本体）に加え、Google広告配信の一般的な仕組みとして必要になる `googleads.g.doubleclick.net`・`tpc.googlesyndication.com`・`www.googletagservices.com`・`fundingchoicesmessages.google.com`（EEA圏などでの同意メッセージ用）・`*.googlesyndication.com`・`*.doubleclick.net`・`www.google.com` を script-src/frame-src/img-src/connect-src に追加した。**この一覧はAdSenseの公開ドキュメント等の一般的な情報に基づくもので、このサイトで実機（本番）確認したものではない**（このクラウド実行環境は本番サイト・Google広告配信ドメインのどちらにもアクセスできないため）。本番でブラウザのコンソールに `Refused to load/frame` が出た場合は、そのドメインをCSPに追加する必要がある旨をコードコメント・CLAUDE.mdに明記した
+  - **重要な設計上の注意点**: AdSenseのこの設定は「Auto ads」（Googleが自動でページを解析して最適な場所に広告を挿入する仕組み）であり、以前から用意している `AdBanner.astro` のダミープレースホルダー（記事一覧3記事ごと・目次の下・記事最下部）とは**連動しない**。Auto ads は独自の判断で広告枠を挿入するため、`AdBanner.astro` の `<div class="ad-container">` の中に実際の広告が入るとは限らない。両者は別の仕組みとして共存させている（`AdBanner.astro` は今のところダミー表示のまま）
+  - 動作確認: `npx astro check` 0 エラー、`npm run build` 36 ページ成功。ビルド後のHTMLで `adsbygoogle.js?client=ca-pub-3582209220110647` のスクリプトタグがユーザーの発行コードと完全に一致する形で出力されていることを確認。**このクラウド実行環境からは本番サイト・Google広告配信ドメインのどちらにもアクセスできないため、実際にAuto adsが広告を表示するかどうかはここでは確認できていない**（Google公式の案内でも反映まで最大1時間程度かかるとされている）
 - [x] **公開済み（2026-09-18、2026-09-25 に独自ドメインへ移行完了）**: https://eno-ramen.com/（旧 URL: https://enoenomirai-beep.github.io/ramen-blog/）
   - リポジトリ: https://github.com/enoenomirai-beep/ramen-blog（`main`、Pages の Source = GitHub Actions）
   - 本番で確認済み: トップ / 記事 3 ページ / `rss.xml` / `sitemap-index.xml` / favicon / OGP・canonical の URL / 画像の読み込み（2026-09-18 時点、旧URLでの確認）。独自ドメイン移行後の最終確認はユーザーがブラウザで実施（コンソールエラー等の詳細確認はクラウド環境のネットワーク制限により Claude 側では未実施）
