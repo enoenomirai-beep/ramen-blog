@@ -1,0 +1,38 @@
+---
+/**
+ * トップページ・2ページ目以降で使う記事一覧の `<ol data-post-list>`。
+ * index.astro / page/[page].astro の両方から使う共通部分を切り出したもの。
+ */
+import PostListItem from './PostListItem.astro';
+import type { Post } from '../lib/posts';
+
+interface Props {
+	posts: Post[];
+}
+
+const { posts } = Astro.props;
+---
+
+<ol class="flex flex-col gap-4" data-post-list>
+	{
+		posts.map((post) => (
+			<li
+				data-post
+				data-post-style={post.data.style}
+				data-post-location={post.data.location}
+				data-post-rating={post.data.rating}
+				data-post-date={post.data.date.toISOString()}
+			>
+				<PostListItem post={post} />
+			</li>
+		))
+	}
+</ol>
+
+<p
+	data-empty-state
+	hidden
+	class="rounded-xl border border-dashed border-line-strong bg-surface-raised px-6 py-12 text-center text-sm text-ink-muted"
+>
+	条件に合う記事はありません。
+</p>

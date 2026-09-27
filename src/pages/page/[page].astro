@@ -5,7 +5,7 @@
  */
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Pagination from '../../components/Pagination.astro';
-import PostListWithAds from '../../components/PostListWithAds.astro';
+import PostList from '../../components/PostList.astro';
 import PostFilters from '../../components/PostFilters.astro';
 import { PAGE_SIZE } from '../../consts';
 import { getPublishedPosts } from '../../lib/posts';
@@ -59,7 +59,7 @@ const locations = countBy('location');
 	</section>
 
 	<section aria-label="記事一覧">
-		<PostListWithAds posts={posts} />
+		<PostList posts={posts} />
 	</section>
 
 	<Pagination currentPage={currentPage} totalPages={totalPages} />
