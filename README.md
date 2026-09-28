@@ -51,6 +51,7 @@ Astro + Tailwind CSS で作ったラーメン食べ歩きレビュー専用の�
 - **ダークモード**：初回は OS の設定に従い、ヘッダー右端の月／太陽ボタンで切り替え（選択はブラウザに保存）。色は `src/styles/global.css` のテーマトークンで一元管理
 - **アフィリエイト・広告カード / 内部リンクカード**：MDX 記事内に埋め込める `AffiliateCard` / `BlogCard` コンポーネント（収益化・回遊率向上の土台）。`takumen_url` / `amazon_url` をフロントマターに指定すると記事末尾に `AffiliateCard` を自動表示
 - **Google AdSense（Auto ads）**：`GoogleAdSense.astro`（2026-09-26 設定済み・稼働中）。Google が自動でページを解析して広告を挿入する仕組み（手動の広告プレースホルダーは用意していない。以前あった `AdBanner` はAuto ads導入後は使われなくなるため2026-09-27に削除した）
+- **プライバシーポリシー**：`/privacy/`（2026-09-28 追加）。GA4・AdSense・アフィリエイト・Giscus コメント欄・LocalStorage について記載
 - RSS フィード、sitemap、OGP / Twitter カード、GA4 アクセス解析、スマホ用フローティング CTA
 
 ## 公開（GitHub Pages）
@@ -164,6 +165,7 @@ Variables に `PUBLIC_GA_MEASUREMENT_ID`（`G-XXXXXXXXXX` 形式）を追加し�
 │   │   ├── ranking.astro       # マイベスト・ランキング
 │   │   ├── dashboard.astro     # 出費ダッシュボード
 │   │   ├── about/              # About ページ
+│   │   ├── privacy/             # プライバシーポリシー
 │   │   ├── styles/             # 系統別（index = 一覧、[style] = 系統ごとの記事）
 │   │   ├── locations/          # エリア別（index / [location]）
 │   │   ├── tags/                # タグ別（index / [tag]）
