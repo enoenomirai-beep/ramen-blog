@@ -1,0 +1,101 @@
+---
+/**
+ * プライバシーポリシー。GA4・AdSense・アフィリエイト（もしもアフィリエイト等）・Giscus コメント欄・
+ * LocalStorage の利用など、実際にこのサイトで使っている仕組みだけを記載する（架空の項目は書かない）。
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { SITE_TITLE, withBase } from '../../consts';
+
+const homeHref = withBase('/');
+---
+
+<BaseLayout title="プライバシーポリシー" description="「らーめん食べ歩きログ」のプライバシーポリシー。アクセス解析・広告・アフィリエイト・コメント欄について。">
+	<nav aria-label="パンくずリスト" class="mb-5 text-xs text-ink-muted sm:text-sm">
+		<a href={homeHref} class="hover:text-brand-fg">記事一覧</a>
+		<span aria-hidden="true" class="mx-2 text-ink-faint">/</span>
+		<span class="font-medium text-ink">プライバシーポリシー</span>
+	</nav>
+
+	<article class="mx-auto max-w-3xl">
+		<header class="mb-8">
+			<p class="mb-1 text-xs font-bold tracking-widest text-brand-fg uppercase">Privacy Policy</p>
+			<h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">プライバシーポリシー</h1>
+		</header>
+
+		<div class="article-body prose max-w-none">
+			<p>
+				「{SITE_TITLE}」（以下「当サイト」）における、アクセス解析・広告配信・アフィリエイトプログラム・
+				コメント欄の利用について、以下のとおりお知らせします。
+			</p>
+
+			<h2>アクセス解析ツールについて</h2>
+			<p>
+				当サイトでは、Google が提供するアクセス解析ツール「Google アナリティクス（GA4）」を利用しています。
+				Google アナリティクスは、Cookie を使用してデータを収集しますが、氏名・住所・メールアドレス・
+				電話番号など、個人を特定する情報は含まれません。この機能は Cookie を無効にすることで収集を
+				拒否できます。詳しくは
+				<a href="https://policies.google.com/technologies/partner-sites?hl=ja" target="_blank" rel="noopener noreferrer">
+					Google のポリシーと規約
+				</a>
+				をご確認ください。
+			</p>
+
+			<h2>広告について（Google AdSense）</h2>
+			<p>
+				当サイトは、第三者配信の広告サービス「Google AdSense」を利用しています。Google
+				を含む第三者配信事業者は、Cookie を使用して当サイトや他のサイトへのアクセス情報に基づき、
+				広告を配信することがあります。この Cookie の使用により、Google などの第三者配信事業者は
+				ユーザーが当サイトや他のサイトにアクセスした際の情報に基づいて、適切な広告を表示します。
+			</p>
+			<p>
+				Google 広告における Cookie の詳細やオプトアウト（広告のカスタマイズを無効にする方法）については
+				<a href="https://policies.google.com/technologies/ads?hl=ja" target="_blank" rel="noopener noreferrer">
+					広告 – ポリシーと規約 – Google
+				</a>
+				をご確認ください。
+			</p>
+
+			<h2>アフィリエイトプログラムについて</h2>
+			<p>
+				当サイトでは、記事内で紹介する商品・サービスについて、「もしもアフィリエイト」等の
+				アフィリエイトプログラムによるリンク（成果報酬型広告）を利用する場合があります。
+				これらのリンク経由でユーザーが商品を購入された場合、当サイトが紹介料を受け取ることがあります。
+				紹介料の有無にかかわらず、記事の感想・評価は実際の来店・試食に基づくものです。
+			</p>
+			<p>
+				アフィリエイトプログラムの提供事業者は、リンクのクリックや購入の計測のために Cookie 等の
+				技術を利用する場合があります。これらの技術によって収集される情報に、氏名や住所などを
+				特定する情報は含まれません。
+			</p>
+
+			<h2>コメント欄について（Giscus）</h2>
+			<p>
+				当サイトの記事のコメント欄には、GitHub のアカウントでログインして利用する「Giscus」（GitHub
+				Discussions を利用した仕組み）を使用しています。コメントを投稿する場合、GitHub の認証が必要となり、
+				投稿したコメントは当サイトのリポジトリの GitHub Discussions
+				に公開の状態で保存されます（GitHub 上の任意のユーザー名・アイコン画像とともに表示されます）。
+				コメントを投稿しない場合、この認証は行われません。
+			</p>
+
+			<h2>ブラウザに保存する情報について</h2>
+			<p>
+				当サイトの「行きたい」ボタン（お気に入り）とダークモードの設定は、サーバーには送信せず、
+				ご利用のブラウザの LocalStorage（ローカルストレージ）にのみ保存しています。そのため、
+				別の端末やブラウザからは参照できず、当サイト側でこれらの情報を収集・保存することもありません。
+			</p>
+
+			<h2>免責事項</h2>
+			<p>
+				当サイトからリンクやバナーなどによって他のサイトに移動された場合、移動先サイトで提供される
+				情報・サービス等について当サイトは責任を負いません。また、当サイトのコンテンツ・情報について、
+				可能な限り正確な情報を掲載するよう努めておりますが、正確性や安全性を保証するものではありません。
+			</p>
+
+			<h2>プライバシーポリシーの変更について</h2>
+			<p>
+				当サイトは、個人情報に関して適用される法令を遵守するとともに、本ポリシーの内容を適宜見直し、
+				その改善に努めます。本ポリシーの内容は、事前の予告なく変更する場合があります。
+			</p>
+		</div>
+	</article>
+</BaseLayout>
