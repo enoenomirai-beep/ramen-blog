@@ -50,8 +50,7 @@ Astro + Tailwind CSS で作ったラーメン食べ歩きレビュー専用の�
 - **CI / Dependabot**：PR ごとに型チェック・ビルドを検証する GitHub Actions（`.github/workflows/ci.yml`）と、依存パッケージの週次自動更新（`.github/dependabot.yml`）
 - **ダークモード**：初回は OS の設定に従い、ヘッダー右端の月／太陽ボタンで切り替え（選択はブラウザに保存）。色は `src/styles/global.css` のテーマトークンで一元管理
 - **アフィリエイト・広告カード / 内部リンクカード**：MDX 記事内に埋め込める `AffiliateCard` / `BlogCard` コンポーネント（収益化・回遊率向上の土台）。`takumen_url` / `amazon_url` をフロントマターに指定すると記事末尾に `AffiliateCard` を自動表示
-- **広告プレースホルダー**：`AdBanner`（`.ad-container` でラップ済みのダミー枠）を記事一覧（3記事ごと）・記事詳細の目次の下・記事の最下部に配置
-- **Google AdSense（Auto ads）**：`GoogleAdSense.astro`（2026-09-26 設定済み・稼働中）。Google が自動で広告枠を挿入する仕組みで、上記の `AdBanner` プレースホルダーとは連動しない
+- **Google AdSense（Auto ads）**：`GoogleAdSense.astro`（2026-09-26 設定済み・稼働中）。Google が自動でページを解析して広告を挿入する仕組み（手動の広告プレースホルダーは用意していない。以前あった `AdBanner` はAuto ads導入後は使われなくなるため2026-09-27に削除した）
 - RSS フィード、sitemap、OGP / Twitter カード、GA4 アクセス解析、スマホ用フローティング CTA
 
 ## 公開（GitHub Pages）
@@ -111,7 +110,6 @@ Variables に `PUBLIC_GA_MEASUREMENT_ID`（`G-XXXXXXXXXX` 形式）を追加し�
 │   │   ├── og-default.jpg      # OGP のデフォルト画像
 │   │   └── posts/              # 記事の写真
 │   ├── components/
-│   │   ├── AdBanner.astro          # 広告プレースホルダー（.ad-container、将来AdSense等に差し替え）
 │   │   ├── AffiliateCard.astro     # アフィリエイト・広告カード（MDX手動埋め込み／takumen_url・amazon_urlから自動表示）
 │   │   ├── AreaSearchBox.astro     # エリアの近接駅・沿線検索
 │   │   ├── BlogCard.astro          # MDX 用内部リンクカード
@@ -131,7 +129,7 @@ Variables に `PUBLIC_GA_MEASUREMENT_ID`（`G-XXXXXXXXXX` 形式）を追加し�
 │   │   ├── PickupPosts.astro       # 殿堂入りピックアップ
 │   │   ├── PostFilters.astro       # 絞り込み・並び替え UI
 │   │   ├── PostListItem.astro      # 記事一覧の 1 行
-│   │   ├── PostListWithAds.astro   # 記事一覧の <ol>（3記事ごとに AdBanner を挟む）
+│   │   ├── PostList.astro          # 記事一覧の <ol>（index.astro / page/[page].astro 共通）
 │   │   ├── PostNav.astro           # 記事ページの前後記事ナビ
 │   │   ├── RelatedPosts.astro      # 関連記事
 │   │   ├── ShareButtons.astro      # SNS シェア + URL コピー

@@ -1,6 +1,6 @@
 # 作業引き継ぎメモ
 
-最終更新: 2026-09-26（Google AdSense（Auto ads）をユーザーから受け取った実際の発行コードで設定・稼働開始。CSPにAdSense関連ドメインを追加。同日、武将家外伝の記事にもしもアフィリエイトの実際のかんたんリンクを組み込み、ダミーのAffiliateCardを置き換えた。独自ドメイン化は2026-09-25に完了済み。詳細は本ファイル下部）
+最終更新: 2026-09-27（もしもアフィリエイトのカードが本番で正しく表示されていることをユーザーが確認。AdSense Auto adsは人間が用意した固定枠と連動しないと分かったため、ダミーの広告プレースホルダー AdBanner をユーザーの指示で削除し、記事一覧の共通コンポーネントを PostListWithAds.astro → PostList.astro にリネーム。2026-09-26にAdSense Auto ads設定・もしもアフィリエイトの実際のかんたんリンク組み込みを実施済み。独自ドメイン化は2026-09-25に完了済み。詳細は本ファイル下部）
 
 ## プロジェクト概要
 
@@ -181,6 +181,13 @@ Astro 7.3 + Tailwind CSS 4 + MDX。記事は Content Collections（`src/content/
   - **CSPを更新**: `pagead2.googlesyndication.com`（ローダースクリプト本体）に加え、Google広告配信の一般的な仕組みとして必要になる `googleads.g.doubleclick.net`・`tpc.googlesyndication.com`・`www.googletagservices.com`・`fundingchoicesmessages.google.com`（EEA圏などでの同意メッセージ用）・`*.googlesyndication.com`・`*.doubleclick.net`・`www.google.com` を script-src/frame-src/img-src/connect-src に追加した。**この一覧はAdSenseの公開ドキュメント等の一般的な情報に基づくもので、このサイトで実機（本番）確認したものではない**（このクラウド実行環境は本番サイト・Google広告配信ドメインのどちらにもアクセスできないため）。本番でブラウザのコンソールに `Refused to load/frame` が出た場合は、そのドメインをCSPに追加する必要がある旨をコードコメント・CLAUDE.mdに明記した
   - **重要な設計上の注意点**: AdSenseのこの設定は「Auto ads」（Googleが自動でページを解析して最適な場所に広告を挿入する仕組み）であり、以前から用意している `AdBanner.astro` のダミープレースホルダー（記事一覧3記事ごと・目次の下・記事最下部）とは**連動しない**。Auto ads は独自の判断で広告枠を挿入するため、`AdBanner.astro` の `<div class="ad-container">` の中に実際の広告が入るとは限らない。両者は別の仕組みとして共存させている（`AdBanner.astro` は今のところダミー表示のまま）
   - 動作確認: `npx astro check` 0 エラー、`npm run build` 36 ページ成功。ビルド後のHTMLで `adsbygoogle.js?client=ca-pub-3582209220110647` のスクリプトタグがユーザーの発行コードと完全に一致する形で出力されていることを確認。**このクラウド実行環境からは本番サイト・Google広告配信ドメインのどちらにもアクセスできないため、実際にAuto adsが広告を表示するかどうかはここでは確認できていない**（Google公式の案内でも反映まで最大1時間程度かかるとされている）
+- [x] **ダミーの広告プレースホルダー AdBanner を削除**（2026-09-27、ユーザーの指示）
+  - 経緯: AdSense Auto ads導入後、ユーザーから「目次の下の広告枠は使わんの？」と質問があり、Auto adsは人間が用意した固定の広告枠（`AdBanner.astro`）とは連動しない仕組みだと説明したところ、「自動的に広告がつくなら広告枠消してほしい」との指示があった
+  - `src/pages/posts/[id].astro`: 目次の下・記事最下部にあった `<AdBanner />` の呼び出しを削除。`AdBanner` の import も削除
+  - `src/components/PostListWithAds.astro` → `src/components/PostList.astro` にリネーム。広告枠を3記事ごとに挟む処理と、それに付随していた `MutationObserver` による広告位置の再配置ロジック（`PostFilters.astro` の並び替えと広告枠が競合する問題を回避するために実装したもの）を削除し、単純な記事一覧の `<ol data-post-list>` に戻した。`index.astro` / `page/[page].astro` の import・呼び出しも `PostList` に合わせて変更
+  - `src/components/AdBanner.astro` を削除（呼び出し元が無くなったため）。`GoogleAdSense.astro` のコメント中の `AdBanner.astro` への言及も、削除した旨に更新
+  - 動作確認: `npx astro check` 0 エラー、`npm run build` 36 ページ成功（ページ構成は変わらず）。ビルド後の `dist/` 内を検索し、`ad-container`・「広告枠（スポンサーリンク）」の文字列がどのページにも残っていないことを確認
+  - なお、これより前の時点でユーザーが本番を確認し、武将家外伝の記事にもしもアフィリエイトの商品カード3点（`MoshimoLink`。PR #50）が正しく表示されていることも確認済み
 - [x] **公開済み（2026-09-18、2026-09-25 に独自ドメインへ移行完了）**: https://eno-ramen.com/（旧 URL: https://enoenomirai-beep.github.io/ramen-blog/）
   - リポジトリ: https://github.com/enoenomirai-beep/ramen-blog（`main`、Pages の Source = GitHub Actions）
   - 本番で確認済み: トップ / 記事 3 ページ / `rss.xml` / `sitemap-index.xml` / favicon / OGP・canonical の URL / 画像の読み込み（2026-09-18 時点、旧URLでの確認）。独自ドメイン移行後の最終確認はユーザーがブラウザで実施（コンソールエラー等の詳細確認はクラウド環境のネットワーク制限により Claude 側では未実施）
