@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Focus Guard 設定</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { font-family: system-ui, sans-serif; max-width: 560px; margin: 0 auto; padding: 16px; min-width: 420px; line-height: 1.6; }
+    h2 { font-size: 1rem; margin: 1.4rem 0 .4rem; border-bottom: 1px solid #8884; padding-bottom: 2px; }
+    #status { font-weight: bold; padding: 8px 12px; border-radius: 8px; background: #8882; }
+    #status.on { background: #b91c1c22; color: #b91c1c; }
+    ul { list-style: none; padding: 0; margin: 0; }
+    li { display: flex; justify-content: space-between; align-items: center; padding: 2px 0; }
+    button, input, select { font: inherit; padding: 4px 8px; }
+    code { font-size: 1.2rem; letter-spacing: .05em; word-break: break-all; user-select: none; }
+    .muted { color: gray; font-size: .85rem; }
+    .row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  </style>
+</head>
+<body>
+  <div id="status"></div>
+
+  <h2>集中モード（今から○分）</h2>
+  <div class="row">
+    <select id="mins">
+      <option value="25">25分</option>
+      <option value="60" selected>60分</option>
+      <option value="120">120分</option>
+      <option value="180">180分</option>
+    </select>
+    <button id="startSession">開始</button>
+  </div>
+  <p class="muted">一度始めたら短縮できません（延長はOK）。早く終わらせるには下の解除チャレンジが必要です。</p>
+
+  <h2>ブロックするサイト</h2>
+  <ul id="sites"></ul>
+  <div class="row" style="margin-top:6px">
+    <input id="newSite" placeholder="例: youtube.com" />
+    <button id="addSite">追加</button>
+  </div>
+  <p class="muted">追加はいつでも可能。削除はロック中できません。</p>
+
+  <h2>毎日の自動ブロック時間</h2>
+  <div class="row"><label><input type="checkbox" id="schedEnabled" /> 有効</label></div>
+  <div class="row" id="days"></div>
+  <div class="row" style="margin-top:6px">
+    <input type="time" id="start" /> 〜 <input type="time" id="end" />
+    <button id="saveSched">保存</button>
+  </div>
+  <p class="muted">日をまたぐ設定も可（例 22:00〜02:00）。</p>
+
+  <h2>解除チャレンジ</h2>
+  <p class="muted">ブロックの一時停止や、ロック中の設定変更をしたいとき用。60秒待ってから、下の文字を<strong>手で</strong>入力します（貼り付け不可）。成功すると5分間だけ解除されます。</p>
+  <div id="challenge"></div>
+
+  <script src="lib.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>
